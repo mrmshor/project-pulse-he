@@ -60,8 +60,8 @@ export function TasksModal({ open, onOpenChange, project }: TasksModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] p-0">
-        <DialogHeader className="p-6 pb-2">
+      <DialogContent className="max-w-2xl h-[70vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between">
             <div>
               <span>משימות - {project.name}</span>
@@ -80,14 +80,14 @@ export function TasksModal({ open, onOpenChange, project }: TasksModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="px-6">
+        <div className="flex-shrink-0 px-6">
           <QuickTaskAdd projectId={project.id} />
         </div>
 
-        <Separator className="my-4" />
+        <Separator className="flex-shrink-0" />
 
-        <ScrollArea className="flex-1 px-6 pb-6">
-          <div className="space-y-6">
+        <ScrollArea className="flex-1 px-6">
+          <div className="space-y-6 py-4">
             {/* משימות ממתינות */}
             {pendingTasks.length > 0 && (
               <div>
