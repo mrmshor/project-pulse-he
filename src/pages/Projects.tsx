@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Download, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle } from 'lucide-react';
+import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { ProjectDialog } from '@/components/ProjectDialog';
+import { EnhancedProjectForm } from '@/components/EnhancedProjectForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { isTauriEnvironment, exportFileNative } from '@/lib/tauri';
 
 export function Projects() {
@@ -206,6 +208,67 @@ export function Projects() {
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">{project.description}</p>
                 
+                {/* פרטי לקוח */}
+                {project.client?.name && (
+                  <div className="client-info">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="w-4 h-4 text-primary" />
+                      <span className="font-medium">{project.client.name}</span>
+                      {project.client.company && (
+                        <span className="text-muted-foreground text-sm">• {project.client.company}</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      {project.client.whatsapp && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => ClientContactService.openWhatsApp(project.client.whatsapp!)}
+                          className="gap-1 h-7 px-2"
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                        </Button>
+                      )}
+                      {project.client.email && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => ClientContactService.openGmail(project.client.email!, `בנוגע לפרויקט: ${project.name}`)}
+                          className="gap-1 h-7 px-2"
+                        >
+                          <Mail className="w-3 h-3" />
+                        </Button>
+                      )}
+                      {project.client.phone && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => ClientContactService.dialNumber(project.client.phone!)}
+                          className="gap-1 h-7 px-2"
+                        >
+                          <Phone className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* תיקיית פרויקט */}
+                {project.folderPath && (
+                  <div className="folder-info">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => FolderService.openInFinder(project.folderPath!)}
+                      className="gap-2 w-full"
+                    >
+                      <FolderOpen className="w-4 h-4" />
+                      פתח תיקיית פרויקט
+                    </Button>
+                  </div>
+                )}
+                
                 <div className="flex items-center justify-between">
                   <Badge className={`${getStatusColor(project.status)} transition-smooth hover:scale-105 border border-opacity-50`}>
                     {project.status}
@@ -248,14 +311,23 @@ export function Projects() {
         </div>
       )}
 
-      <ProjectDialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) setEditingProject(null);
-        }}
-        project={editingProject}
-      />
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) setEditingProject(null);
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}
+            </DialogTitle>
+          </DialogHeader>
+          <EnhancedProjectForm
+            project={editingProject}
+            onSave={() => setIsDialogOpen(false)}
+            onCancel={() => setIsDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
