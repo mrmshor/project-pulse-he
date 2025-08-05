@@ -12,7 +12,9 @@
     "active": true,
     "targets": "all",
     "category": "Productivity",
-    "icon": []
+    "icon": [
+      "icons/icon.png"
+    ]
   },
   "app": {
     "windows": [{
