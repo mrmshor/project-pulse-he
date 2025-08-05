@@ -131,10 +131,19 @@ export function Projects() {
       {/* Fixed Header & Filters */}
       <div className="flex-shrink-0 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
         {/* Header */}
-        <div className="text-center space-y-4 py-6 px-6">
-          <h1 className="text-3xl font-bold text-foreground">
-            מערכת ניהול פרויקטים Pro
-          </h1>
+        <div className="text-center space-y-6 py-8 px-6 relative">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute top-0 right-1/4 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-10 left-1/3 w-48 h-48 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          </div>
+          
+          <div className="relative">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight mb-2 animate-fade-in">
+              מערכת ניהול פרויקטים Pro
+            </h1>
+            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full shadow-lg"></div>
+          </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             ניהול ומעקב מתקדם אחר כל הפרויקטים שלך במקום אחד
           </p>

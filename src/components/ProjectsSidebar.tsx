@@ -116,14 +116,18 @@ export function ProjectsSidebar() {
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
+              <div className="relative p-2 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-xl shadow-sm">
                 <FolderOpen className="w-4 h-4 text-primary" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-xl animate-pulse"></div>
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-foreground">
-                  פרויקטים
-                </h2>
-                <p className="text-xs text-muted-foreground">
+                <div className="relative">
+                  <h2 className="text-sm font-semibold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                    פרויקטים
+                  </h2>
+                  <div className="absolute -bottom-0.5 right-0 w-8 h-0.5 bg-gradient-to-l from-primary/60 to-transparent rounded-full"></div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {projects.length} פרויקטים
                 </p>
               </div>

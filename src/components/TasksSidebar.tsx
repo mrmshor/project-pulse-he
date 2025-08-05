@@ -147,11 +147,19 @@ export function TasksSidebar() {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <div className="flex items-center gap-2">
-              <CheckSquare className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold text-foreground">
-                משימות אישיות
-              </h2>
+            <div className="flex items-center gap-3">
+              <div className="relative p-2 bg-gradient-to-br from-primary/20 to-green-500/20 rounded-xl shadow-sm">
+                <CheckSquare className="w-5 h-5 text-primary" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-xl animate-pulse"></div>
+              </div>
+              <div>
+                <div className="relative">
+                  <h2 className="text-lg font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                    משימות אישיות
+                  </h2>
+                  <div className="absolute -bottom-0.5 right-0 w-12 h-0.5 bg-gradient-to-l from-primary/60 to-transparent rounded-full"></div>
+                </div>
+              </div>
             </div>
           )}
           <button

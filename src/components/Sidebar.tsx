@@ -32,7 +32,12 @@ export function Sidebar() {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-lg font-bold text-foreground">ניהול פרויקטים Pro</h1>
+            <div className="relative">
+              <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent animate-fade-in">
+                ניהול פרויקטים Pro
+              </h1>
+              <div className="absolute -bottom-0.5 right-0 w-16 h-0.5 bg-gradient-to-l from-primary to-transparent rounded-full"></div>
+            </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
