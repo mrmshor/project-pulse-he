@@ -54,9 +54,11 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
   };
 
   // פתיחת WhatsApp
-  const handleOpenWhatsApp = async () => {
-    const primaryWhatsApp = project.client.whatsappNumbers?.find(w => w.isPrimary && w.number);
-    const whatsappNumber = primaryWhatsApp?.number || project.client.whatsappNumbers?.[0]?.number;
+  const handleOpenWhatsApp = async (whatsappNumber?: string) => {
+    if (!whatsappNumber) {
+      const primaryWhatsApp = project.client.whatsappNumbers?.find(w => w.isPrimary && w.number);
+      whatsappNumber = primaryWhatsApp?.number || project.client.whatsappNumbers?.[0]?.number;
+    }
     
     if (whatsappNumber) {
       const success = await ClientContactService.openWhatsApp(whatsappNumber);
@@ -140,16 +142,20 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
             </div>
             
             <div className="flex gap-2">
-              {project.client.whatsappNumbers?.some(w => w.number) && (
+              {project.client.whatsappNumbers?.filter(w => w.number).map((whatsapp, index) => (
                 <Button
-                  onClick={handleOpenWhatsApp}
+                  key={whatsapp.id}
+                  onClick={() => handleOpenWhatsApp(whatsapp.number)}
                   size="sm"
                   className="btn-glass hover:bg-green-500 hover:text-white transition-smooth"
-                  title="פתח WhatsApp"
+                  title={`פתח WhatsApp - ${whatsapp.label}${whatsapp.isPrimary ? ' (עיקרי)' : ''}`}
                 >
                   <MessageCircle size={14} />
+                  {project.client.whatsappNumbers?.filter(w => w.number).length > 1 && (
+                    <span className="text-xs ml-1">{index + 1}</span>
+                  )}
                 </Button>
-              )}
+              ))}
               
               {project.client.email && (
                 <Button
