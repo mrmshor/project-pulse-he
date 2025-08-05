@@ -127,94 +127,124 @@ export function Projects() {
   };
 
   return (
-    <div className="p-8 space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent mb-2 relative">
-            פרויקטים
-            <div className="absolute -bottom-1 right-0 w-20 h-1 bg-gradient-to-l from-primary to-primary-glow rounded-full"></div>
-          </h1>
-          <p className="text-muted-foreground text-lg">ניהול ומעקב אחר כל הפרויקטים שלך</p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => handleExport('csv')}
-            className="gap-2 hover:shadow-medium transition-all duration-300"
-          >
-            <Download size={16} />
-            CSV
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleExport('json')}
-            className="gap-2 hover:shadow-medium transition-all duration-300"
-          >
-            <Download size={16} />
-            JSON
-          </Button>
-          <Button 
-            onClick={() => setIsDialogOpen(true)} 
-            className="btn-gradient gap-2 shadow-medium hover:shadow-glow transition-all duration-300 hover:-translate-y-1"
-          >
-            <Plus size={16} />
-            פרויקט חדש
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 card-macos">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input
-            placeholder="חיפוש פרויקטים..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-glass pr-10 text-lg font-medium"
-          />
+    <div className="min-h-screen bg-gradient-ambient">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-radial from-primary/20 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-1/4 w-64 h-64 bg-gradient-radial from-accent/15 to-transparent rounded-full blur-2xl"></div>
+          <div className="absolute top-40 right-1/3 w-32 h-32 bg-gradient-radial from-secondary/25 to-transparent rounded-full blur-xl"></div>
         </div>
         
-        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
-          <SelectTrigger className="input-glass">
-            <SelectValue placeholder="בחר סטטוס" />
-          </SelectTrigger>
-          <SelectContent className="glass">
-            <SelectItem value="all">כל הסטטוסים</SelectItem>
-            <SelectItem value="תכנון">תכנון</SelectItem>
-            <SelectItem value="פעיל">פעיל</SelectItem>
-            <SelectItem value="הושלם">הושלם</SelectItem>
-            <SelectItem value="בהמתנה">בהמתנה</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
-          <SelectTrigger className="input-glass">
-            <SelectValue placeholder="בחר עדיפות" />
-          </SelectTrigger>
-          <SelectContent className="glass">
-            <SelectItem value="all">כל העדיפויות</SelectItem>
-            <SelectItem value="נמוכה">נמוכה</SelectItem>
-            <SelectItem value="בינונית">בינונית</SelectItem>
-            <SelectItem value="גבוהה">גבוהה</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="container mx-auto px-8 pt-12 pb-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="space-y-4">
+              <div className="relative">
+                <h1 className="text-6xl font-display font-bold gradient-primary bg-clip-text text-transparent leading-tight">
+                  פרויקטים
+                </h1>
+                <div className="absolute -bottom-2 right-0 w-32 h-1.5 bg-gradient-to-l from-primary via-primary-glow to-accent rounded-full shadow-glow"></div>
+              </div>
+              <p className="text-xl text-muted-foreground max-w-md leading-relaxed">
+                ניהול ומעקב מתקדם אחר כל הפרויקטים שלך במקום אחד
+              </p>
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  <span>{projects.length} פרויקטים פעילים</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                  <span>{filteredProjects.length} מוצגים</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleExport('csv')}
+                  className="gap-2 glass-effect hover:shadow-elegant transition-all duration-300 hover:scale-105"
+                >
+                  <Download size={16} />
+                  CSV
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleExport('json')}
+                  className="gap-2 glass-effect hover:shadow-elegant transition-all duration-300 hover:scale-105"
+                >
+                  <Download size={16} />
+                  JSON
+                </Button>
+              </div>
+              <Button 
+                onClick={() => setIsDialogOpen(true)} 
+                className="btn-gradient gap-2 shadow-elegant hover:shadow-glow transition-all duration-300 hover:-translate-y-2 hover:scale-105 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <Plus size={18} />
+                <span className="font-medium">פרויקט חדש</span>
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        {filteredProjects.map((project, index) => {
-          const projectTasks = getTasksByProject(project.id);
-          const completedTasks = projectTasks.filter(task => task.status === 'הושלמה').length;
+        <div className="container mx-auto px-8 space-y-8">
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 card-macos">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input
+                placeholder="חיפוש פרויקטים..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input-glass pr-10 text-lg font-medium"
+              />
+            </div>
+            
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
+              <SelectTrigger className="input-glass">
+                <SelectValue placeholder="בחר סטטוס" />
+              </SelectTrigger>
+              <SelectContent className="glass">
+                <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="תכנון">תכנון</SelectItem>
+                <SelectItem value="פעיל">פעיל</SelectItem>
+                <SelectItem value="הושלם">הושלם</SelectItem>
+                <SelectItem value="בהמתנה">בהמתנה</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
+              <SelectTrigger className="input-glass">
+                <SelectValue placeholder="בחר עדיפות" />
+              </SelectTrigger>
+              <SelectContent className="glass">
+                <SelectItem value="all">כל העדיפויות</SelectItem>
+                <SelectItem value="נמוכה">נמוכה</SelectItem>
+                <SelectItem value="בינונית">בינונית</SelectItem>
+                <SelectItem value="גבוהה">גבוהה</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Projects Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+            {filteredProjects.map((project, index) => {
+              const projectTasks = getTasksByProject(project.id);
+              const completedTasks = projectTasks.filter(task => task.status === 'הושלמה').length;
           
-          return (
-            <Card 
-              key={project.id} 
-              id={`project-${project.id}`}
-              className="card-macos animate-scale-in group cursor-pointer relative overflow-hidden"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
+              return (
+                <Card 
+                  key={project.id} 
+                  id={`project-${project.id}`}
+                  className="card-macos animate-scale-in group cursor-pointer relative overflow-hidden"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
               {/* Floating action buttons */}
               <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
                 <Button
@@ -356,38 +386,39 @@ export function Projects() {
                   )}
                 </div>
               </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {filteredProjects.length === 0 && (
-        <div className="text-center py-16 card-macos">
-          <div className="animate-bounce-subtle">
-            <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                </Card>
+              );
+            })}
           </div>
-          <h3 className="text-xl font-semibold mb-2">אין פרויקטים להצגה</h3>
-          <p className="text-muted-foreground">נסה לשנות את הפילטרים או ליצור פרויקט חדש</p>
-        </div>
-      )}
 
-      <Dialog open={isDialogOpen} onOpenChange={(open) => {
-        setIsDialogOpen(open);
-        if (!open) setEditingProject(null);
-      }}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto glass border-0 shadow-elegant">
-          <DialogHeader className="pb-6">
-            <DialogTitle className="text-2xl font-display">
-              {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}
-            </DialogTitle>
-          </DialogHeader>
-          <EnhancedProjectForm
-            project={editingProject}
-            onSave={() => setIsDialogOpen(false)}
-            onCancel={() => setIsDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+          {filteredProjects.length === 0 && (
+            <div className="text-center py-16 card-macos">
+              <div className="animate-bounce-subtle">
+                <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">אין פרויקטים להצגה</h3>
+              <p className="text-muted-foreground">נסה לשנות את הפילטרים או ליצור פרויקט חדש</p>
+            </div>
+          )}
+
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setEditingProject(null);
+          }}>
+            <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto glass border-0 shadow-elegant">
+              <DialogHeader className="pb-6">
+                <DialogTitle className="text-2xl font-display">
+                  {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}
+                </DialogTitle>
+              </DialogHeader>
+              <EnhancedProjectForm
+                project={editingProject}
+                onSave={() => setIsDialogOpen(false)}
+                onCancel={() => setIsDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
     </div>
   );
 }
