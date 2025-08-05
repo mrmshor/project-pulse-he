@@ -14,13 +14,13 @@ export function Layout({ children }: LayoutProps) {
       <TauriStatus />
       <TopNavigation />
       <div className="flex relative">
-        <main className="flex-1 overflow-auto p-8 animate-fade-in ml-80">
+        <main className="flex-1 overflow-auto p-8 animate-fade-in mx-80">
           {children}
         </main>
-        <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40">
+        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40">
           <TasksSidebar />
         </div>
-        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40">
+        <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40">
           <ProjectsSidebar />
         </div>
       </div>
