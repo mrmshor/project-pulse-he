@@ -13,14 +13,14 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
       <TauriStatus />
       <TopNavigation />
-      <div className="flex relative">
-        <main className="flex-1 overflow-auto p-8 animate-fade-in mx-80">
+      <div className="relative">
+        <main className="pt-16 px-8 min-h-screen animate-fade-in" style={{ marginRight: '320px', marginLeft: '320px' }}>
           {children}
         </main>
-        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40">
+        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40 w-80">
           <TasksSidebar />
         </div>
-        <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40">
+        <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 w-80">
           <ProjectsSidebar />
         </div>
       </div>
