@@ -142,16 +142,16 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
             </div>
             
             <div className="flex gap-2">
-              {project.client.whatsappNumbers?.filter(w => w.number).map((whatsapp, index) => (
+              {project.client.whatsappNumbers?.filter(w => w.number && w.number.trim()).map((whatsapp, index) => (
                 <Button
-                  key={whatsapp.id}
+                  key={whatsapp.id || index}
                   onClick={() => handleOpenWhatsApp(whatsapp.number)}
                   size="sm"
                   className="btn-glass hover:bg-green-500 hover:text-white transition-smooth"
-                  title={`פתח WhatsApp - ${whatsapp.label}${whatsapp.isPrimary ? ' (עיקרי)' : ''}`}
+                  title={`פתח WhatsApp - ${whatsapp.label || 'WhatsApp'}${whatsapp.isPrimary ? ' (עיקרי)' : ''}`}
                 >
                   <MessageCircle size={14} />
-                  {project.client.whatsappNumbers?.filter(w => w.number).length > 1 && (
+                  {project.client.whatsappNumbers?.filter(w => w.number && w.number.trim()).length > 1 && (
                     <span className="text-xs ml-1">{index + 1}</span>
                   )}
                 </Button>
