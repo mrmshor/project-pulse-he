@@ -13,14 +13,18 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
       <TauriStatus />
       <TopNavigation />
-      <div className="relative">
-        <main className="pt-16 px-8 min-h-screen animate-fade-in" style={{ marginRight: '320px', marginLeft: '320px' }}>
+      <div className="relative w-full overflow-hidden">
+        <main className="mx-auto max-w-none px-8 py-8 animate-fade-in" style={{ 
+          marginRight: '320px', 
+          marginLeft: '320px',
+          minHeight: 'calc(100vh - 64px)'
+        }}>
           {children}
         </main>
-        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40 w-80">
+        <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40 w-80 bg-white border-l shadow-lg">
           <TasksSidebar />
         </div>
-        <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 w-80">
+        <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 w-80 bg-white border-r shadow-lg">
           <ProjectsSidebar />
         </div>
       </div>
