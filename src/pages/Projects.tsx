@@ -326,16 +326,21 @@ export function Projects() {
                     </div>
                     
                   <div className="flex gap-2">
-                    {project.client?.whatsappNumbers?.filter(w => w.number).length > 0 && (
+                    {project.client?.whatsappNumbers?.filter(w => w.number && w.number.trim()).map((whatsapp, index) => (
                       <Button
+                        key={whatsapp.id || index}
                         variant="outline"
                         size="sm"
-                        onClick={() => ClientContactService.openWhatsApp(project.client.whatsappNumbers!.find(w => w.isPrimary)?.number || project.client.whatsappNumbers![0].number)}
+                        onClick={() => ClientContactService.openWhatsApp(whatsapp.number)}
                         className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                        title={`פתח WhatsApp - ${whatsapp.label}${whatsapp.isPrimary ? ' (עיקרי)' : ''}`}
                       >
-                          <MessageCircle className="w-3 h-3" />
-                        </Button>
-                      )}
+                        <MessageCircle className="w-3 h-3" />
+                        {project.client?.whatsappNumbers?.filter(w => w.number && w.number.trim()).length > 1 && (
+                          <span className="text-xs ml-1">{index + 1}</span>
+                        )}
+                      </Button>
+                    ))}
                       {project.client.email && (
                         <Button
                           variant="outline"
