@@ -200,8 +200,12 @@ export function Projects() {
           const completedTasks = projectTasks.filter(task => task.status === 'הושלמה').length;
           
           return (
-            <Card key={project.id} className="card-macos animate-slide-up"
-              style={{ animationDelay: `${filteredProjects.indexOf(project) * 0.1}s` }}>
+            <Card 
+              key={project.id} 
+              id={`project-${project.id}`}
+              className="card-macos animate-slide-up transition-all duration-300"
+              style={{ animationDelay: `${filteredProjects.indexOf(project) * 0.1}s` }}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{project.name}</CardTitle>
