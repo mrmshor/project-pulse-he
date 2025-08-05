@@ -10,7 +10,7 @@ import { TasksModal } from './TasksModal';
 
 interface ProjectTaskListProps {
   projectId: string;
-  project: any; // הוספתי project כדי להעביר לדיאלוג
+  project: any;
   maxVisible?: number;
 }
 
@@ -19,9 +19,14 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { getTasksByProject, updateTask } = useProjectStore();
   
-  const tasks = getTasksByProject(projectId).sort((a, b) => b.order - a.order); // סורט בסדר יורד - החדשות ראשונות
-  const visibleTasks = isExpanded ? tasks : tasks.slice(0, maxVisible);
-  const hasMoreTasks = tasks.length > maxVisible;
+  const allTasks = getTasksByProject(projectId).sort((a, b) => b.order - a.order);
+  const pendingTasks = allTasks.filter(task => task.status !== 'הושלמה');
+  const completedTasks = allTasks.filter(task => task.status === 'הושלמה');
+  
+  // להציג תמיד משימות שלא הושלמו, ואם אין - אז משימות שהושלמו
+  const tasksToShow = pendingTasks.length > 0 ? pendingTasks : completedTasks;
+  const visibleTasks = isExpanded ? tasksToShow : tasksToShow.slice(0, maxVisible);
+  const hasMoreTasks = tasksToShow.length > maxVisible;
 
   const handleTaskToggle = (task: Task) => {
     const newStatus = task.status === 'הושלמה' ? 'לביצוע' : 'הושלמה';
@@ -32,7 +37,7 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
     return task.status === 'הושלמה';
   };
 
-  if (tasks.length === 0) {
+  if (allTasks.length === 0) {
     return (
       <div className="space-y-2">
         <Button
@@ -63,7 +68,7 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
           onClick={() => setIsModalOpen(true)}
           className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
         >
-          משימות ({tasks.filter(t => t.status === 'הושלמה').length}/{tasks.length})
+          משימות ({completedTasks.length}/{allTasks.length})
           <ExternalLink className="w-3 h-3" />
         </Button>
         {hasMoreTasks && (
@@ -110,9 +115,9 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
           </div>
         ))}
         
-        {isExpanded && hasMoreTasks && tasks.length > maxVisible && (
+        {isExpanded && hasMoreTasks && tasksToShow.length > maxVisible && (
           <div className="text-xs text-muted-foreground text-center py-1">
-            {tasks.length - maxVisible} משימות נוספות
+            {tasksToShow.length - maxVisible} משימות נוספות
           </div>
         )}
       </div>
