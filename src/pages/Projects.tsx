@@ -127,13 +127,13 @@ export function Projects() {
   };
 
   return (
-    <div className="p-8 space-y-8 animate-fade-in">
+    <div className="p-6 space-y-6 min-h-screen bg-gray-50/50 dark:bg-gray-900/50">
       {/* Header */}
-      <div className="text-center space-y-4 mb-8">
-        <h1 className="text-4xl font-bold text-foreground">
+      <div className="text-center space-y-4 py-8">
+        <h1 className="text-3xl font-bold text-foreground">
           מערכת ניהול פרויקטים Pro
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-muted-foreground max-w-2xl mx-auto">
           ניהול ומעקב מתקדם אחר כל הפרויקטים שלך במקום אחד
         </p>
         
@@ -148,11 +148,12 @@ export function Projects() {
           </div>
         </div>
         
-        <div className="flex items-center justify-center gap-3 mt-6">
+        <div className="flex items-center justify-center gap-3 pt-4">
           <Button
             variant="outline"
             onClick={() => handleExport('csv')}
             className="gap-2"
+            size="sm"
           >
             <Download size={16} />
             יצוא CSV
@@ -161,6 +162,7 @@ export function Projects() {
             variant="outline"
             onClick={() => handleExport('json')}
             className="gap-2"
+            size="sm"
           >
             <Download size={16} />
             יצוא JSON
@@ -168,6 +170,7 @@ export function Projects() {
           <Button 
             onClick={() => setIsDialogOpen(true)} 
             className="gap-2 bg-primary hover:bg-primary/90"
+            size="sm"
           >
             <Plus size={16} />
             פרויקט חדש
@@ -176,45 +179,50 @@ export function Projects() {
       </div>
       
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm border">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input
-            placeholder="חיפוש פרויקטים..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10"
-          />
-        </div>
-        
-        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
-          <SelectTrigger>
-            <SelectValue placeholder="בחר סטטוס" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">כל הסטטוסים</SelectItem>
-            <SelectItem value="תכנון">תכנון</SelectItem>
-            <SelectItem value="פעיל">פעיל</SelectItem>
-            <SelectItem value="הושלם">הושלם</SelectItem>
-            <SelectItem value="בהמתנה">בהמתנה</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input
+                placeholder="חיפוש פרויקטים..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-10 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600"
+              />
+            </div>
+            
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
+              <SelectTrigger className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600">
+                <SelectValue placeholder="בחר סטטוס" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 z-50">
+                <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="תכנון">תכנון</SelectItem>
+                <SelectItem value="פעיל">פעיל</SelectItem>
+                <SelectItem value="הושלם">הושלם</SelectItem>
+                <SelectItem value="בהמתנה">בהמתנה</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
-          <SelectTrigger>
-            <SelectValue placeholder="בחר עדיפות" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">כל העדיפויות</SelectItem>
-            <SelectItem value="נמוכה">נמוכה</SelectItem>
-            <SelectItem value="בינונית">בינונית</SelectItem>
-            <SelectItem value="גבוהה">גבוהה</SelectItem>
-          </SelectContent>
-        </Select>
+            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
+              <SelectTrigger className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600">
+                <SelectValue placeholder="בחר עדיפות" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 z-50">
+                <SelectItem value="all">כל העדיפויות</SelectItem>
+                <SelectItem value="נמוכה">נמוכה</SelectItem>
+                <SelectItem value="בינונית">בינונית</SelectItem>
+                <SelectItem value="גבוהה">גבוהה</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredProjects.map((project, index) => {
           const projectTasks = getTasksByProject(project.id);
           const completedTasks = projectTasks.filter(task => task.status === 'הושלמה').length;
@@ -370,13 +378,16 @@ export function Projects() {
             </Card>
           );
         })}
+        </div>
       </div>
 
       {filteredProjects.length === 0 && (
-        <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-lg shadow-sm border">
-          <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">אין פרויקטים להצגה</h3>
-          <p className="text-muted-foreground">נסה לשנות את הפילטרים או ליצור פרויקט חדש</p>
+        <div className="max-w-md mx-auto text-center py-16">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">אין פרויקטים להצגה</h3>
+            <p className="text-muted-foreground">נסה לשנות את הפילטרים או ליצור פרויקט חדש</p>
+          </div>
         </div>
       )}
 
@@ -384,9 +395,9 @@ export function Projects() {
         setIsDialogOpen(open);
         if (!open) setEditingProject(null);
       }}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <DialogHeader className="pb-6">
-            <DialogTitle className="text-2xl">
+            <DialogTitle className="text-2xl font-semibold">
               {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}
             </DialogTitle>
           </DialogHeader>
