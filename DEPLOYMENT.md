@@ -33,7 +33,16 @@ git push -u origin main
 
 ## 🎯 שלב 3: פרסום גרסה ויצירת קובץ התקנה
 
-### פקודות לפרסום:
+### אם GitHub Actions לא מתחיל - פתרון בעיות:
+
+#### 🔍 בדיקה ראשונה:
+1. **ודא שהפרויקט ב-GitHub** - בדוק שהקבצים הועלו נכון
+2. **בדוק שיש תיקיית `.github/workflows/`** ברפוזיטורי
+3. **ודא ש-GitHub Actions מופעל**:
+   - לך לרפוזיטורי → Settings → Actions → General
+   - ודא שנבחר "Allow all actions and reusable workflows"
+
+#### 🚀 פקודות לפרסום (שיטה 1 - דרך Tag):
 ```bash
 # 1. Clone הפרויקט למחשב (אם עדיין לא)
 git clone https://github.com/[USERNAME]/[REPO-NAME].git
@@ -42,18 +51,33 @@ cd [REPO-NAME]
 # 2. ודא שהכל מעודכן
 git pull origin main
 
-# 3. צור גרסה חדשה (שנה את מספר הגרסה לפי הצורך)
+# 3. צור גרסה חדשה
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
+#### ⚡ שיטה 2 - הפעלה ידנית:
+אם ה-Tag לא עובד, אפשר להפעיל ידנית:
+1. **לך לרפוזיטורי ב-GitHub**
+2. **Actions → Build and Release Native Apps**
+3. **לחץ "Run workflow"**
+4. **לחץ "Run workflow" שוב**
+
+#### 🛠️ שיטה 3 - דחיפה רגילה (חירום):
+```bash
+# אם כלום לא עוזר:
+git add .
+git commit -m "trigger build"
+git push origin main
+```
+
 ### 🔄 מה קורה באופן אוטומטי:
-1. **GitHub Actions מתחיל** - זיהוי ה-tag החדש
+1. **GitHub Actions מתחיל** - זיהוי ה-tag או ההפעלה הידנית
 2. **בנייה במקביל** על 3 מערכות הפעלה:
-   - 🍎 **macOS** (עבור Mac)
-   - 🪟 **Windows** (עבור PC)
-   - 🐧 **Linux** (עבור לינוקס)
-3. **יצירת קבצי התקנה** מוכנים להורדה
+   - 🍎 **macOS** (15-20 דקות)
+   - 🪟 **Windows** (10-15 דקות)  
+   - 🐧 **Linux** (8-12 דקות)
+3. **יצירת Release** עם קבצי ההתקנה
 
 ## 📦 שלב 4: הורדת קובץ ההתקנה למק
 

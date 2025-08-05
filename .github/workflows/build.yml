@@ -1,10 +1,18 @@
-name: Build and Release
+name: Build and Release Native Apps
 
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build'
+        required: false
+        default: 'latest'
+
+permissions:
+  contents: write
 
 jobs:
   build-macos:
@@ -21,12 +29,17 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
+
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
@@ -35,11 +48,20 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'מנהל פרויקטים Pro v__VERSION__'
-          releaseBody: 'See the assets to download and install this version.'
+          releaseBody: |
+            🎯 מנהל פרויקטים Pro - גרסה __VERSION__
+            
+            📦 קבצי התקנה זמינים:
+            - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
+            - 🪟 Windows: קובץ MSI להתקנה
+            - 🐧 Linux: קובץ AppImage
+            
+            ✨ שיפורים בגרסה זו:
+            - ממשק משתמש מעודכן ויפה
+            - ביצועים משופרים
+            - תיקוני באגים
           releaseDraft: true
           prerelease: false
-          includeDebug: false
-          includeRelease: true
 
   build-windows:
     runs-on: windows-latest
@@ -57,10 +79,13 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
+
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
@@ -69,11 +94,15 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'מנהל פרויקטים Pro v__VERSION__'
-          releaseBody: 'See the assets to download and install this version.'
+          releaseBody: |
+            🎯 מנהל פרויקטים Pro - גרסה __VERSION__
+            
+            📦 קבצי התקנה זמינים:
+            - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
+            - 🪟 Windows: קובץ MSI להתקנה
+            - 🐧 Linux: קובץ AppImage
           releaseDraft: true
           prerelease: false
-          includeDebug: false
-          includeRelease: true
 
   build-linux:
     runs-on: ubuntu-20.04
@@ -96,10 +125,13 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
+
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
@@ -108,8 +140,12 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'מנהל פרויקטים Pro v__VERSION__'
-          releaseBody: 'See the assets to download and install this version.'
+          releaseBody: |
+            🎯 מנהל פרויקטים Pro - גרסה __VERSION__
+            
+            📦 קבצי התקנה זמינים:
+            - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
+            - 🪟 Windows: קובץ MSI להתקנה  
+            - 🐧 Linux: קובץ AppImage
           releaseDraft: true
           prerelease: false
-          includeDebug: false
-          includeRelease: true
