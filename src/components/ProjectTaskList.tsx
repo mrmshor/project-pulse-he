@@ -16,7 +16,7 @@ export function ProjectTaskList({ projectId, maxVisible = 3 }: ProjectTaskListPr
   const [isExpanded, setIsExpanded] = useState(false);
   const { getTasksByProject, updateTask } = useProjectStore();
   
-  const tasks = getTasksByProject(projectId);
+  const tasks = getTasksByProject(projectId).sort((a, b) => b.order - a.order); // סורט בסדר יורד - החדשות ראשונות
   const visibleTasks = isExpanded ? tasks : tasks.slice(0, maxVisible);
   const hasMoreTasks = tasks.length > maxVisible;
 

@@ -23,7 +23,7 @@ export function QuickTaskAdd({ projectId, onTaskAdded }: QuickTaskAddProps) {
       status: 'לביצוע' as const,
       priority: 'בינונית' as const,
       dueDate: new Date(),
-      order: 0,
+      order: Date.now(), // משתמש בזמן נוכחי כדי שמשימות חדשות יהיו עם order גבוה יותר
       tags: []
     };
 
