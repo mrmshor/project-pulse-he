@@ -22,10 +22,10 @@ export function Layout({ children }: LayoutProps) {
           {children}
         </main>
         <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] z-40 w-80 bg-white border-l shadow-lg">
-          <TasksSidebar />
+          <ProjectsSidebar />
         </div>
         <div className="fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 w-80 bg-white border-r shadow-lg">
-          <ProjectsSidebar />
+          <TasksSidebar />
         </div>
       </div>
     </div>
