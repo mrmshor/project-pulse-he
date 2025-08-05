@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TaskDialog } from '@/components/TaskDialog';
+import { isTauriEnvironment, exportFileNative } from '@/lib/tauri';
 
 export function Tasks() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,15 +51,20 @@ export function Tasks() {
     setIsDialogOpen(true);
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const content = exportToCSV('tasks');
-    const blob = new Blob([content], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'tasks.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    if (isTauriEnvironment()) {
+      await exportFileNative(content, 'tasks.csv', 'csv');
+    } else {
+      const blob = new Blob([content], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tasks.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const getStatusColor = (status: TaskStatus) => {

@@ -1,0 +1,30 @@
+{
+  "productName": "מנהל פרויקטים Pro",
+  "version": "1.0.0",
+  "identifier": "com.company.projectmanager",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:8080",
+    "frontendDist": "../dist"
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "category": "Productivity"
+  },
+  "app": {
+    "windows": [{
+      "title": "מנהל פרויקטים Pro",
+      "width": 1200,
+      "height": 800,
+      "minWidth": 800,
+      "minHeight": 600
+    }]
+  },
+  "plugins": {
+    "dialog": { "all": true },
+    "shell": { "all": false, "open": true },
+    "fs": { "all": true }
+  }
+}

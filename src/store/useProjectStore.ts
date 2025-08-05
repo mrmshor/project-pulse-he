@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Project, Task, Contact } from '@/types';
+import { isTauriEnvironment, saveDataNative, loadDataNative } from '@/lib/tauri';
 
 interface ProjectStore {
   projects: Project[];
@@ -25,12 +26,41 @@ interface ProjectStore {
   deleteContact: (id: string) => void;
   getContactsByProject: (projectId: string) => Contact[];
   
-  // Export
+  // Export with native support
   exportToJSON: () => string;
   exportToCSV: (type: 'projects' | 'tasks' | 'contacts') => string;
+  
+  // Native save/load
+  saveToNative: () => Promise<boolean>;
+  loadFromNative: () => Promise<void>;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
+
+// Custom storage for Tauri support
+const tauriStorage = {
+  getItem: async (name: string) => {
+    if (isTauriEnvironment()) {
+      const data = await loadDataNative();
+      return data ? JSON.stringify(data) : null;
+    }
+    return localStorage.getItem(name);
+  },
+  setItem: async (name: string, value: string) => {
+    if (isTauriEnvironment()) {
+      await saveDataNative(JSON.parse(value));
+    } else {
+      localStorage.setItem(name, value);
+    }
+  },
+  removeItem: async (name: string) => {
+    if (isTauriEnvironment()) {
+      // Implement if needed
+    } else {
+      localStorage.removeItem(name);
+    }
+  }
+};
 
 export const useProjectStore = create<ProjectStore>()(
   persist(
@@ -180,6 +210,28 @@ export const useProjectStore = create<ProjectStore>()(
         }
         
         return '';
+      },
+      
+      // Native save/load functions
+      saveToNative: async () => {
+        if (isTauriEnvironment()) {
+          const { projects, tasks, contacts } = get();
+          return await saveDataNative({ projects, tasks, contacts });
+        }
+        return false;
+      },
+      
+      loadFromNative: async () => {
+        if (isTauriEnvironment()) {
+          const data = await loadDataNative();
+          if (data) {
+            set({
+              projects: data.projects || [],
+              tasks: data.tasks || [],
+              contacts: data.contacts || []
+            });
+          }
+        }
       },
     }),
     {

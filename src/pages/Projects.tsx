@@ -14,6 +14,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { ProjectDialog } from '@/components/ProjectDialog';
+import { isTauriEnvironment, exportFileNative } from '@/lib/tauri';
 
 export function Projects() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,28 +51,30 @@ export function Projects() {
     setIsDialogOpen(true);
   };
 
-  const handleExport = (format: 'csv' | 'json') => {
+  const handleExport = async (format: 'csv' | 'json') => {
     let content: string;
     let filename: string;
-    let mimeType: string;
 
     if (format === 'csv') {
       content = exportToCSV('projects');
       filename = 'projects.csv';
-      mimeType = 'text/csv';
     } else {
       content = exportToJSON();
       filename = 'projects.json';
-      mimeType = 'application/json';
     }
 
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (isTauriEnvironment()) {
+      await exportFileNative(content, filename, format);
+    } else {
+      const mimeType = format === 'csv' ? 'text/csv' : 'application/json';
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const getStatusColor = (status: ProjectStatus) => {

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ContactDialog } from '@/components/ContactDialog';
+import { isTauriEnvironment, openWhatsApp, openMail, openPhone, exportFileNative } from '@/lib/tauri';
 
 export function Contacts() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,20 +40,49 @@ export function Contacts() {
     setIsDialogOpen(true);
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const content = exportToCSV('contacts');
-    const blob = new Blob([content], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'contacts.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    
+    if (isTauriEnvironment()) {
+      await exportFileNative(content, 'contacts.csv', 'csv');
+    } else {
+      const blob = new Blob([content], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'contacts.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const formatPhone = (phone: string) => {
     // Convert Israeli phone format for WhatsApp (remove dashes, add country code)
     return phone.replace(/[^0-9]/g, '').replace(/^0/, '972');
+  };
+
+  const handleEmailClick = async (email: string) => {
+    if (isTauriEnvironment()) {
+      await openMail(email);
+    } else {
+      window.open(`mailto:${email}`);
+    }
+  };
+
+  const handlePhoneClick = async (phone: string) => {
+    if (isTauriEnvironment()) {
+      await openPhone(phone);
+    } else {
+      window.open(`tel:${phone}`);
+    }
+  };
+
+  const handleWhatsAppClick = async (phone: string) => {
+    if (isTauriEnvironment()) {
+      await openWhatsApp(phone);
+    } else {
+      window.open(`https://wa.me/${formatPhone(phone)}`);
+    }
   };
 
   return (
@@ -137,7 +167,7 @@ export function Contacts() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(`mailto:${contact.email}`)}
+                      onClick={() => handleEmailClick(contact.email!)}
                       className="gap-1"
                     >
                       <Mail size={14} />
@@ -149,7 +179,7 @@ export function Contacts() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(`tel:${contact.phone}`)}
+                        onClick={() => handlePhoneClick(contact.phone!)}
                         className="gap-1"
                       >
                         <Phone size={14} />
@@ -158,9 +188,7 @@ export function Contacts() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => 
-                          window.open(`https://wa.me/${formatPhone(contact.phone)}`)
-                        }
+                        onClick={() => handleWhatsAppClick(contact.phone!)}
                         className="gap-1"
                       >
                         <MessageCircle size={14} />
