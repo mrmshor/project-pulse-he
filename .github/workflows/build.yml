@@ -47,6 +47,13 @@ jobs:
       - name: Build Tauri app (with verbose output)
         run: |
           export RUST_BACKTRACE=1
-          npm run tauri build -- --verbose
+          tauri build --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-artifacts
+          path: src-tauri/target/release/bundle/
