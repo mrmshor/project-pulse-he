@@ -139,8 +139,8 @@ export function TasksSidebar() {
   return (
     <div
       className={cn(
-        'fixed left-0 top-0 h-screen z-40 bg-white dark:bg-gray-900 transition-all duration-300 shadow-lg flex flex-col border-r border-gray-200 dark:border-gray-700',
-        isCollapsed ? 'w-16' : 'w-80'
+        'h-full bg-white dark:bg-gray-900 transition-all duration-300 shadow-lg flex flex-col border-gray-200 dark:border-gray-700',
+        isCollapsed ? 'w-16' : 'w-full'
       )}
     >
       {/* Header */}
