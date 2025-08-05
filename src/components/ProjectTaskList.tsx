@@ -48,6 +48,7 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
           project={project}
+          scrollToFirstPending={true}
         />
       </div>
     );
@@ -122,6 +123,7 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         project={project}
+        scrollToFirstPending={true}
       />
     </div>
   );

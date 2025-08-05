@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,11 +14,13 @@ interface TasksModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   project: Project;
+  scrollToFirstPending?: boolean;
 }
 
-export function TasksModal({ open, onOpenChange, project }: TasksModalProps) {
+export function TasksModal({ open, onOpenChange, project, scrollToFirstPending = false }: TasksModalProps) {
   const { getTasksByProject, updateTask, deleteTask } = useProjectStore();
   const tasks = getTasksByProject(project.id).sort((a, b) => b.order - a.order);
+  const firstPendingRef = useRef<HTMLDivElement>(null);
 
   const handleTaskToggle = (task: Task) => {
     const newStatus = task.status === 'הושלמה' ? 'לביצוע' : 'הושלמה';
@@ -58,6 +60,18 @@ export function TasksModal({ open, onOpenChange, project }: TasksModalProps) {
   const completedTasks = tasks.filter(t => t.status === 'הושלמה');
   const pendingTasks = tasks.filter(t => t.status !== 'הושלמה');
 
+  // גלילה אוטומטית למשימה הראשונה שלא בוצעה
+  useEffect(() => {
+    if (open && scrollToFirstPending && firstPendingRef.current && pendingTasks.length > 0) {
+      setTimeout(() => {
+        firstPendingRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 100);
+    }
+  }, [open, scrollToFirstPending, pendingTasks.length]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl h-[70vh] flex flex-col">
@@ -96,10 +110,11 @@ export function TasksModal({ open, onOpenChange, project }: TasksModalProps) {
                   ממתינות לביצוע ({pendingTasks.length})
                 </h3>
                 <div className="space-y-2">
-                  {pendingTasks.map((task) => (
+                  {pendingTasks.map((task, index) => (
                     <div
                       key={task.id}
-                      className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors group"
+                      ref={index === 0 ? firstPendingRef : null}
+                      className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors group focus-within:ring-2 focus-within:ring-primary/50"
                     >
                       <Checkbox
                         checked={false}
