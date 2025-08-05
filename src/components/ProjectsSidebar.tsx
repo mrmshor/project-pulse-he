@@ -3,6 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   FolderOpen, 
   Menu, 
@@ -14,7 +20,8 @@ import {
   Clock,
   ArrowUp,
   ArrowRight,
-  ArrowDown
+  ArrowDown,
+  Filter
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectStore } from '@/store/useProjectStore';
@@ -23,14 +30,19 @@ import { Project, ProjectStatus, Priority } from '@/types';
 export function ProjectsSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all');
   const { projects, getTasksByProject } = useProjectStore();
 
-  // פילטור פרויקטים לפי חיפוש
-  const filteredProjects = projects.filter(project =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (project.client?.name && project.client.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // פילטור פרויקטים לפי חיפוש ודחיפות
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.client?.name && project.client.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesPriority = priorityFilter === 'all' || project.priority === priorityFilter;
+    
+    return matchesSearch && matchesPriority;
+  });
 
   // פונקציה לגלילה והבהוב
   const highlightProject = (projectId: string) => {
@@ -132,19 +144,94 @@ export function ProjectsSidebar() {
 
       {!isCollapsed && (
         <>
+          {/* חיפוש וסינון */}
+          <div className="p-4 space-y-3 border-b border-gray-200/30 dark:border-gray-700/30">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={14} />
+              <Input
+                placeholder="חיפוש..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-9 h-8 text-xs bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+              />
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full justify-between h-8 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Filter size={14} />
+                    <span>{priorityFilter === 'all' ? 'כל הדחיפויות' : priorityFilter}</span>
+                  </div>
+                  {priorityFilter !== 'all' && (
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                      {filteredProjects.length}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 z-50">
+                <DropdownMenuItem 
+                  onClick={() => setPriorityFilter('all')}
+                  className="gap-2 cursor-pointer"
+                >
+                  <div className="w-4 h-4"></div>
+                  כל הדחיפויות
+                  <Badge variant="outline" className="ml-auto text-xs">
+                    {projects.length}
+                  </Badge>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setPriorityFilter('גבוהה')}
+                  className="gap-2 cursor-pointer"
+                >
+                  <ArrowUp className="w-4 h-4 text-red-600" />
+                  גבוהה
+                  <Badge variant="outline" className="ml-auto text-xs">
+                    {projects.filter(p => p.priority === 'גבוהה').length}
+                  </Badge>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setPriorityFilter('בינונית')}
+                  className="gap-2 cursor-pointer"
+                >
+                  <ArrowRight className="w-4 h-4 text-yellow-600" />
+                  בינונית
+                  <Badge variant="outline" className="ml-auto text-xs">
+                    {projects.filter(p => p.priority === 'בינונית').length}
+                  </Badge>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setPriorityFilter('נמוכה')}
+                  className="gap-2 cursor-pointer"
+                >
+                  <ArrowDown className="w-4 h-4 text-green-600" />
+                  נמוכה
+                  <Badge variant="outline" className="ml-auto text-xs">
+                    {projects.filter(p => p.priority === 'נמוכה').length}
+                  </Badge>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           {/* רשימת פרויקטים */}
           <ScrollArea className="flex-1 p-4">
-            {projects.length === 0 ? (
+            {filteredProjects.length === 0 ? (
               <div className="text-center py-8">
                 <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl mb-3">
                   <FolderOpen className="w-10 h-10 text-muted-foreground mx-auto" />
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">אין פרויקטים</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">צור פרויקט ראשון</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  {projects.length === 0 ? 'אין פרויקטים' : 'אין תוצאות'}
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  {projects.length === 0 ? 'צור פרויקט ראשון' : 'נסה חיפוש או סינון אחר'}
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
-                {projects.map((project, index) => {
+                {filteredProjects.map((project, index) => {
                   const stats = getProjectStats(project);
                   return (
                     <div
