@@ -19,24 +19,28 @@ const priorityOptions: {
   value: Priority; 
   label: string; 
   color: string;
+  bgColor: string;
   icon: React.ReactNode;
 }[] = [
   { 
     value: 'נמוכה', 
     label: 'נמוכה', 
-    color: 'text-success',
+    color: 'text-green-700 dark:text-green-300',
+    bgColor: 'bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-600',
     icon: <ArrowDown className="w-3 h-3" />
   },
   { 
     value: 'בינונית', 
     label: 'בינונית', 
-    color: 'text-primary',
+    color: 'text-orange-700 dark:text-orange-300',
+    bgColor: 'bg-orange-100 dark:bg-orange-900 border-orange-300 dark:border-orange-600',
     icon: <ArrowRight className="w-3 h-3" />
   },
   { 
     value: 'גבוהה', 
     label: 'גבוהה', 
-    color: 'text-danger',
+    color: 'text-red-700 dark:text-red-300',
+    bgColor: 'bg-red-100 dark:bg-red-900 border-red-300 dark:border-red-600',
     icon: <ArrowUp className="w-3 h-3" />
   },
 ];
@@ -53,10 +57,10 @@ export function PrioritySelector({ currentPriority, onPriorityChange, disabled =
 
   if (disabled) {
     return (
-      <span className={`text-sm font-medium ${currentOption?.color} flex items-center gap-1`}>
+      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border ${currentOption?.color} ${currentOption?.bgColor}`}>
         {currentOption?.icon}
         {currentOption?.label}
-      </span>
+      </div>
     );
   }
 
@@ -66,16 +70,16 @@ export function PrioritySelector({ currentPriority, onPriorityChange, disabled =
         <Button
           variant="ghost"
           size="sm"
-          className={`h-auto p-1 hover:bg-accent/50 rounded-md group ${currentOption?.color}`}
+          className="h-auto p-0 hover:bg-transparent group"
         >
-          <div className="flex items-center gap-1">
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border transition-all duration-200 cursor-pointer group-hover:shadow-sm group-hover:scale-105 ${currentOption?.color} ${currentOption?.bgColor}`}>
             {currentOption?.icon}
-            <span className="text-sm font-medium">{currentOption?.label}</span>
+            <span>{currentOption?.label}</span>
             <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="w-32">
+      <DropdownMenuContent align="center" className="w-36 glass">
         {priorityOptions.map((option) => (
           <DropdownMenuItem
             key={option.value}

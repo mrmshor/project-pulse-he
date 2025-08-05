@@ -131,8 +131,9 @@ export function Projects() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold font-display gradient-primary bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent mb-2 relative">
             פרויקטים
+            <div className="absolute -bottom-1 right-0 w-20 h-1 bg-gradient-to-l from-primary to-primary-glow rounded-full"></div>
           </h1>
           <p className="text-muted-foreground text-lg">ניהול ומעקב אחר כל הפרויקטים שלך</p>
         </div>
@@ -235,15 +236,18 @@ export function Projects() {
               </div>
 
               <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-display leading-tight">{project.name}</CardTitle>
+                <CardTitle className="text-xl font-bold leading-tight relative group-hover:text-primary transition-colors duration-300">
+                  {project.name}
+                  <div className="absolute -bottom-1 right-0 w-0 group-hover:w-8 h-0.5 bg-primary transition-all duration-300"></div>
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground">{project.description}</p>
+              <CardContent className="space-y-5">
+                <p className="text-muted-foreground leading-relaxed">{project.description}</p>
                 
                 {/* פרטי לקוח */}
                 {project.client?.name && (
-                  <div className="client-info">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="client-info p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg border border-slate-200/30">
+                    <div className="flex items-center gap-2 mb-3">
                       <User className="w-4 h-4 text-primary" />
                       <span className="font-medium">{project.client.name}</span>
                       {project.client.company && (
@@ -257,7 +261,7 @@ export function Projects() {
                           variant="outline"
                           size="sm"
                           onClick={() => ClientContactService.openWhatsApp(project.client.whatsapp!)}
-                          className="gap-1 h-7 px-2"
+                          className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                         >
                           <MessageCircle className="w-3 h-3" />
                         </Button>
@@ -267,7 +271,7 @@ export function Projects() {
                           variant="outline"
                           size="sm"
                           onClick={() => ClientContactService.openGmail(project.client.email!, `בנוגע לפרויקט: ${project.name}`)}
-                          className="gap-1 h-7 px-2"
+                          className="gap-1 h-7 px-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
                         >
                           <Mail className="w-3 h-3" />
                         </Button>
@@ -277,7 +281,7 @@ export function Projects() {
                           variant="outline"
                           size="sm"
                           onClick={() => ClientContactService.dialNumber(project.client.phone!)}
-                          className="gap-1 h-7 px-2"
+                          className="gap-1 h-7 px-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700"
                         >
                           <Phone className="w-3 h-3" />
                         </Button>
@@ -288,12 +292,12 @@ export function Projects() {
                 
                 {/* תיקיית פרויקט */}
                 {project.folderPath && (
-                  <div className="folder-info">
+                  <div className="folder-info p-3 bg-amber-50/50 dark:bg-amber-900/20 rounded-lg border border-amber-200/30">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => FolderService.openInFinder(project.folderPath!)}
-                      className="gap-2 w-full"
+                      className="gap-2 w-full bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700"
                     >
                       <FolderOpen className="w-4 h-4" />
                       פתח תיקיית פרויקט
@@ -303,7 +307,7 @@ export function Projects() {
                 
                 {/* סטטוס תשלום */}
                 {project.payment?.amount && (
-                  <div className="payment-status">
+                  <div className="payment-status p-3 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200/30">
                     <PaymentStatusButton
                       projectId={project.id}
                       isPaid={project.payment.isPaid}
@@ -314,7 +318,7 @@ export function Projects() {
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <StatusSelector 
                     currentStatus={project.status}
                     onStatusChange={(status) => handleStatusChange(project.id, status)}
@@ -325,8 +329,10 @@ export function Projects() {
                   />
                 </div>
 
-                {/* רשימת משימות מהירה */}
-                <ProjectTaskList projectId={project.id} project={project} />
+                {/* רשימת משימות */}
+                <div className="tasks-container p-4 bg-gradient-to-br from-blue-50/40 to-indigo-50/40 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200/30 dark:border-blue-700/30">
+                  <ProjectTaskList projectId={project.id} project={project} />
+                </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
