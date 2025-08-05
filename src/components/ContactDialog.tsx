@@ -66,6 +66,7 @@ export function ContactDialog({ open, onOpenChange, contact }: ContactDialogProp
       email: formData.email || undefined,
       phone: formData.phone || undefined,
       projectIds: formData.projectIds,
+      tags: [], // Initialize with empty tags array
     };
 
     if (contact) {

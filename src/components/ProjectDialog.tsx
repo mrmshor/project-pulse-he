@@ -72,6 +72,8 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
       priority: formData.priority,
       startDate: new Date(formData.startDate),
       dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
+      tags: [], // Initialize with empty tags array
+      reminders: [], // Initialize with empty reminders array
     };
 
     if (project) {

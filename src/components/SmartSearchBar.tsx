@@ -180,7 +180,9 @@ export function SmartSearchBar({ onResultSelect }: SmartSearchProps) {
                         {getResultIcon(result.type)}
                         <div className="flex-1 min-w-0">
                           <div className="font-medium truncate">
-                            {result.item.name || result.item.title}
+                            {result.type === 'task' 
+                              ? (result.item as Task).title 
+                              : (result.item as Project | Contact).name}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {getResultPreview(result)}

@@ -72,6 +72,8 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
       status: formData.status,
       priority: formData.priority,
       dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
+      tags: [], // Initialize with empty tags array
+      order: Date.now(), // Initialize with timestamp for ordering
     };
 
     if (task) {
