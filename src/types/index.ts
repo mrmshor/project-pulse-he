@@ -83,3 +83,13 @@ export interface Contact {
 export type ProjectStatus = Project['status'];
 export type TaskStatus = Task['status'];
 export type Priority = Project['priority'];
+
+// משימות אישיות - נפרדות מהפרויקטים
+export interface PersonalTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  priority: Priority;
+  createdAt: Date;
+  completedAt?: Date;
+}

@@ -10,7 +10,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
       <TauriStatus />
-      <main className="flex-1 overflow-auto p-8 animate-fade-in">
+      <main className="flex-1 overflow-auto p-8 animate-fade-in ml-80">
         {children}
       </main>
       <TasksSidebar />
