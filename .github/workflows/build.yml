@@ -44,22 +44,9 @@ jobs:
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri app (with verbose output)
+        run: |
+          export RUST_BACKTRACE=1
+          npm run tauri build -- --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name || 'v1.0.0' }}
-          releaseName: 'מנהל פרויקטים Pro v__VERSION__ (macOS)'
-          releaseBody: |
-            🎯 מנהל פרויקטים Pro - גרסה __VERSION__ (macOS בלבד)
-            
-            📦 קובץ התקנה זמין:
-            - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
-            
-            ✨ שיפורים בגרסה זו:
-            - ממשק משתמש מעודכן ויפה
-            - ביצועים משופרים
-            - תיקוני באגים
-          releaseDraft: true
-          prerelease: false
