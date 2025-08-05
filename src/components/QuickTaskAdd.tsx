@@ -28,8 +28,7 @@ export function QuickTaskAdd({ projectId, onTaskAdded }: QuickTaskAddProps) {
     };
 
     addTask(newTask);
-    setTaskTitle('');
-    setIsAdding(false);
+    setTaskTitle(''); // רק מאפס את השדה, לא סוגר
     onTaskAdded?.();
   };
 
@@ -40,7 +39,9 @@ export function QuickTaskAdd({ projectId, onTaskAdded }: QuickTaskAddProps) {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleAddTask();
+      // השדה נשאר פתוח למשימה הבאה
     } else if (e.key === 'Escape') {
       handleCancel();
     }
@@ -66,7 +67,7 @@ export function QuickTaskAdd({ projectId, onTaskAdded }: QuickTaskAddProps) {
         value={taskTitle}
         onChange={(e) => setTaskTitle(e.target.value)}
         onKeyDown={handleKeyPress}
-        placeholder="שם המשימה..."
+        placeholder="הוסף משימה... (Enter להוסיף עוד)"
         className="h-8 text-sm"
         autoFocus
       />
