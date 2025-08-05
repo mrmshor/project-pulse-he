@@ -159,32 +159,59 @@ export function Projects() {
             </div>
           </div>
           
-          <div className="flex items-center justify-center gap-3 pt-2">
+          {/* Export buttons - positioned to the side for desktop */}
+          <div className="absolute left-6 top-1/2 transform -translate-y-1/2 hidden lg:flex flex-col gap-2">
             <Button
               variant="outline"
               onClick={() => handleExport('csv')}
-              className="gap-2"
+              className="gap-2 text-xs shadow-sm hover:shadow-md transition-all"
               size="sm"
             >
-              <Download size={16} />
-              יצוא CSV
+              <Download size={14} />
+              CSV
             </Button>
             <Button
               variant="outline"
               onClick={() => handleExport('json')}
-              className="gap-2"
+              className="gap-2 text-xs shadow-sm hover:shadow-md transition-all"
               size="sm"
             >
-              <Download size={16} />
-              יצוא JSON
+              <Download size={14} />
+              JSON
             </Button>
+          </div>
+          
+          {/* Main action button - centered and prominent */}
+          <div className="pt-4">
             <Button 
               onClick={() => setIsDialogOpen(true)} 
-              className="gap-2 bg-primary hover:bg-primary/90"
+              className="gap-3 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-8"
+              size="lg"
+            >
+              <Plus size={20} />
+              <span className="font-semibold">פרויקט חדש</span>
+            </Button>
+          </div>
+          
+          {/* Export buttons for mobile - below main button */}
+          <div className="flex lg:hidden items-center justify-center gap-3 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => handleExport('csv')}
+              className="gap-2 text-xs"
               size="sm"
             >
-              <Plus size={16} />
-              פרויקט חדש
+              <Download size={14} />
+              CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExport('json')}
+              className="gap-2 text-xs"
+              size="sm"
+            >
+              <Download size={14} />
+              JSON
             </Button>
           </div>
         </div>
