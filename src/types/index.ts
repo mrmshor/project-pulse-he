@@ -33,7 +33,12 @@ export interface Project {
   folderPath?: string; // נתיב לתיקיה המקושרת
   client: {
     name: string;
-    whatsapp?: string;
+    whatsappNumbers?: {
+      id: string;
+      number: string;
+      label: string; // כמו "אישי", "עסקי", "משרד"
+      isPrimary: boolean;
+    }[];
     email?: string;
     phone?: string;
     company?: string;

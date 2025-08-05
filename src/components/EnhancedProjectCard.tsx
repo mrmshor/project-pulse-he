@@ -55,8 +55,11 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
 
   // פתיחת WhatsApp
   const handleOpenWhatsApp = async () => {
-    if (project.client.whatsapp) {
-      const success = await ClientContactService.openWhatsApp(project.client.whatsapp);
+    const primaryWhatsApp = project.client.whatsappNumbers?.find(w => w.isPrimary && w.number);
+    const whatsappNumber = primaryWhatsApp?.number || project.client.whatsappNumbers?.[0]?.number;
+    
+    if (whatsappNumber) {
+      const success = await ClientContactService.openWhatsApp(whatsappNumber);
       if (!success) {
         alert('לא ניתן לפתוח WhatsApp');
       }
@@ -137,7 +140,7 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
             </div>
             
             <div className="flex gap-2">
-              {project.client.whatsapp && (
+              {project.client.whatsappNumbers?.some(w => w.number) && (
                 <Button
                   onClick={handleOpenWhatsApp}
                   size="sm"

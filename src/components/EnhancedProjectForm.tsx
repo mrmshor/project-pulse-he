@@ -19,12 +19,19 @@ import {
   Check,
   X,
   CreditCard,
-  DollarSign
+  DollarSign,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 interface ClientFormData {
   name: string;
-  whatsapp: string;
+  whatsappNumbers: {
+    id: string;
+    number: string;
+    label: string;
+    isPrimary: boolean;
+  }[];
   email: string;
   phone: string;
   company: string;
@@ -53,7 +60,9 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
   const [folderPath, setFolderPath] = useState(project?.folderPath || '');
   const [client, setClient] = useState<ClientFormData>({
     name: project?.client?.name || '',
-    whatsapp: project?.client?.whatsapp || '',
+    whatsappNumbers: project?.client?.whatsappNumbers || [
+      { id: '1', number: '', label: 'אישי', isPrimary: true }
+    ],
     email: project?.client?.email || '',
     phone: project?.client?.phone || '',
     company: project?.client?.company || '',
@@ -71,7 +80,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
   const [isSelectingFolder, setIsSelectingFolder] = useState(false);
   const [validations, setValidations] = useState({
     phone: true,
-    whatsapp: true,
+    whatsappNumbers: client.whatsappNumbers.map(() => true),
     email: true
   });
 
@@ -79,10 +88,12 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
   useEffect(() => {
     setValidations({
       phone: !client.phone || ClientContactService.validateIsraeliPhone(client.phone),
-      whatsapp: !client.whatsapp || ClientContactService.validateIsraeliPhone(client.whatsapp),
+      whatsappNumbers: client.whatsappNumbers.map(whatsapp => 
+        !whatsapp.number || ClientContactService.validateIsraeliPhone(whatsapp.number)
+      ),
       email: !client.email || ClientContactService.validateEmail(client.email)
     });
-  }, [client.phone, client.whatsapp, client.email]);
+  }, [client.phone, client.whatsappNumbers, client.email]);
 
   // בחירת תיקיה
   const handleSelectFolder = async () => {
@@ -125,7 +136,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
       return;
     }
 
-    if (!validations.phone || !validations.whatsapp || !validations.email) {
+    if (!validations.phone || !validations.whatsappNumbers.every(v => v) || !validations.email) {
       alert('יש לתקן את השגיאות בטופס');
       return;
     }
@@ -161,12 +172,54 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
     onSave();
   };
 
-  const handleClientChange = (field: keyof ClientFormData, value: string) => {
+  const handleClientChange = (field: keyof ClientFormData, value: string | ClientFormData['whatsappNumbers']) => {
     setClient(prev => ({ ...prev, [field]: value }));
   };
 
   const handlePaymentChange = (field: string, value: string | boolean) => {
     setPayment(prev => ({ ...prev, [field]: value }));
+  };
+
+  // פונקציות עבור וואטסאפ מרובה
+  const addWhatsAppNumber = () => {
+    const newId = Date.now().toString();
+    setClient(prev => ({
+      ...prev,
+      whatsappNumbers: [
+        ...prev.whatsappNumbers,
+        { id: newId, number: '', label: 'נוסף', isPrimary: false }
+      ]
+    }));
+  };
+
+  const removeWhatsAppNumber = (id: string) => {
+    setClient(prev => ({
+      ...prev,
+      whatsappNumbers: prev.whatsappNumbers.filter(w => w.id !== id)
+    }));
+  };
+
+  const updateWhatsAppNumber = (id: string, field: 'number' | 'label' | 'isPrimary', value: string | boolean) => {
+    setClient(prev => ({
+      ...prev,
+      whatsappNumbers: prev.whatsappNumbers.map(w => 
+        w.id === id 
+          ? { 
+              ...w, 
+              [field]: value,
+              // אם מסמן כראשי, צריך לבטל את הראשי הקודם
+              ...(field === 'isPrimary' && value === true 
+                ? { isPrimary: true }
+                : field === 'isPrimary' && value === false
+                ? { isPrimary: false }
+                : {}
+              )
+            }
+          : field === 'isPrimary' && value === true 
+            ? { ...w, isPrimary: false }
+            : w
+      )
+    }));
   };
 
   return (
@@ -385,25 +438,77 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-                {client.whatsapp && (
-                  validations.whatsapp ? 
-                    <Check className="w-4 h-4 text-green-600" /> : 
-                    <X className="w-4 h-4 text-red-600" />
-                )}
-              </label>
-              <Input
-                type="tel"
-                value={client.whatsapp}
-                onChange={(e) => handleClientChange('whatsapp', e.target.value)}
-                placeholder="05X-XXXXXXX"
-                className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.whatsapp ? 'border-red-300' : ''}`}
-              />
-              {!validations.whatsapp && (
-                <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין</span>
-              )}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <MessageCircle className="w-4 h-4" />
+                  מספרי WhatsApp
+                </label>
+                <Button
+                  type="button"
+                  onClick={addWhatsAppNumber}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 text-xs"
+                >
+                  <Plus size={14} />
+                  הוסף מספר
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {client.whatsappNumbers.map((whatsapp, index) => (
+                  <div key={whatsapp.id} className="flex gap-2 items-start">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          type="tel"
+                          value={whatsapp.number}
+                          onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'number', e.target.value)}
+                          placeholder="05X-XXXXXXX"
+                          className={`flex-1 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.whatsappNumbers[index] ? 'border-red-300' : ''}`}
+                        />
+                        <Input
+                          value={whatsapp.label}
+                          onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'label', e.target.value)}
+                          placeholder="תווית"
+                          className="w-20 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary text-xs"
+                        />
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="radio"
+                            checked={whatsapp.isPrimary}
+                            onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'isPrimary', e.target.checked)}
+                            className="w-4 h-4"
+                            title="ראשי"
+                          />
+                          {client.whatsappNumbers.length > 1 && (
+                            <Button
+                              type="button"
+                              onClick={() => removeWhatsAppNumber(whatsapp.id)}
+                              size="sm"
+                              variant="ghost"
+                              className="w-8 h-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      {!validations.whatsappNumbers[index] && (
+                        <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין</span>
+                      )}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {whatsapp.number && validations.whatsappNumbers[index] && (
+                          <Check className="w-3 h-3 text-green-600" />
+                        )}
+                        {whatsapp.isPrimary && (
+                          <span className="text-primary font-medium">ראשי</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2 md:col-span-2">

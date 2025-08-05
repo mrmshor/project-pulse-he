@@ -325,14 +325,14 @@ export function Projects() {
                       )}
                     </div>
                     
-                    <div className="flex gap-2">
-                      {project.client.whatsapp && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => ClientContactService.openWhatsApp(project.client.whatsapp!)}
-                          className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
-                        >
+                  <div className="flex gap-2">
+                    {project.client?.whatsappNumbers?.filter(w => w.number).length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => ClientContactService.openWhatsApp(project.client.whatsappNumbers!.find(w => w.isPrimary)?.number || project.client.whatsappNumbers![0].number)}
+                        className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                      >
                           <MessageCircle className="w-3 h-3" />
                         </Button>
                       )}
