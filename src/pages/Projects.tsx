@@ -4,6 +4,7 @@ import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { StatusSelector } from '@/components/StatusSelector';
 import { PrioritySelector } from '@/components/PrioritySelector';
 import { ProjectTaskList } from '@/components/ProjectTaskList';
+import { PaymentStatusButton } from '@/components/PaymentStatusButton';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -284,6 +285,19 @@ export function Projects() {
                       <FolderOpen className="w-4 h-4" />
                       פתח תיקיית פרויקט
                     </Button>
+                  </div>
+                )}
+                
+                {/* סטטוס תשלום */}
+                {project.payment?.amount && (
+                  <div className="payment-status">
+                    <PaymentStatusButton
+                      projectId={project.id}
+                      isPaid={project.payment.isPaid}
+                      amount={project.payment.amount}
+                      currency={project.payment.currency}
+                      size="sm"
+                    />
                   </div>
                 )}
                 

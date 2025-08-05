@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { Project } from '@/types';
 import { useProjectStore } from '@/store/useProjectStore';
@@ -16,7 +17,9 @@ import {
   Building,
   Loader2,
   Check,
-  X
+  X,
+  CreditCard,
+  DollarSign
 } from 'lucide-react';
 
 interface ClientFormData {
@@ -55,6 +58,14 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
     phone: project?.client?.phone || '',
     company: project?.client?.company || '',
     notes: project?.client?.notes || ''
+  });
+  
+  // נתוני תשלום
+  const [payment, setPayment] = useState({
+    amount: project?.payment?.amount || '',
+    currency: project?.payment?.currency || 'ILS',
+    isPaid: project?.payment?.isPaid || false,
+    notes: project?.payment?.notes || ''
   });
   
   const [isSelectingFolder, setIsSelectingFolder] = useState(false);
@@ -128,6 +139,13 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
       dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
       folderPath: folderPath || undefined,
       client: client,
+      payment: {
+        amount: payment.amount ? Number(payment.amount) : undefined,
+        currency: payment.currency as 'ILS' | 'USD' | 'EUR',
+        isPaid: payment.isPaid,
+        paidDate: payment.isPaid ? (project?.payment?.paidDate || new Date()) : undefined,
+        notes: payment.notes || undefined
+      },
       tags: project?.tags || [],
       reminders: project?.reminders || []
     };
@@ -145,6 +163,10 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
 
   const handleClientChange = (field: keyof ClientFormData, value: string) => {
     setClient(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePaymentChange = (field: string, value: string | boolean) => {
+    setPayment(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -404,6 +426,68 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
               placeholder="הערות נוספות על הלקוח..."
               className="input-glass"
               rows={3}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* פרטי תשלום */}
+      <Card className="card-macos">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-primary" />
+            פרטי תשלום
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <DollarSign className="w-4 h-4" />
+                סכום
+              </label>
+              <Input
+                type="number"
+                value={payment.amount}
+                onChange={(e) => handlePaymentChange('amount', e.target.value)}
+                placeholder="0"
+                className="input-glass"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">מטבע</label>
+              <select
+                value={payment.currency}
+                onChange={(e) => handlePaymentChange('currency', e.target.value)}
+                className="input-glass w-full"
+              >
+                <option value="ILS">שקל (₪)</option>
+                <option value="USD">דולר ($)</option>
+                <option value="EUR">יורו (€)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isPaid"
+              checked={payment.isPaid}
+              onCheckedChange={(checked) => handlePaymentChange('isPaid', checked === true)}
+            />
+            <label htmlFor="isPaid" className="text-sm font-medium cursor-pointer">
+              התקבל תשלום
+            </label>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">הערות תשלום</label>
+            <Textarea
+              value={payment.notes}
+              onChange={(e) => handlePaymentChange('notes', e.target.value)}
+              placeholder="הערות על התשלום..."
+              className="input-glass"
+              rows={2}
             />
           </div>
         </CardContent>

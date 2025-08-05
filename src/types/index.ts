@@ -39,6 +39,14 @@ export interface Project {
     company?: string;
     notes?: string;
   };
+  // פרטי תשלום
+  payment: {
+    amount?: number;
+    currency: 'ILS' | 'USD' | 'EUR';
+    isPaid: boolean;
+    paidDate?: Date;
+    notes?: string;
+  };
 }
 
 export interface Task {

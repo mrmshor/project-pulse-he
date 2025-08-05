@@ -82,6 +82,12 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
         phone: '',
         company: '',
         notes: ''
+      },
+      payment: {
+        amount: undefined,
+        currency: 'ILS' as const,
+        isPaid: false,
+        notes: ''
       }
     };
 
