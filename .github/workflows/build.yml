@@ -1,4 +1,4 @@
-name: Build and Release Native Apps
+name: Build and Release macOS App
 
 on:
   push:
@@ -50,105 +50,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name || 'v1.0.0' }}
-          releaseName: 'מנהל פרויקטים Pro v__VERSION__'
+          releaseName: 'מנהל פרויקטים Pro v__VERSION__ (macOS)'
           releaseBody: |
-            🎯 מנהל פרויקטים Pro - גרסה __VERSION__
+            🎯 מנהל פרויקטים Pro - גרסה __VERSION__ (macOS בלבד)
             
-            📦 קבצי התקנה זמינים:
+            📦 קובץ התקנה זמין:
             - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
-            - 🪟 Windows: קובץ MSI להתקנה
-            - 🐧 Linux: קובץ AppImage
             
             ✨ שיפורים בגרסה זו:
             - ממשק משתמש מעודכן ויפה
             - ביצועים משופרים
             - תיקוני באגים
-          releaseDraft: true
-          prerelease: false
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Install Tauri CLI
-        run: npm install -g @tauri-apps/cli
-
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name || 'v1.0.0' }}
-          releaseName: 'מנהל פרויקטים Pro v__VERSION__'
-          releaseBody: |
-            🎯 מנהל פרויקטים Pro - גרסה __VERSION__
-            
-            📦 קבצי התקנה זמינים:
-            - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
-            - 🪟 Windows: קובץ MSI להתקנה
-            - 🐧 Linux: קובץ AppImage
-          releaseDraft: true
-          prerelease: false
-
-  build-linux:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Install Tauri CLI
-        run: npm install -g @tauri-apps/cli
-
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name || 'v1.0.0' }}
-          releaseName: 'מנהל פרויקטים Pro v__VERSION__'
-          releaseBody: |
-            🎯 מנהל פרויקטים Pro - גרסה __VERSION__
-            
-            📦 קבצי התקנה זמינים:
-            - 🍎 macOS: קובץ DMG עבור Intel ו-Apple Silicon
-            - 🪟 Windows: קובץ MSI להתקנה  
-            - 🐧 Linux: קובץ AppImage
           releaseDraft: true
           prerelease: false
