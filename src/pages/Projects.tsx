@@ -299,7 +299,7 @@ export function Projects() {
                 </div>
 
                 {/* רשימת משימות מהירה */}
-                <ProjectTaskList projectId={project.id} />
+                <ProjectTaskList projectId={project.id} project={project} />
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">

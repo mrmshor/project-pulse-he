@@ -2,18 +2,21 @@ import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Task } from '@/types';
 import { QuickTaskAdd } from './QuickTaskAdd';
+import { TasksModal } from './TasksModal';
 
 interface ProjectTaskListProps {
   projectId: string;
+  project: any; // הוספתי project כדי להעביר לדיאלוג
   maxVisible?: number;
 }
 
-export function ProjectTaskList({ projectId, maxVisible = 3 }: ProjectTaskListProps) {
+export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectTaskListProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { getTasksByProject, updateTask } = useProjectStore();
   
   const tasks = getTasksByProject(projectId).sort((a, b) => b.order - a.order); // סורט בסדר יורד - החדשות ראשונות
@@ -32,8 +35,20 @@ export function ProjectTaskList({ projectId, maxVisible = 3 }: ProjectTaskListPr
   if (tasks.length === 0) {
     return (
       <div className="space-y-2">
-        <div className="text-xs text-muted-foreground">משימות:</div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsModalOpen(true)}
+          className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground justify-start"
+        >
+          משימות:
+        </Button>
         <QuickTaskAdd projectId={projectId} />
+        <TasksModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          project={project}
+        />
       </div>
     );
   }
@@ -41,9 +56,15 @@ export function ProjectTaskList({ projectId, maxVisible = 3 }: ProjectTaskListPr
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsModalOpen(true)}
+          className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+        >
           משימות ({tasks.filter(t => t.status === 'הושלמה').length}/{tasks.length})
-        </div>
+          <ExternalLink className="w-3 h-3" />
+        </Button>
         {hasMoreTasks && (
           <Button
             variant="ghost"
@@ -96,6 +117,12 @@ export function ProjectTaskList({ projectId, maxVisible = 3 }: ProjectTaskListPr
       </div>
       
       <QuickTaskAdd projectId={projectId} />
+      
+      <TasksModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        project={project}
+      />
     </div>
   );
 }
