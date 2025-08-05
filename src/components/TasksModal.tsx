@@ -111,13 +111,12 @@ export function TasksModal({ open, onOpenChange, project }: TasksModalProps) {
                         <div className="flex items-start justify-between gap-2">
                           <h4 className="font-medium text-sm">{task.title}</h4>
                           <div className="flex items-center gap-1">
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs ${getPriorityColor(task.priority)}`}
-                            >
-                              <Flag className="w-3 h-3 mr-1" />
-                              {task.priority}
-                            </Badge>
+                            {task.priority === 'גבוהה' && (
+                              <Badge variant="destructive" className="text-xs">
+                                <Flag className="w-3 h-3 mr-1" />
+                                דחוף
+                              </Badge>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"

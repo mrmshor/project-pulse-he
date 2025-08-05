@@ -103,7 +103,7 @@ export function ProjectTaskList({ projectId, project, maxVisible = 3 }: ProjectT
             </span>
             {task.status !== 'הושלמה' && task.priority === 'גבוהה' && (
               <Badge variant="destructive" className="h-4 text-xs px-1">
-                !
+                דחוף
               </Badge>
             )}
           </div>
