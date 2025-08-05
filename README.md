@@ -1,73 +1,127 @@
-# Welcome to your Lovable project
+# מנהל פרויקטים Pro
 
-## Project info
+אפליקציית ניהול פרויקטים מתקדמת עם ממשק בעברית ותמיכה בפלטפורמות מרובות.
 
-**URL**: https://lovable.dev/projects/c27f87cf-29ce-4b0f-9526-7155d4f931ee
+## תכונות
 
-## How can I edit this code?
+- ✅ ניהול פרויקטים ומשימות
+- 👥 ניהול אנשי קשר וחיבור לאפליקציות חיצוניות
+- 📱 תמיכה במספרי WhatsApp מרובים
+- 📧 שליחת אימיילים ישירות מהאפליקציה
+- 📞 חיוג ישיר למספרי טלפון
+- 📁 פתיחת תיקיות מקושרות
+- 🏷️ מערכת תגיות מתקדמת
+- ⏱️ מדידת זמני עבודה
+- 📊 דשבורד מתקדם עם גרפים
+- 🌙 תמיכה במצב כהה/בהיר
+- 💾 יצוא נתונים ל-Excel
 
-There are several ways of editing your application.
+## טכנולוגיות
 
-**Use Lovable**
+- **Frontend**: React + TypeScript + Vite
+- **UI Components**: Radix UI + shadcn/ui
+- **Styling**: Tailwind CSS
+- **Desktop App**: Tauri
+- **State Management**: Zustand
+- **Icons**: Lucide React
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c27f87cf-29ce-4b0f-9526-7155d4f931ee) and start prompting.
+## הרצה מקומית
 
-Changes made via Lovable will be committed automatically to this repo.
+### דרישות מקדימות
 
-**Use your preferred IDE**
+- Node.js 18+ 
+- Rust (עבור Tauri)
+- npm או yarn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### התקנה
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone הפרויקט
 git clone <YOUR_GIT_URL>
+cd project-pulse-he
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# התקן dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# הרץ את האפליקציה בדפדפן
 npm run dev
+
+# הרץ את האפליקציה כ-desktop app
+npm run tauri dev
 ```
 
-**Edit a file directly in GitHub**
+### בנייה לפרודקשן
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# בנה את האפליקציה לדפדפן
+npm run build
 
-**Use GitHub Codespaces**
+# בנה קובץ התקנה לדסקטופ
+npm run tauri build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## פרסום אוטומטי עם GitHub Actions
 
-## What technologies are used for this project?
+הפרויקט כולל GitHub Actions שבונה אוטומטית קבצי התקנה עבור:
+- 🍎 macOS (.dmg)
+- 🪟 Windows (.exe)
+- 🐧 Linux (.AppImage)
 
-This project is built with:
+### איך לפרסם גרסה חדשה:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. **יצור tag חדש**:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
 
-## How can I deploy this project?
+2. **GitHub Actions יבנה אוטומטית**:
+   - קבצי ההתקנה יתווספו כ-assets ל-Release החדש
+   - ה-Release יכין כטיוטה ויצטרך אישור
 
-Simply open [Lovable](https://lovable.dev/projects/c27f87cf-29ce-4b0f-9526-7155d4f931ee) and click on Share -> Publish.
+3. **הפרסם את ה-Release**:
+   - לך ל-GitHub → Releases
+   - ערוך את הטיוטה
+   - פרסם את ה-Release
 
-## Can I connect a custom domain to my Lovable project?
+### הורדת קבצי ההתקנה
 
-Yes, you can!
+לאחר הפרסום, המשתמשים יוכלו להוריד:
+- **macOS**: `מנהל-פרויקטים-Pro_[version]_universal.dmg`
+- **Windows**: `מנהל-פרויקטים-Pro_[version]_x64.msi`
+- **Linux**: `מנהל-פרויקטים-Pro_[version]_amd64.AppImage`
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## הגדרת GitHub
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. **התחבר ל-GitHub**:
+   - לחץ על כפתור GitHub בלובייבל
+   - עקב אחר ההוראות להתחברות
+
+2. **העבר לפרודקשן**:
+   - לחץ "Export to GitHub"
+   - הפרויקט יועבר לרפוזיטורי הפרטי שלך
+
+3. **בנה גרסה ראשונה**:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+## מבנה הפרויקט
+
+```
+src/
+├── components/          # רכיבי UI
+│   ├── ui/             # רכיבי UI בסיסיים
+│   └── ...             # רכיבים מותאמים
+├── pages/              # עמודים ראשיים
+├── hooks/              # Hooks מותאמים
+├── services/           # שירותים (Native, Export, וכו')
+├── store/              # ניהול מצב עם Zustand
+├── types/              # הגדרות TypeScript
+└── lib/                # כלי עזר
+
+src-tauri/              # קוד Rust לאפליקציית הדסקטופ
+├── src/                # קוד המקור של Tauri
+└── tauri.conf.json     # הגדרות Tauri
+```
