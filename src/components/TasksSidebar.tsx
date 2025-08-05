@@ -5,6 +5,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   CheckSquare, 
   Copy, 
@@ -15,7 +21,8 @@ import {
   Check,
   ArrowUp,
   ArrowRight,
-  ArrowDown
+  ArrowDown,
+  MoreVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePersonalTasksStore } from '@/store/usePersonalTasksStore';
@@ -31,6 +38,7 @@ export function TasksSidebar() {
     addTask, 
     toggleTask, 
     deleteTask, 
+    updateTask,
     clearCompleted 
   } = usePersonalTasksStore();
   const { toast } = useToast();
@@ -105,6 +113,11 @@ export function TasksSidebar() {
       title: "נוקו משימות",
       description: `${completedTasks.length} משימות מושלמות הוסרו`,
     });
+  };
+
+  // שינוי עדיפות משימה
+  const handlePriorityChange = (taskId: string, priority: Priority) => {
+    updateTask(taskId, { priority });
   };
 
   const getPriorityIcon = (priority: Priority) => {
@@ -267,14 +280,53 @@ export function TasksSidebar() {
                                 </p>
                               </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteTask(task.id)}
-                              className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              {/* תפריט עדיפות */}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0"
+                                  >
+                                    <MoreVertical className="w-3 h-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="w-32">
+                                  <DropdownMenuItem 
+                                    onClick={() => handlePriorityChange(task.id, 'גבוהה')}
+                                    className="gap-2"
+                                  >
+                                    <ArrowUp className="w-3 h-3 text-red-500" />
+                                    גבוהה
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handlePriorityChange(task.id, 'בינונית')}
+                                    className="gap-2"
+                                  >
+                                    <ArrowRight className="w-3 h-3 text-yellow-500" />
+                                    בינונית
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handlePriorityChange(task.id, 'נמוכה')}
+                                    className="gap-2"
+                                  >
+                                    <ArrowDown className="w-3 h-3 text-green-500" />
+                                    נמוכה
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              
+                              {/* כפתור מחיקה */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteTask(task.id)}
+                                className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
