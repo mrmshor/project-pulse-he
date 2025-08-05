@@ -139,24 +139,24 @@ export function TasksSidebar() {
   return (
     <div
       className={cn(
-        'fixed left-0 top-0 h-screen z-40 glass transition-smooth shadow-elegant flex flex-col border-r',
+        'fixed left-0 top-0 h-screen z-40 bg-white dark:bg-gray-900 transition-all duration-300 shadow-lg flex flex-col border-r border-gray-200 dark:border-gray-700',
         isCollapsed ? 'w-16' : 'w-80'
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-border/50 flex-shrink-0">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
               <CheckSquare className="w-5 h-5 text-primary" />
-              <h1 className="text-lg font-bold gradient-primary bg-clip-text text-transparent">
+              <h2 className="text-lg font-bold text-foreground">
                 משימות אישיות
-              </h1>
+              </h2>
             </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 btn-glass transition-smooth"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
           >
             {isCollapsed ? <Menu size={18} /> : <X size={18} />}
           </button>
