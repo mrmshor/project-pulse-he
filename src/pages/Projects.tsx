@@ -127,15 +127,20 @@ export function Projects() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between animate-fade-in">
-        <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">פרויקטים</h1>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold font-display gradient-primary bg-clip-text text-transparent mb-2">
+            פרויקטים
+          </h1>
+          <p className="text-muted-foreground text-lg">ניהול ומעקב אחר כל הפרויקטים שלך</p>
+        </div>
+        <div className="flex gap-3">
           <Button
             variant="outline"
             onClick={() => handleExport('csv')}
-            className="gap-2"
+            className="gap-2 hover:shadow-medium transition-all duration-300"
           >
             <Download size={16} />
             CSV
@@ -143,12 +148,15 @@ export function Projects() {
           <Button
             variant="outline"
             onClick={() => handleExport('json')}
-            className="gap-2"
+            className="gap-2 hover:shadow-medium transition-all duration-300"
           >
             <Download size={16} />
             JSON
           </Button>
-          <Button onClick={() => setIsDialogOpen(true)} className="btn-gradient transition-smooth hover:shadow-glow gap-2">
+          <Button 
+            onClick={() => setIsDialogOpen(true)} 
+            className="btn-gradient gap-2 shadow-medium hover:shadow-glow transition-all duration-300 hover:-translate-y-1"
+          >
             <Plus size={16} />
             פרויקט חדש
           </Button>
@@ -156,22 +164,22 @@ export function Projects() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 card-macos">
+        <div className="relative">
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             placeholder="חיפוש פרויקטים..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-glass pr-10"
+            className="input-glass pr-10 text-lg font-medium"
           />
         </div>
         
         <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="סטטוס" />
+          <SelectTrigger className="input-glass">
+            <SelectValue placeholder="בחר סטטוס" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="glass">
             <SelectItem value="all">כל הסטטוסים</SelectItem>
             <SelectItem value="תכנון">תכנון</SelectItem>
             <SelectItem value="פעיל">פעיל</SelectItem>
@@ -181,10 +189,10 @@ export function Projects() {
         </Select>
 
         <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="עדיפות" />
+          <SelectTrigger className="input-glass">
+            <SelectValue placeholder="בחר עדיפות" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="glass">
             <SelectItem value="all">כל העדיפויות</SelectItem>
             <SelectItem value="נמוכה">נמוכה</SelectItem>
             <SelectItem value="בינונית">בינונית</SelectItem>
@@ -194,8 +202,8 @@ export function Projects() {
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.map((project) => {
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        {filteredProjects.map((project, index) => {
           const projectTasks = getTasksByProject(project.id);
           const completedTasks = projectTasks.filter(task => task.status === 'הושלמה').length;
           
@@ -203,30 +211,31 @@ export function Projects() {
             <Card 
               key={project.id} 
               id={`project-${project.id}`}
-              className="card-macos animate-slide-up transition-all duration-300"
-              style={{ animationDelay: `${filteredProjects.indexOf(project) * 0.1}s` }}
+              className="card-macos animate-scale-in group cursor-pointer relative overflow-hidden"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{project.name}</CardTitle>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(project)}
-                    >
-                      <Edit size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(project.id)}
-                      className="text-danger hover:text-danger"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                </div>
+              {/* Floating action buttons */}
+              <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleEdit(project)}
+                  className="btn-glass w-10 h-10 p-0 hover:scale-110 transition-transform"
+                >
+                  <Edit size={16} />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleDelete(project.id)}
+                  className="btn-glass w-10 h-10 p-0 hover:scale-110 transition-transform text-danger hover:text-danger"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-display leading-tight">{project.name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">{project.description}</p>
@@ -347,8 +356,12 @@ export function Projects() {
       </div>
 
       {filteredProjects.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">לא נמצאו פרויקטים</p>
+        <div className="text-center py-16 card-macos">
+          <div className="animate-bounce-subtle">
+            <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">אין פרויקטים להצגה</h3>
+          <p className="text-muted-foreground">נסה לשנות את הפילטרים או ליצור פרויקט חדש</p>
         </div>
       )}
 
@@ -356,9 +369,9 @@ export function Projects() {
         setIsDialogOpen(open);
         if (!open) setEditingProject(null);
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto glass border-0 shadow-elegant">
+          <DialogHeader className="pb-6">
+            <DialogTitle className="text-2xl font-display">
               {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}
             </DialogTitle>
           </DialogHeader>

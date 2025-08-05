@@ -125,9 +125,10 @@
     @apply bg-background text-foreground;
     direction: rtl;
     background: var(--gradient-background);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss02';
   }
 
   /* macOS style focus outlines */
