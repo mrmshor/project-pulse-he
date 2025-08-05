@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Plus, Search, Filter, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle } from 'lucide-react';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
+import { StatusSelector } from '@/components/StatusSelector';
+import { PrioritySelector } from '@/components/PrioritySelector';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,7 @@ export function Projects() {
   const {
     projects,
     deleteProject,
+    updateProject,
     exportToCSV,
     exportToJSON,
     getTasksByProject,
@@ -76,6 +79,20 @@ export function Projects() {
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleStatusChange = (projectId: string, status: ProjectStatus) => {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      updateProject(projectId, { ...project, status });
+    }
+  };
+
+  const handlePriorityChange = (projectId: string, priority: Priority) => {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      updateProject(projectId, { ...project, priority });
     }
   };
 
@@ -270,12 +287,14 @@ export function Projects() {
                 )}
                 
                 <div className="flex items-center justify-between">
-                  <Badge className={`${getStatusColor(project.status)} transition-smooth hover:scale-105 border border-opacity-50`}>
-                    {project.status}
-                  </Badge>
-                  <span className={`text-sm font-medium ${getPriorityColor(project.priority)}`}>
-                    {project.priority}
-                  </span>
+                  <StatusSelector 
+                    currentStatus={project.status}
+                    onStatusChange={(status) => handleStatusChange(project.id, status)}
+                  />
+                  <PrioritySelector 
+                    currentPriority={project.priority}
+                    onPriorityChange={(priority) => handlePriorityChange(project.id, priority)}
+                  />
                 </div>
 
                 <div className="space-y-2">
