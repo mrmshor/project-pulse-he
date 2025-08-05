@@ -74,6 +74,15 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
       dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
       tags: [], // Initialize with empty tags array
       reminders: [], // Initialize with empty reminders array
+      folderPath: undefined, // Will be set later via folder selection
+      client: {
+        name: '',
+        whatsapp: '',
+        email: '',
+        phone: '',
+        company: '',
+        notes: ''
+      }
     };
 
     if (project) {

@@ -30,6 +30,15 @@ export interface Project {
   contacts: Contact[];
   tags: Tag[];
   reminders: Reminder[];
+  folderPath?: string; // נתיב לתיקיה המקושרת
+  client: {
+    name: string;
+    whatsapp?: string;
+    email?: string;
+    phone?: string;
+    company?: string;
+    notes?: string;
+  };
 }
 
 export interface Task {
