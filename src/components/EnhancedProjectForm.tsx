@@ -87,9 +87,9 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
   // ולידציה בזמן אמת
   useEffect(() => {
     setValidations({
-      phone: !client.phone || ClientContactService.validateIsraeliPhone(client.phone),
+      phone: !client.phone || ClientContactService.validateInternationalPhone(client.phone),
       whatsappNumbers: client.whatsappNumbers.map(whatsapp => 
-        !whatsapp.number || ClientContactService.validateIsraeliPhone(whatsapp.number)
+        !whatsapp.number || ClientContactService.validateInternationalPhone(whatsapp.number)
       ),
       email: !client.email || ClientContactService.validateEmail(client.email)
     });
@@ -429,11 +429,11 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 type="tel"
                 value={client.phone}
                 onChange={(e) => handleClientChange('phone', e.target.value)}
-                placeholder="05X-XXXXXXX"
+                placeholder="+972-XX-XXXXXXX או 0XX-XXXXXXX"
                 className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.phone ? 'border-red-300' : ''}`}
               />
               {!validations.phone && (
-                <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין</span>
+                <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין. השתמש ב: +972-XX-XXXXXXX או 0XX-XXXXXXX</span>
               )}
             </div>
 
@@ -464,7 +464,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                           type="tel"
                           value={whatsapp.number}
                           onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'number', e.target.value)}
-                          placeholder="05X-XXXXXXX"
+                          placeholder="+972-XX-XXXXXXX או 0XX-XXXXXXX"
                           className={`flex-1 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.whatsappNumbers[index] ? 'border-red-300' : ''}`}
                         />
                         <Input
@@ -495,7 +495,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                         </div>
                       </div>
                       {!validations.whatsappNumbers[index] && (
-                        <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין</span>
+                        <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין. השתמש ב: +972-XX-XXXXXXX או 0XX-XXXXXXX</span>
                       )}
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         {whatsapp.number && validations.whatsappNumbers[index] && (
