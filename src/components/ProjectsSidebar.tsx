@@ -83,31 +83,31 @@ export function ProjectsSidebar() {
   return (
     <div
       className={cn(
-        'fixed right-0 top-0 h-screen z-40 glass transition-smooth shadow-elegant flex flex-col border-l',
-        isCollapsed ? 'w-16' : 'w-64'
+        'fixed right-0 top-0 h-screen z-40 bg-white dark:bg-gray-900 transition-all duration-300 shadow-lg flex flex-col border-l border-gray-200 dark:border-gray-700',
+        isCollapsed ? 'w-12' : 'w-48'
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-border/50 flex-shrink-0">
+      <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
-              <FolderOpen className="w-5 h-5 text-primary" />
-              <h1 className="text-lg font-bold gradient-primary bg-clip-text text-transparent">
+              <FolderOpen className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">
                 פרויקטים
-              </h1>
+              </h2>
             </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 btn-glass transition-smooth"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
           >
-            {isCollapsed ? <Menu size={18} /> : <X size={18} />}
+            {isCollapsed ? <Menu size={16} /> : <X size={16} />}
           </button>
         </div>
         
         {!isCollapsed && (
-          <div className="mt-3 text-sm text-muted-foreground">
+          <div className="mt-2 text-xs text-muted-foreground">
             {projects.length} פרויקטים
           </div>
         )}
@@ -116,25 +116,25 @@ export function ProjectsSidebar() {
       {!isCollapsed && (
         <>
           {/* רשימת פרויקטים */}
-          <ScrollArea className="flex-1 px-4 pb-4">
+          <ScrollArea className="flex-1 px-3 pb-3">
             {projects.length === 0 ? (
-              <div className="text-center py-8">
-                <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">אין פרויקטים עדיין</p>
+              <div className="text-center py-6">
+                <FolderOpen className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">אין פרויקטים</p>
               </div>
             ) : (
-              <div className="space-y-2 pt-4">
+              <div className="space-y-1 pt-3">
                 {projects.map((project) => (
                   <div
                     key={project.id}
                     onClick={() => highlightProject(project.id)}
-                    className="p-3 rounded-lg hover:bg-accent/50 transition-all cursor-pointer group hover:shadow-sm border border-transparent hover:border-primary/20"
+                    className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-sm group-hover:text-primary transition-colors">
+                      <h3 className="font-medium text-xs text-foreground group-hover:text-primary transition-colors truncate">
                         {project.name}
                       </h3>
-                      <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                     </div>
                   </div>
                 ))}
@@ -147,7 +147,7 @@ export function ProjectsSidebar() {
       {/* במצב מוקטן - מספר פרויקטים */}
       {isCollapsed && projects.length > 0 && (
         <div className="p-2">
-          <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold mx-auto">
+          <div className="w-6 h-6 bg-primary text-primary-foreground rounded flex items-center justify-center text-xs font-bold mx-auto">
             {projects.length}
           </div>
         </div>

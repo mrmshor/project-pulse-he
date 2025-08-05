@@ -24,19 +24,19 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        'glass h-screen transition-smooth shadow-elegant',
+        'bg-white dark:bg-gray-900 h-screen transition-all duration-300 shadow-lg border-r border-gray-200 dark:border-gray-700',
         isCollapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-border/50">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-xl font-bold gradient-primary bg-clip-text text-transparent animate-float">ניהול פרויקטים</h1>
+            <h1 className="text-lg font-bold text-foreground">ניהול פרויקטים Pro</h1>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 btn-glass transition-smooth"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
           >
             {isCollapsed ? <Menu size={20} /> : <X size={20} />}
           </button>
@@ -52,10 +52,10 @@ export function Sidebar() {
               key={item.name}
               to={item.href}
               className={cn(
-                'nav-item flex items-center gap-3',
+                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
                 isActive
-                  ? 'active'
-                  : 'hover:shadow-elegant'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-foreground'
               )}
             >
               <item.icon size={20} />
