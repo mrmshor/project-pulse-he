@@ -1,3 +1,23 @@
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  category?: 'status' | 'priority' | 'type' | 'custom';
+  icon?: string;
+}
+
+export interface Reminder {
+  id: string;
+  type: 'deadline' | 'followup' | 'meeting' | 'custom';
+  message: string;
+  triggerDate: Date;
+  isActive: boolean;
+  recurring?: {
+    frequency: 'daily' | 'weekly' | 'monthly';
+    endDate?: Date;
+  };
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -8,6 +28,8 @@ export interface Project {
   dueDate?: Date;
   tasks: Task[];
   contacts: Contact[];
+  tags: Tag[];
+  reminders: Reminder[];
 }
 
 export interface Task {
@@ -18,6 +40,9 @@ export interface Task {
   priority: 'נמוכה' | 'בינונית' | 'גבוהה';
   dueDate?: Date;
   timeEntries?: TimeEntry[];
+  tags: Tag[];
+  order: number;
+  estimatedTime?: number; // in minutes
 }
 
 export interface TimeEntry {
@@ -35,6 +60,7 @@ export interface Contact {
   email?: string;
   phone?: string; // פורמט ישראלי 05X-XXXXXXX
   projectIds: string[];
+  tags: Tag[];
 }
 
 export type ProjectStatus = Project['status'];
