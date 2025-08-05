@@ -29,8 +29,8 @@ export function ProjectsSidebar() {
     (project.client?.name && project.client.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // גלילה לפרויקט ספציפי
-  const scrollToProject = (projectId: string) => {
+  // פונקציה לגלילה והבהוב
+  const highlightProject = (projectId: string) => {
     const element = document.getElementById(`project-${projectId}`);
     if (element) {
       element.scrollIntoView({ 
@@ -39,10 +39,12 @@ export function ProjectsSidebar() {
         inline: 'nearest' 
       });
       
-      // הדגשה זמנית
-      element.classList.add('ring-2', 'ring-primary', 'ring-opacity-75');
+      // הבהוב - הוספה והסרה של אפקט זוהר
+      element.classList.add('ring-4', 'ring-primary/50', 'bg-primary/10', 'scale-105');
+      element.style.transition = 'all 0.3s ease-in-out';
+      
       setTimeout(() => {
-        element.classList.remove('ring-2', 'ring-primary', 'ring-opacity-75');
+        element.classList.remove('ring-4', 'ring-primary/50', 'bg-primary/10', 'scale-105');
       }, 2000);
     }
   };
@@ -77,23 +79,6 @@ export function ProjectsSidebar() {
     };
   };
 
-  // פונקציה לגלילה והבהוב
-  const highlightProject = (projectId: string) => {
-    const element = document.getElementById(`project-${projectId}`);
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'nearest' 
-      });
-      
-      // הבהוב - הוספה והסרה של אפקט זוהר
-      element.classList.add('animate-pulse', 'ring-2', 'ring-primary', 'ring-opacity-75');
-      setTimeout(() => {
-        element.classList.remove('animate-pulse', 'ring-2', 'ring-primary', 'ring-opacity-75');
-      }, 2000);
-    }
-  };
 
   return (
     <div
