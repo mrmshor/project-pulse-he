@@ -26,7 +26,7 @@ export function ProjectsSidebar() {
   const filteredProjects = projects.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.client.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (project.client?.name && project.client.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // גלילה לפרויקט ספציפי
@@ -164,7 +164,7 @@ export function ProjectsSidebar() {
                       </div>
 
                       {/* פרטי לקוח */}
-                      {project.client.name && (
+                      {project.client?.name && (
                         <div className="text-xs text-muted-foreground mb-2">
                           👤 {project.client.name}
                           {project.client.company && ` • ${project.client.company}`}
