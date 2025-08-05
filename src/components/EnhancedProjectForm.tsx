@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { Project } from '@/types';
+import { useProjectStore } from '@/store/useProjectStore';
 import { 
   FolderOpen, 
   Phone, 
@@ -29,11 +30,12 @@ interface ClientFormData {
 
 interface EnhancedProjectFormProps {
   project?: Project;
-  onSave: (projectData: any) => void;
+  onSave: () => void;
   onCancel: () => void;
 }
 
 export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProjectFormProps) {
+  const { addProject, updateProject } = useProjectStore();
   // נתוני הטופס הקיימים
   const [formData, setFormData] = useState({
     name: project?.name || '',
@@ -117,8 +119,11 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
       return;
     }
 
-    const updatedProject = {
-      ...formData,
+    const projectData = {
+      name: formData.name,
+      description: formData.description,
+      status: formData.status,
+      priority: formData.priority,
       startDate: new Date(formData.startDate),
       dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
       folderPath: folderPath || undefined,
@@ -127,7 +132,15 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
       reminders: project?.reminders || []
     };
     
-    onSave(updatedProject);
+    if (project) {
+      // עריכת פרויקט קיים
+      updateProject(project.id, projectData);
+    } else {
+      // יצירת פרויקט חדש
+      addProject(projectData);
+    }
+    
+    onSave();
   };
 
   const handleClientChange = (field: keyof ClientFormData, value: string) => {
