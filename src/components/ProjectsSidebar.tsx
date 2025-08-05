@@ -11,7 +11,10 @@ import {
   ExternalLink,
   Calendar,
   CheckCircle2,
-  Clock
+  Clock,
+  ArrowUp,
+  ArrowRight,
+  ArrowDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectStore } from '@/store/useProjectStore';
@@ -65,6 +68,15 @@ export function ProjectsSidebar() {
       case 'בינונית': return 'text-yellow-600';
       case 'נמוכה': return 'text-green-600';
       default: return 'text-gray-600';
+    }
+  };
+
+  const getPriorityIcon = (priority: Priority) => {
+    switch (priority) {
+      case 'גבוהה': return <ArrowUp className="w-3 h-3" />;
+      case 'בינונית': return <ArrowRight className="w-3 h-3" />;
+      case 'נמוכה': return <ArrowDown className="w-3 h-3" />;
+      default: return <ArrowRight className="w-3 h-3" />;
     }
   };
 
@@ -141,24 +153,39 @@ export function ProjectsSidebar() {
                       className="group p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 cursor-pointer border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2">
-                          {project.name}
-                        </h3>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={cn("p-1 rounded", getPriorityColor(project.priority))}>
+                              {getPriorityIcon(project.priority)}
+                            </div>
+                            <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-1">
+                              {project.name}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs">
+                            <span className={cn("font-medium", getPriorityColor(project.priority))}>
+                              {project.priority}
+                            </span>
+                            <span className="text-muted-foreground">•</span>
+                            <div className="flex items-center gap-1">
+                              <div className={cn("w-2 h-2 rounded-full", 
+                                project.status === 'פעיל' ? 'bg-green-500' :
+                                project.status === 'תכנון' ? 'bg-blue-500' :
+                                project.status === 'הושלם' ? 'bg-gray-500' : 'bg-yellow-500'
+                              )}></div>
+                              <span className="text-muted-foreground">{project.status}</span>
+                            </div>
+                          </div>
+                        </div>
                         <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 ml-2 group-hover:scale-110" />
                       </div>
                       
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1">
-                          <div className={cn("w-2 h-2 rounded-full", 
-                            project.status === 'פעיל' ? 'bg-green-500' :
-                            project.status === 'תכנון' ? 'bg-blue-500' :
-                            project.status === 'הושלם' ? 'bg-gray-500' : 'bg-yellow-500'
-                          )}></div>
-                          <span className="text-muted-foreground">{project.status}</span>
-                        </div>
-                        
+                      <div className="flex items-center justify-between text-xs mb-2">
                         <div className="text-muted-foreground">
-                          {stats.completed}/{stats.total}
+                          משימות: {stats.completed}/{stats.total}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {stats.progress}%
                         </div>
                       </div>
                       
