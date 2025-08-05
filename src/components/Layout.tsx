@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Sidebar } from './Sidebar';
+import { TasksSidebar } from './TasksSidebar';
 import { TauriStatus } from './TauriStatus';
 
 interface LayoutProps {
@@ -13,7 +13,7 @@ export function Layout({ children }: LayoutProps) {
       <main className="flex-1 overflow-auto p-8 animate-fade-in">
         {children}
       </main>
-      <Sidebar />
+      <TasksSidebar />
     </div>
   );
 }
