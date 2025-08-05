@@ -170,42 +170,47 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-4xl mx-auto">
-      {/* כותרת */}
-      <div>
-        <h2 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-          {project ? 'עריכת פרויקט' : 'פרויקט חדש'}
-        </h2>
-        <p className="text-muted-foreground">מלא את פרטי הפרויקט והלקוח</p>
+    <div className="space-y-6 p-1">
+      {/* כותרת מעוצבת */}
+      <div className="text-center pb-6">
+        <div className="relative">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight mb-2">
+            {project ? 'עריכת פרויקט' : 'פרויקט חדש'}
+          </h2>
+          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full"></div>
+        </div>
+        <p className="text-muted-foreground mt-3">מלא את פרטי הפרויקט והלקוח</p>
       </div>
 
       {/* פרטי פרויקט בסיסיים */}
-      <Card className="card-macos">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FolderOpen className="w-5 h-5 text-primary" />
-            פרטי פרויקט
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <FolderOpen className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">פרטי פרויקט</h3>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">שם הפרויקט *</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">שם הפרויקט *</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="הזן שם הפרויקט"
-                className="input-glass"
+                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">סטטוס</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">סטטוס</label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({...formData, status: e.target.value as any})}
-                className="input-glass w-full"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="תכנון">תכנון</option>
                 <option value="פעיל">פעיל</option>
@@ -215,11 +220,11 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">עדיפות</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">עדיפות</label>
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({...formData, priority: e.target.value as any})}
-                className="input-glass w-full"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="נמוכה">נמוכה</option>
                 <option value="בינונית">בינונית</option>
@@ -228,44 +233,46 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">תאריך יעד</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">תאריך יעד</label>
               <Input
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
-                className="input-glass"
+                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">תיאור</label>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">תיאור</label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
               placeholder="תאר את הפרויקט..."
-              className="input-glass"
+              className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
               rows={3}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* תיקיית פרויקט */}
-      <Card className="card-macos">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FolderOpen className="w-5 h-5 text-primary" />
-            תיקיית פרויקט
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+              <FolderOpen className="w-5 h-5 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">תיקיית פרויקט</h3>
+          </div>
+        </div>
+        <div className="p-6">
           {folderPath ? (
-            <div className="glass p-4 rounded-lg">
+            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="truncate text-sm">{folderPath}</span>
+                  <FolderOpen className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span className="truncate text-sm font-medium">{folderPath}</span>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -273,6 +280,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                     onClick={() => FolderService.openInFinder(folderPath)}
                     size="sm"
                     variant="outline"
+                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
                   >
                     פתח
                   </Button>
@@ -281,6 +289,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                     onClick={handleSelectFolder}
                     size="sm"
                     variant="outline"
+                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
                   >
                     שנה
                   </Button>
@@ -301,7 +310,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
               onClick={handleSelectFolder}
               disabled={isSelectingFolder}
               variant="outline"
-              className="w-full gap-2 h-16 border-dashed"
+              className="w-full gap-2 h-16 border-dashed border-2 border-gray-300 dark:border-gray-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
             >
               {isSelectingFolder ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -311,21 +320,23 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
               {isSelectingFolder ? 'בוחר תיקיה...' : 'בחר תיקיית פרויקט'}
             </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* פרטי לקוח */}
-      <Card className="card-macos">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5 text-primary" />
-            פרטי לקוח
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">פרטי לקוח</h3>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <User className="w-4 h-4" />
                 שם הלקוח *
               </label>
@@ -333,13 +344,13 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 value={client.name}
                 onChange={(e) => handleClientChange('name', e.target.value)}
                 placeholder="שם מלא של הלקוח"
-                className="input-glass"
+                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <Building className="w-4 h-4" />
                 חברה
               </label>
@@ -347,12 +358,12 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 value={client.company}
                 onChange={(e) => handleClientChange('company', e.target.value)}
                 placeholder="שם החברה"
-                className="input-glass"
+                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <Phone className="w-4 h-4" />
                 טלפון
                 {client.phone && (
@@ -366,7 +377,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 value={client.phone}
                 onChange={(e) => handleClientChange('phone', e.target.value)}
                 placeholder="05X-XXXXXXX"
-                className={`input-glass ${!validations.phone ? 'border-red-300' : ''}`}
+                className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.phone ? 'border-red-300' : ''}`}
               />
               {!validations.phone && (
                 <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין</span>
@@ -374,7 +385,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <MessageCircle className="w-4 h-4" />
                 WhatsApp
                 {client.whatsapp && (
@@ -388,7 +399,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 value={client.whatsapp}
                 onChange={(e) => handleClientChange('whatsapp', e.target.value)}
                 placeholder="05X-XXXXXXX"
-                className={`input-glass ${!validations.whatsapp ? 'border-red-300' : ''}`}
+                className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.whatsapp ? 'border-red-300' : ''}`}
               />
               {!validations.whatsapp && (
                 <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין</span>
@@ -396,7 +407,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <Mail className="w-4 h-4" />
                 אימייל
                 {client.email && (
@@ -410,7 +421,7 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 value={client.email}
                 onChange={(e) => handleClientChange('email', e.target.value)}
                 placeholder="client@example.com"
-                className={`input-glass ${!validations.email ? 'border-red-300' : ''}`}
+                className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.email ? 'border-red-300' : ''}`}
               />
               {!validations.email && (
                 <span className="text-red-600 text-xs">כתובת אימייל לא תקינה</span>
@@ -419,30 +430,32 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">הערות</label>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">הערות</label>
             <Textarea
               value={client.notes}
               onChange={(e) => handleClientChange('notes', e.target.value)}
               placeholder="הערות נוספות על הלקוח..."
-              className="input-glass"
+              className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
               rows={3}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* פרטי תשלום */}
-      <Card className="card-macos">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-primary" />
-            פרטי תשלום
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+              <CreditCard className="w-5 h-5 text-emerald-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">פרטי תשלום</h3>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <DollarSign className="w-4 h-4" />
                 סכום
               </label>
@@ -451,16 +464,16 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
                 value={payment.amount}
                 onChange={(e) => handlePaymentChange('amount', e.target.value)}
                 placeholder="0"
-                className="input-glass"
+                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">מטבע</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">מטבע</label>
               <select
                 value={payment.currency}
                 onChange={(e) => handlePaymentChange('currency', e.target.value)}
-                className="input-glass w-full"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="ILS">שקל (₪)</option>
                 <option value="USD">דולר ($)</option>
@@ -475,31 +488,40 @@ export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProje
               checked={payment.isPaid}
               onCheckedChange={(checked) => handlePaymentChange('isPaid', checked === true)}
             />
-            <label htmlFor="isPaid" className="text-sm font-medium cursor-pointer">
+            <label htmlFor="isPaid" className="text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer">
               התקבל תשלום
             </label>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">הערות תשלום</label>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">הערות תשלום</label>
             <Textarea
               value={payment.notes}
               onChange={(e) => handlePaymentChange('notes', e.target.value)}
               placeholder="הערות על התשלום..."
-              className="input-glass"
+              className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
               rows={2}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* כפתורי פעולה */}
-      <div className="flex gap-4 justify-end">
-        <Button type="button" onClick={onCancel} variant="outline">
-          ביטול
+      <div className="flex gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <Button
+          onClick={handleSave}
+          className="flex-1 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          size="lg"
+        >
+          {project ? 'עדכן פרויקט' : 'צור פרויקט'}
         </Button>
-        <Button type="button" onClick={handleSave} className="btn-gradient">
-          שמור פרויקט
+        <Button
+          onClick={onCancel}
+          variant="outline"
+          className="flex-1 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          size="lg"
+        >
+          ביטול
         </Button>
       </div>
     </div>
