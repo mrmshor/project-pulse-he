@@ -24,19 +24,19 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        'bg-card border-l border-border h-screen transition-all duration-300',
+        'glass h-screen transition-smooth shadow-elegant',
         isCollapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border/50">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-primary">ניהול פרויקטים</h1>
+            <h1 className="text-xl font-bold gradient-primary bg-clip-text text-transparent animate-float">ניהול פרויקטים</h1>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            className="p-2 btn-glass transition-smooth"
           >
             {isCollapsed ? <Menu size={20} /> : <X size={20} />}
           </button>
@@ -52,10 +52,10 @@ export function Sidebar() {
               key={item.name}
               to={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                'nav-item flex items-center gap-3',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                  ? 'active'
+                  : 'hover:shadow-elegant'
               )}
             >
               <item.icon size={20} />

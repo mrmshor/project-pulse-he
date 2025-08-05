@@ -108,8 +108,8 @@ export function Projects() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">פרויקטים</h1>
+      <div className="flex items-center justify-between animate-fade-in">
+        <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">פרויקטים</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -127,7 +127,7 @@ export function Projects() {
             <Download size={16} />
             JSON
           </Button>
-          <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+          <Button onClick={() => setIsDialogOpen(true)} className="btn-gradient transition-smooth hover:shadow-glow gap-2">
             <Plus size={16} />
             פרויקט חדש
           </Button>
@@ -142,7 +142,7 @@ export function Projects() {
             placeholder="חיפוש פרויקטים..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10"
+            className="input-glass pr-10"
           />
         </div>
         
@@ -179,7 +179,8 @@ export function Projects() {
           const completedTasks = projectTasks.filter(task => task.status === 'הושלמה').length;
           
           return (
-            <Card key={project.id} className="hover:shadow-lg transition-shadow">
+            <Card key={project.id} className="card-macos animate-slide-up"
+              style={{ animationDelay: `${filteredProjects.indexOf(project) * 0.1}s` }}>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{project.name}</CardTitle>
@@ -206,7 +207,7 @@ export function Projects() {
                 <p className="text-muted-foreground">{project.description}</p>
                 
                 <div className="flex items-center justify-between">
-                  <Badge className={getStatusColor(project.status)}>
+                  <Badge className={`${getStatusColor(project.status)} transition-smooth hover:scale-105 border border-opacity-50`}>
                     {project.status}
                   </Badge>
                   <span className={`text-sm font-medium ${getPriorityColor(project.priority)}`}>

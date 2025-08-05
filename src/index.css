@@ -1,102 +1,109 @@
+/* =========================================================================
+   HEBREW PROJECT MANAGEMENT DESIGN SYSTEM - COMPLETE PACKAGE
+   תמיכה RTL + עיצוב macOS + מערכת אנימציות מלאה
+   ========================================================================= */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/* ===== DESIGN TOKENS - משתני עיצוב בסיסיים ===== */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Core color palette - Light mode */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 215 25% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 15%;
 
-    /* Custom project colors */
-    --primary: 217 91% 60%; /* Blue #3b82f6 */
-    --primary-foreground: 210 40% 98%;
+    /* Primary brand colors - Modern blue gradient */
+    --primary: 220 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 225 70% 70%;
 
-    --success: 159 70% 45%; /* Green #10b981 */
-    --success-foreground: 0 0% 100%;
+    /* Secondary colors */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 215 25% 15%;
 
-    --danger: 0 84% 60%; /* Red #ef4444 */
-    --danger-foreground: 0 0% 100%;
+    /* Muted colors for subtle elements */
+    --muted: 210 40% 95%;
+    --muted-foreground: 215 16% 47%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Accent colors */
+    --accent: 210 40% 95%;
+    --accent-foreground: 215 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    /* Status colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* UI elements */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 220 70% 55%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem;
+    /* Border radius */
+    --radius: 0.75rem;
 
+    /* Beautiful gradient definitions */
+    --gradient-primary: linear-gradient(135deg, hsl(220 70% 55%), hsl(270 70% 60%));
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(160 84% 39%));
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%), hsl(25 95% 53%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%), hsl(15 85% 58%));
+    --gradient-background: linear-gradient(135deg, hsl(210 40% 98%), hsl(220 14% 96%));
+
+    /* macOS inspired shadows */
+    --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-medium: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-strong: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-elegant: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 0 40px hsl(220 70% 55% / 0.3);
+
+    /* Smooth transition definitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Sidebar colors */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  /* Dark mode color palette */
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 25% 6%;
     --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
+    --card: 222 25% 8%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    /* Dark mode colors */
-    --primary: 217 91% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --success: 159 70% 45%;
-    --success-foreground: 0 0% 100%;
-
-    --danger: 0 84% 60%;
-    --danger-foreground: 0 0% 100%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --primary: 220 70% 60%;
+    --secondary: 217 32% 17%;
+    --muted: 217 32% 15%;
+    --accent: 217 32% 17%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --gradient-primary: linear-gradient(135deg, hsl(220 70% 60%), hsl(270 70% 65%));
+    --shadow-elegant: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -108,12 +115,169 @@ All colors MUST be HSL.
   }
 }
 
+/* ===== BASE STYLES - סגנונות בסיס ו-RTL ===== */
 @layer base {
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply bg-background text-foreground;
+    direction: rtl;
+    background: var(--gradient-background);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* macOS style focus outlines */
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ===== UTILITY CLASSES ===== */
+@layer utilities {
+  .gradient-primary { background: var(--gradient-primary); }
+  .gradient-success { background: var(--gradient-success); }
+  .gradient-warning { background: var(--gradient-warning); }
+  .gradient-danger { background: var(--gradient-danger); }
+  
+  .shadow-elegant { box-shadow: var(--shadow-elegant); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  
+  .glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: hsl(var(--background) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .card-macos {
+    background: hsl(var(--card) / 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 12px;
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition-smooth);
+  }
+
+  .card-macos:hover {
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-2px);
+  }
+
+  .animate-fade-in { animation: fade-in 0.3s ease-out; }
+  .animate-scale-in { animation: scale-in 0.2s ease-out; }
+  .animate-slide-up { animation: slide-up 0.5s ease-out; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  
+  .transition-smooth { transition: var(--transition-smooth); }
+  .transition-bounce { transition: var(--transition-bounce); }
+}
+
+/* ===== COMPONENT STYLES ===== */
+@layer components {
+  .btn-gradient {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: var(--transition-smooth);
+  }
+
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .btn-glass {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: var(--transition-smooth);
+  }
+
+  .btn-glass:hover {
+    background: hsl(var(--background) / 0.9);
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .input-glass {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: var(--transition-smooth);
+  }
+
+  .input-glass:focus {
+    background: hsl(var(--background) / 0.9);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+  }
+
+  .nav-item {
+    transition: var(--transition-smooth);
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+  }
+
+  .nav-item:hover {
+    background: hsl(var(--accent));
+    transform: translateX(-2px);
+  }
+
+  .nav-item.active {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-glow);
   }
 }
