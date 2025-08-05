@@ -1,9 +1,9 @@
 import { FolderOpen, CheckSquare, TrendingUp, Activity } from 'lucide-react';
-import { useProjectStore } from '@/store/useProjectStore';
+import { useProjectStore, useProjectStats } from '@/store/useProjectStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function Dashboard() {
-  const stats = useProjectStore((state) => state.getStats());
+  const stats = useProjectStats();
   const projects = useProjectStore((state) => state.projects);
   const tasks = useProjectStore((state) => state.tasks);
 

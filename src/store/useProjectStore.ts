@@ -25,14 +25,6 @@ interface ProjectStore {
   deleteContact: (id: string) => void;
   getContactsByProject: (projectId: string) => Contact[];
   
-  // Stats
-  getStats: () => {
-    totalProjects: number;
-    activeTasks: number;
-    completedThisWeek: number;
-    activeProjects: number;
-  };
-  
   // Export
   exportToJSON: () => string;
   exportToCSV: (type: 'projects' | 'tasks' | 'contacts') => string;
@@ -140,22 +132,6 @@ export const useProjectStore = create<ProjectStore>()(
         );
       },
       
-      getStats: () => {
-        const { projects, tasks } = get();
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
-        return {
-          totalProjects: projects.length,
-          activeTasks: tasks.filter((task) => task.status !== 'הושלמה').length,
-          completedThisWeek: tasks.filter(
-            (task) => task.status === 'הושלמה'
-            // Note: would need completion date to filter by week
-          ).length,
-          activeProjects: projects.filter((project) => project.status === 'פעיל').length,
-        };
-      },
-      
       exportToJSON: () => {
         const { projects, tasks, contacts } = get();
         return JSON.stringify({ projects, tasks, contacts }, null, 2);
@@ -211,3 +187,16 @@ export const useProjectStore = create<ProjectStore>()(
     }
   )
 );
+
+// Helper selectors to prevent infinite loops
+export const useProjectStats = () => {
+  const projects = useProjectStore((state) => state.projects);
+  const tasks = useProjectStore((state) => state.tasks);
+  
+  return {
+    totalProjects: projects.length,
+    activeTasks: tasks.filter((task) => task.status !== 'הושלמה').length,
+    completedThisWeek: tasks.filter((task) => task.status === 'הושלמה').length,
+    activeProjects: projects.filter((project) => project.status === 'פעיל').length,
+  };
+};
