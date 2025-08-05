@@ -3,6 +3,7 @@ import { Plus, Search, Filter, Download, Edit, Trash2, FolderOpen, User, Phone, 
 import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { StatusSelector } from '@/components/StatusSelector';
 import { PrioritySelector } from '@/components/PrioritySelector';
+import { ProjectTaskList } from '@/components/ProjectTaskList';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -297,9 +298,12 @@ export function Projects() {
                   />
                 </div>
 
+                {/* רשימת משימות מהירה */}
+                <ProjectTaskList projectId={project.id} />
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>משימות:</span>
+                    <span>התקדמות:</span>
                     <span>{completedTasks}/{projectTasks.length}</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
