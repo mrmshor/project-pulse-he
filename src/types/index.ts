@@ -17,6 +17,16 @@ export interface Task {
   status: 'לביצוע' | 'בתהליך' | 'הושלמה';
   priority: 'נמוכה' | 'בינונית' | 'גבוהה';
   dueDate?: Date;
+  timeEntries?: TimeEntry[];
+}
+
+export interface TimeEntry {
+  id: string;
+  taskId: string;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in minutes
+  description?: string;
 }
 
 export interface Contact {

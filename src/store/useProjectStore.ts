@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, Task, Contact } from '@/types';
+import { Project, Task, Contact, TimeEntry } from '@/types';
 import { isTauriEnvironment, saveDataNative, loadDataNative } from '@/lib/tauri';
 
 interface ProjectStore {
   projects: Project[];
   tasks: Task[];
   contacts: Contact[];
+  timeEntries: TimeEntry[];
   
   // Projects
   addProject: (project: Omit<Project, 'id' | 'tasks' | 'contacts'>) => void;
@@ -25,6 +26,12 @@ interface ProjectStore {
   updateContact: (id: string, contact: Partial<Contact>) => void;
   deleteContact: (id: string) => void;
   getContactsByProject: (projectId: string) => Contact[];
+  
+  // Time Entries
+  addTimeEntry: (timeEntry: Omit<TimeEntry, 'id'>) => void;
+  updateTimeEntry: (id: string, timeEntry: Partial<TimeEntry>) => void;
+  deleteTimeEntry: (id: string) => void;
+  getTimeEntriesByTask: (taskId: string) => TimeEntry[];
   
   // Export with native support
   exportToJSON: () => string;
@@ -68,6 +75,7 @@ export const useProjectStore = create<ProjectStore>()(
       projects: [],
       tasks: [],
       contacts: [],
+      timeEntries: [],
       
       addProject: (projectData) => {
         const newProject: Project = {
@@ -163,8 +171,8 @@ export const useProjectStore = create<ProjectStore>()(
       },
       
       exportToJSON: () => {
-        const { projects, tasks, contacts } = get();
-        return JSON.stringify({ projects, tasks, contacts }, null, 2);
+        const { projects, tasks, contacts, timeEntries } = get();
+        return JSON.stringify({ projects, tasks, contacts, timeEntries }, null, 2);
       },
       
       exportToCSV: (type) => {
@@ -212,11 +220,40 @@ export const useProjectStore = create<ProjectStore>()(
         return '';
       },
       
+      // Time Entries
+      addTimeEntry: (timeEntryData) => {
+        const newTimeEntry: TimeEntry = {
+          ...timeEntryData,
+          id: generateId(),
+        };
+        set((state) => ({
+          timeEntries: [...state.timeEntries, newTimeEntry],
+        }));
+      },
+
+      updateTimeEntry: (id, timeEntryData) => {
+        set((state) => ({
+          timeEntries: state.timeEntries.map((entry) =>
+            entry.id === id ? { ...entry, ...timeEntryData } : entry
+          ),
+        }));
+      },
+
+      deleteTimeEntry: (id) => {
+        set((state) => ({
+          timeEntries: state.timeEntries.filter((entry) => entry.id !== id),
+        }));
+      },
+
+      getTimeEntriesByTask: (taskId) => {
+        return get().timeEntries.filter((entry) => entry.taskId === taskId);
+      },
+
       // Native save/load functions
       saveToNative: async () => {
         if (isTauriEnvironment()) {
-          const { projects, tasks, contacts } = get();
-          return await saveDataNative({ projects, tasks, contacts });
+          const { projects, tasks, contacts, timeEntries } = get();
+          return await saveDataNative({ projects, tasks, contacts, timeEntries });
         }
         return false;
       },
@@ -228,7 +265,8 @@ export const useProjectStore = create<ProjectStore>()(
             set({
               projects: data.projects || [],
               tasks: data.tasks || [],
-              contacts: data.contacts || []
+              contacts: data.contacts || [],
+              timeEntries: data.timeEntries || []
             });
           }
         }
