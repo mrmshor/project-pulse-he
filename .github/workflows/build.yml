@@ -27,17 +27,13 @@ jobs:
 
       - name: Clean everything and fix
         run: |
-          # מחיקת כל מה שקשור לאייקונים
           rm -rf src-tauri/icons
           rm -rf src-tauri/target
-          
-          # יצירת אייקון dummy פשוט
           mkdir -p src-tauri/icons
           echo -n "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > src-tauri/icons/icon.png
           cp src-tauri/icons/icon.png src-tauri/icons/32x32.png
           cp src-tauri/icons/icon.png src-tauri/icons/128x128.png
           
-          # יצירת tauri.conf.json פשוט
           cat > src-tauri/tauri.conf.json << 'EOF'
           {
             "$schema": "../node_modules/@tauri-apps/cli/schema.json",
@@ -60,16 +56,25 @@ jobs:
             }
           }
           EOF
-          
-          # וידוא שהכל בסדר
-          ls -la src-tauri/icons/
-          cat src-tauri/tauri.conf.json
 
       - name: Build for Apple Silicon Mac  
         run: bun tauri build --target aarch64-apple-darwin
 
-      - name: Upload build
+      - name: Find built files
+        run: |
+          echo "=== מחפש קבצים שנוצרו ==="
+          find src-tauri/target -name "*.app" -o -name "*.dmg" -o -name "*.pkg" 2>/dev/null || echo "לא נמצאו קבצי אפליקציה"
+          echo "=== תוכן target directory ==="
+          ls -la src-tauri/target/ || echo "אין target directory"
+          echo "=== תוכן release directory ==="
+          ls -la src-tauri/target/*/release/bundle/ 2>/dev/null || echo "אין bundle directory"
+
+      - name: Upload everything we can find
         uses: actions/upload-artifact@v4
         with:
-          name: mac-app
-          path: src-tauri/target/aarch64-apple-darwin/release/bundle/
+          name: mac-app-files
+          path: |
+            src-tauri/target/**/*.app
+            src-tauri/target/**/*.dmg
+            src-tauri/target/**/bundle/
+        continue-on-error: true
