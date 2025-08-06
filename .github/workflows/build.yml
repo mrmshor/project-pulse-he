@@ -28,37 +28,15 @@ jobs:
       - name: Create valid icon
         run: |
           mkdir -p src-tauri/icons
-          # יצירת PNG תקין פשוט
-          python3 -c "
-          from PIL import Image, ImageDraw
-          import os
-          
-          # יצירת תמונה כחולה פשוטה
-          img = Image.new('RGBA', (1024, 1024), (52, 152, 219, 255))
-          draw = ImageDraw.Draw(img)
-          
-          # הוספת טקסט
-          try:
-              from PIL import ImageFont
-              font = ImageFont.truetype('/System/Library/Fonts/Arial.ttf', 120)
-          except:
-              font = ImageFont.load_default()
-          
-          draw.text((512, 512), 'APP', fill=(255, 255, 255, 255), anchor='mm', font=font)
-          
-          # שמירת כל הגדלים
-          img.save('src-tauri/icons/icon.png')
-          img.resize((512, 512)).save('src-tauri/icons/512x512.png')
-          img.resize((256, 256)).save('src-tauri/icons/256x256.png')
-          img.resize((128, 128)).save('src-tauri/icons/128x128.png')
-          img.resize((32, 32)).save('src-tauri/icons/32x32.png')
-          "
+          curl -L -o "src-tauri/icons/icon.png" "https://via.placeholder.com/1024x1024/3498db/ffffff?text=APP"
+          curl -L -o "src-tauri/icons/32x32.png" "https://via.placeholder.com/32x32/3498db/ffffff?text=APP"
+          curl -L -o "src-tauri/icons/128x128.png" "https://via.placeholder.com/128x128/3498db/ffffff?text=APP"
 
       - name: Build for Apple Silicon Mac  
         run: bun tauri build --target aarch64-apple-darwin
 
-      - name: Upload Apple Silicon build
+      - name: Upload build
         uses: actions/upload-artifact@v4
         with:
-          name: apple-silicon-mac-app
+          name: mac-app
           path: src-tauri/target/aarch64-apple-darwin/release/bundle/
