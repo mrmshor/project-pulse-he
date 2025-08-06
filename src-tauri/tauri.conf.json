@@ -26,7 +26,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "identifier": "com.projectpulse.app",
     "category": "Productivity",
     "shortDescription": "מנהל פרויקטים מתקדם",
     "longDescription": "אפליקציה לניהול פרויקטים ומשימות בעברית"
