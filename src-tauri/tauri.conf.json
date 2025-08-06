@@ -1,30 +1,33 @@
 {
-  "productName": "מנהל פרויקטים Pro",
-  "version": "1.0.0",
-  "identifier": "com.company.projectmanager",
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:5173",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "", 
+    "devPath": "../dist",
+    "distDir": "../dist"
   },
-  "bundle": {
-    "active": false,
-    "targets": "all",
-    "category": "Productivity"
+  "package": {
+    "productName": "project-manager-pro",
+    "version": "0.1.0"
   },
-  "app": {
-    "windows": [{
-      "title": "מנהל פרויקטים Pro",
-      "width": 1200,
-      "height": 800,
-      "minWidth": 800,
-      "minHeight": 600
-    }]
-  },
-  "plugins": {
-    "dialog": { "all": true },
-    "shell": { "all": false, "open": true },
-    "fs": { "all": true }
+  "tauri": {
+    "allowlist": {
+      "all": false
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "com.example.app"
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "project-manager-pro",
+        "width": 800,
+        "height": 600
+      }
+    ]
   }
 }
