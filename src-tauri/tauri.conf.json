@@ -9,8 +9,7 @@
     "frontendDist": "../dist"
   },
   "bundle": {
-    "active": true,
-    "targets": "all"
+    "active": false
   },
   "allowlist": {
     "all": false
