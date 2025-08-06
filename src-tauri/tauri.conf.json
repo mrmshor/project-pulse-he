@@ -1,33 +1,28 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "productName": "project-manager-pro",
+  "version": "0.1.0",
+  "identifier": "com.example.app",
   "build": {
     "beforeBuildCommand": "",
-    "beforeDevCommand": "", 
-    "devPath": "../dist",
-    "distDir": "../dist"
+    "beforeDevCommand": "",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "project-manager-pro",
-    "version": "0.1.0"
+  "bundle": {
+    "active": true,
+    "targets": "all"
   },
-  "tauri": {
-    "allowlist": {
-      "all": false
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.example.app"
-    },
-    "security": {
-      "csp": null
-    },
-    "windows": [
-      {
-        "title": "project-manager-pro",
-        "width": 800,
-        "height": 600
-      }
-    ]
-  }
+  "allowlist": {
+    "all": false
+  },
+  "security": {
+    "csp": null
+  },
+  "windows": [
+    {
+      "title": "project-manager-pro",
+      "width": 800,
+      "height": 600
+    }
+  ]
 }
