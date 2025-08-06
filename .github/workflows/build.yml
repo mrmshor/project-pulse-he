@@ -74,7 +74,7 @@ jobs:
         with:
           name: mac-app-files
           path: |
-            src-tauri/target/**/*.app
-            src-tauri/target/**/*.dmg
-            src-tauri/target/**/bundle/
+           target/**/*.app
+            target/**/*.dmg
+            target/**/bundle/
         continue-on-error: true
