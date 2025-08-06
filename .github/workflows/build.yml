@@ -1,80 +1,51 @@
-name: "Build macOS App"
+name: "Build and Release"
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
-    
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest]
+    runs-on: ${{ matrix.platform }}
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: lts/*
+          cache: 'npm'
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: Install dependencies
-        run: bun install
+        run: npm ci
 
-      - name: Clean everything and fix
-        run: |
-          rm -rf src-tauri/icons
-          rm -rf src-tauri/target
-          mkdir -p src-tauri/icons
-          echo -n "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > src-tauri/icons/icon.png
-          cp src-tauri/icons/icon.png src-tauri/icons/32x32.png
-          cp src-tauri/icons/icon.png src-tauri/icons/128x128.png
-          
-          cat > src-tauri/tauri.conf.json << 'EOF'
-          {
-            "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-            "productName": "project-manager-pro",  
-            "version": "0.1.0",
-            "identifier": "com.projectpulse.app",
-            "build": {
-              "beforeDevCommand": "bun run dev",
-              "beforeBuildCommand": "bun run build", 
-              "frontendDist": "../dist",
-              "devUrl": "http://localhost:5173"
-            },
-            "app": {
-              "windows": [{"title": "Project Pulse", "width": 1200, "height": 800}],
-              "security": {"csp": null}
-            },
-            "bundle": {
-              "active": true,
-              "targets": "all"
-            }
-          }
-          EOF
-
-      - name: Build for Apple Silicon Mac  
-        run: bun tauri build --target aarch64-apple-darwin
-
-      - name: Find built files
-        run: |
-          echo "=== מחפש קבצים שנוצרו ==="
-          find src-tauri/target -name "*.app" -o -name "*.dmg" -o -name "*.pkg" 2>/dev/null || echo "לא נמצאו קבצי אפליקציה"
-          echo "=== תוכן target directory ==="
-          ls -la src-tauri/target/ || echo "אין target directory"
-          echo "=== תוכן release directory ==="
-          ls -la src-tauri/target/*/release/bundle/ 2>/dev/null || echo "אין bundle directory"
-
-      - name: Upload everything we can find
-        uses: actions/upload-artifact@v4
+      - name: Build the app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: mac-app-files
-          path: |
-           target/**/*.app
-            target/**/*.dmg
-            target/**/bundle/
-        continue-on-error: true
+          tagName: app-v__VERSION__
+          releaseName: 'Project Manager Pro v__VERSION__'
+          releaseBody: 'Fixed app startup and security issues'
+          releaseDraft: false
+          prerelease: false
+          args: --target universal-apple-darwin
