@@ -1,38 +1,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::command;
-use std::process::Command;
+use tauri_plugin_shell::ShellExt;
 
-#[command]
-async fn open_folder(path: String) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        Command::new("open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| format!("Failed to open folder: {}", e))?;
-    }
-    
-    #[cfg(target_os = "windows")]
-    {
-        Command::new("explorer")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| format!("Failed to open folder: {}", e))?;
-    }
-    
-    #[cfg(target_os = "linux")]
-    {
-        Command::new("xdg-open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| format!("Failed to open folder: {}", e))?;
-    }
-    
+#[tauri::command]
+async fn open_folder(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    app.shell()
+        .open(path, None)
+        .map_err(|e| format!("Failed to open folder: {}", e))?;
     Ok(())
 }
 
-#[command]
+#[tauri::command]
 async fn get_desktop_path() -> Result<String, String> {
     let home_dir = dirs::home_dir()
         .ok_or("Could not find home directory")?;
@@ -44,6 +22,7 @@ async fn get_desktop_path() -> Result<String, String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![open_folder, get_desktop_path])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
