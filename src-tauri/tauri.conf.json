@@ -14,20 +14,26 @@
       {
         "title": "Project Pulse",
         "width": 1200,
-        "height": 800,
-        "resizable": true,
-        "fullscreen": false
+        "height": 800
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "description": "Capability for main window",
+          "windows": ["*"],
+          "permissions": [
+            "core:default",
+            "shell:allow-open"
+          ]
+        }
+      ]
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "category": "Productivity",
-    "shortDescription": "מנהל פרויקטים מתקדם",
-    "longDescription": "אפליקציה לניהול פרויקטים ומשימות בעברית"
+    "targets": "all"
   }
 }
