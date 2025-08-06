@@ -2,19 +2,19 @@
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "productName": "project-manager-pro",
   "version": "0.1.0",
-  "identifier": "com.tauri.project-manager-pro",
+  "identifier": "com.projectpulse.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:8080"
+    "devUrl": "http://localhost:5173"
   },
   "app": {
     "windows": [
       {
-        "title": "project-manager-pro",
-        "width": 800,
-        "height": 600
+        "title": "Project Pulse",
+        "width": 1200,
+        "height": 800
       }
     ],
     "security": {
@@ -24,6 +24,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "identifier": "com.tauri.project-manager-pro"
+    "identifier": "com.projectpulse.app"
   }
 }
