@@ -6,19 +6,16 @@ on:
 
 jobs:
   build-macos:
-    permissions:
-      contents: write
     runs-on: macos-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 18
-          cache: 'npm'
+          bun-version: latest
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -26,16 +23,22 @@ jobs:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build for Intel Mac
+        run: bun tauri build --target x86_64-apple-darwin
+
+      - name: Build for Apple Silicon Mac  
+        run: bun tauri build --target aarch64-apple-darwin
+
+      - name: Upload Intel build
+        uses: actions/upload-artifact@v4
         with:
-          tagName: v__VERSION__
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'אפליקציית דסקטופ חדשה'
-          releaseDraft: false
-          prerelease: false
-          args: '--target universal-apple-darwin'
+          name: intel-mac-app
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle/
+
+      - name: Upload Apple Silicon build
+        uses: actions/upload-artifact@v4
+        with:
+          name: apple-silicon-mac-app
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle/
