@@ -1,39 +1,76 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-  "productName": "project-manager-pro",
-  "version": "0.1.0",
-  "identifier": "com.projectpulse.app",
   "build": {
-    "beforeDevCommand": "bun run dev",
-    "beforeBuildCommand": "bun run build",
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173"
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
   },
-  "app": {
+  "package": {
+    "productName": "Project Manager Pro",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "fs": {
+        "all": false,
+        "scope": [
+          "$APPDATA/*",
+          "$DOCUMENT/*"
+        ]
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.projectpulse.app",
+      "longDescription": "",
+      "macOS": {
+        "frameworks": [],
+        "minimumSystemVersion": "10.13",
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
     "windows": [
       {
-        "title": "Project Pulse",
+        "fullscreen": false,
+        "height": 800,
+        "resizable": true,
+        "title": "Project Manager Pro",
         "width": 1200,
-        "height": 800
+        "center": true
       }
-    ],
-    "security": {
-      "csp": null,
-      "capabilities": [
-        {
-          "identifier": "main-capability",
-          "description": "Capability for main window",
-          "windows": ["*"],
-          "permissions": [
-            "core:default",
-            "shell:allow-open"
-          ]
-        }
-      ]
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all"
+    ]
   }
 }
