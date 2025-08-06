@@ -23,8 +23,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -49,13 +47,6 @@ jobs:
       - name: Build Tauri app (with verbose output)
         run: |
           export RUST_BACKTRACE=1
-          tauri build --verbose
+          npm run tauri build -- --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: macos-artifacts
-          path: src-tauri/target/release/bundle/
