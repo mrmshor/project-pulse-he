@@ -11,10 +11,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "category": "Productivity",
-    "icon": [
-      "icons/icon.png"
-    ]
+    "category": "Productivity"
   },
   "app": {
     "windows": [{
