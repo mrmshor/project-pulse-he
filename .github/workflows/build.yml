@@ -25,40 +25,45 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Remove icon requirement
+      - name: Clean everything and fix
         run: |
-          # יצירת tauri.conf.json ללא אייקונים
+          # מחיקת כל מה שקשור לאייקונים
+          rm -rf src-tauri/icons
+          rm -rf src-tauri/target
+          
+          # יצירת אייקון dummy פשוט
+          mkdir -p src-tauri/icons
+          echo -n "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > src-tauri/icons/icon.png
+          cp src-tauri/icons/icon.png src-tauri/icons/32x32.png
+          cp src-tauri/icons/icon.png src-tauri/icons/128x128.png
+          
+          # יצירת tauri.conf.json פשוט
           cat > src-tauri/tauri.conf.json << 'EOF'
           {
             "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-            "productName": "project-manager-pro",
+            "productName": "project-manager-pro",  
             "version": "0.1.0",
             "identifier": "com.projectpulse.app",
             "build": {
               "beforeDevCommand": "bun run dev",
-              "beforeBuildCommand": "bun run build",
+              "beforeBuildCommand": "bun run build", 
               "frontendDist": "../dist",
               "devUrl": "http://localhost:5173"
             },
             "app": {
-              "windows": [
-                {
-                  "title": "Project Pulse",
-                  "width": 1200,
-                  "height": 800
-                }
-              ],
-              "security": {
-                "csp": null
-              }
+              "windows": [{"title": "Project Pulse", "width": 1200, "height": 800}],
+              "security": {"csp": null}
             },
             "bundle": {
               "active": true,
-              "targets": "all",
-              "category": "Productivity"
+              "targets": "all"
             }
           }
           EOF
+          
+          # וידוא שהכל בסדר
+          ls -la src-tauri/icons/
+          cat src-tauri/tauri.conf.json
 
       - name: Build for Apple Silicon Mac  
         run: bun tauri build --target aarch64-apple-darwin
