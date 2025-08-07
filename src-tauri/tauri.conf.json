@@ -44,9 +44,6 @@
     "active": true,
     "category": "ProductivityApp",
     "copyright": "",
-    "deb": {
-      "depends": []
-    },
     "externalBin": [],
     "longDescription": "",
     "resources": [],
