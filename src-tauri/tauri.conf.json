@@ -1,76 +1,62 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "productName": "Project Pulse HE",
+  "version": "1.0.0",
+  "identifier": "com.projectpulse.manager",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173"
   },
-  "package": {
-    "productName": "Project Manager Pro",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "fs": {
-        "all": false,
-        "scope": [
-          "$APPDATA/*",
-          "$DOCUMENT/*"
-        ]
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.projectpulse.app",
-      "longDescription": "",
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "10.13",
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
-    },
+  "app": {
     "windows": [
       {
-        "fullscreen": false,
-        "height": 800,
-        "resizable": true,
-        "title": "Project Manager Pro",
+        "title": "Project Pulse HE - מנהל פרויקטים מתקדם",
         "width": 1200,
-        "center": true
+        "height": 800,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "minWidth": 800,
+        "minHeight": 600
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    },
+    "longDescription": "Advanced project and task management system in Hebrew",
+    "shortDescription": "Project management tool"
+  },
+  "plugins": {
+    "dialog": {
+      "all": true
+    },
+    "shell": {
+      "all": false,
+      "open": true
+    },
+    "fs": {
+      "scope": [
+        "$APPDATA/*",
+        "$DOCUMENT/*",
+        "$HOME/Documents/*"
+      ]
+    }
   }
 }
