@@ -6,24 +6,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  build-macos:
     permissions:
       contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [macos-latest]
-    runs-on: ${{ matrix.platform }}
-
+    runs-on: macos-14  # Better consistency than macos-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # Setup Bun instead of Node.js
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: lts/*
-          cache: 'npm'
+          bun-version: latest
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -35,17 +31,58 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      # Install dependencies with Bun
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
-      - name: Build the app
-        uses: tauri-apps/tauri-action@v0
+      # Debug - Check project before build
+      - name: Debug - Check project structure
+        run: |
+          echo "=== Package.json version ==="
+          cat package.json | grep '"version"'
+          echo "=== Tauri config ==="
+          cat src-tauri/tauri.conf.json | head -20
+          echo "=== Rust dependencies ==="
+          cat src-tauri/Cargo.toml | grep tauri
+
+      # Build with Tauri Action v1 (supports Tauri v2)
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__
-          releaseName: 'Project Manager Pro v__VERSION__'
-          releaseBody: 'Fixed app startup and security issues'
+          # Release configuration
+          tagName: "v__VERSION__"
+          releaseName: "Project Pulse HE v__VERSION__"
+          releaseBody: |
+            🚀 **Project Pulse HE - Advanced Project Management System in Hebrew**
+            
+            ## ✨ Features:
+            - 📊 Advanced project and task management
+            - 📈 Real-time charts and analytics
+            - 🇮🇱 Full Hebrew and RTL support
+            - 💬 WhatsApp integration
+            - 🎨 Modern and intuitive user interface
+            
+            ## 📥 Download and Installation:
+            - **macOS Universal** (Recommended): `project-pulse-he_*_universal.dmg`
+            - **macOS Intel**: `project-pulse-he_*_x64.dmg`
+            - **macOS Apple Silicon**: `project-pulse-he_*_aarch64.dmg`
+            
+            ## 🛠️ What's new in this version:
+            - Fixed build and deployment issues
+            - Performance and stability improvements
+            - Updated to latest Tauri v2
           releaseDraft: false
           prerelease: false
+          # Build Universal macOS app
           args: --target universal-apple-darwin
+
+      # Debug - Check build results
+      - name: Debug - List build outputs
+        if: always()
+        run: |
+          echo "=== Build outputs ==="
+          find src-tauri/target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No app files in src-tauri/target"
+          find target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No app files in target"
+          find . -maxdepth 3 -name "*.dmg" 2>/dev/null || echo "No DMG files found"
