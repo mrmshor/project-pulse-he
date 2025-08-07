@@ -6,8 +6,7 @@
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "bun run build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173",
-    "withGlobalTauri": false
+    "devUrl": "http://localhost:5173"
   },
   "app": {
     "windows": [
