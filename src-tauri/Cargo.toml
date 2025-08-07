@@ -13,7 +13,7 @@ rust-version = "1.70"
 tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
-tauri = { version = "2.0", features = ["shell-open"] }
+tauri = { version = "2.0" }
 tauri-plugin-dialog = "2.3"
 tauri-plugin-fs = "2.3"
 tauri-plugin-shell = "2.3"
