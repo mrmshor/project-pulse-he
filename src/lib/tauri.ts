@@ -1,14 +1,14 @@
-import { open } from '@tauri-apps/plugin-dialog';
-import { Command } from '@tauri-apps/plugin-shell';
+import { open as openDialog } from '@tauri-apps/plugin-dialog';
+import { open as openUrl } from '@tauri-apps/plugin-opener';
 import { writeTextFile, readTextFile, mkdir, exists } from '@tauri-apps/plugin-fs';
 import { appDataDir } from '@tauri-apps/api/path';
 
-// פונקציות נייטיביות לבחירת תיקיות
+// Native functions for folder selection
 export async function selectFolder() {
   try {
-    const folderPath = await open({
+    const folderPath = await openDialog({
       directory: true,
-      title: 'בחר תיקיית פרויקט'
+      title: 'Select Project Folder'
     });
     return folderPath;
   } catch (error) {
@@ -17,7 +17,7 @@ export async function selectFolder() {
   }
 }
 
-// פונקציות נייטיביות לאנשי קשר
+// Native contact functions - fixed for Tauri v2
 export async function openWhatsApp(phone: string) {
   try {
     const cleanPhone = phone.replace(/\D/g, '');
@@ -25,47 +25,65 @@ export async function openWhatsApp(phone: string) {
       ? `972${cleanPhone.substring(1)}` 
       : cleanPhone;
     
-    await Command.create('open', [`whatsapp://send?phone=${israeliPhone}`]).execute();
+    // First attempt - Desktop WhatsApp
+    const whatsappUrl = `whatsapp://send?phone=${israeliPhone}`;
+    await openUrl(whatsappUrl);
+    console.log('WhatsApp opened successfully:', israeliPhone);
   } catch (error) {
-    console.error('Error opening WhatsApp:', error);
+    console.error('WhatsApp desktop failed, trying web version:', error);
+    
     // Fallback to web WhatsApp
-    window.open(`https://wa.me/${phone.replace(/\D/g, '').replace(/^0/, '972')}`);
+    try {
+      const webUrl = `https://wa.me/${phone.replace(/\D/g, '').replace(/^0/, '972')}`;
+      await openUrl(webUrl);
+      console.log('WhatsApp Web opened:', webUrl);
+    } catch (webError) {
+      console.error('WhatsApp Web also failed:', webError);
+    }
   }
 }
 
 export async function openMail(email: string) {
   try {
-    await Command.create('open', [`mailto:${email}`]).execute();
+    // Try Gmail first
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${email}`;
+    await openUrl(gmailUrl);
+    console.log('Gmail opened for:', email);
   } catch (error) {
-    console.error('Error opening mail:', error);
-    // Fallback to web mail
-    window.open(`mailto:${email}`);
+    console.error('Gmail failed, trying mailto:', error);
+    
+    // Fallback to mailto
+    try {
+      await openUrl(`mailto:${email}`);
+      console.log('Mailto opened for:', email);
+    } catch (mailtoError) {
+      console.error('Mailto also failed:', mailtoError);
+    }
   }
 }
 
 export async function openPhone(phone: string) {
   try {
-    await Command.create('open', [`tel:${phone}`]).execute();
+    await openUrl(`tel:${phone}`);
+    console.log('Phone dialer opened for:', phone);
   } catch (error) {
-    console.error('Error opening phone:', error);
-    // Fallback to web tel
-    window.open(`tel:${phone}`);
+    console.error('Error opening phone dialer:', error);
   }
 }
 
-// פונקציות שמירה נייטיבית
+// Native save functions
 export async function saveDataNative(data: any) {
   try {
     const appDir = await appDataDir();
     const dataPath = `${appDir}/ProjectManager`;
     
-    // יצירת תיקיה אם לא קיימת
+    // Create directory if doesn't exist
     const dirExists = await exists(dataPath);
     if (!dirExists) {
       await mkdir(dataPath, { recursive: true });
     }
     
-    // שמירת הנתונים
+    // Save the data
     await writeTextFile(`${dataPath}/data.json`, JSON.stringify(data, null, 2));
     console.log('Data saved to native storage');
     return true;
@@ -93,27 +111,34 @@ export async function loadDataNative() {
   }
 }
 
-// בדיקה האם רצים בסביבת Tauri
+// Check if running in Tauri environment
 export function isTauriEnvironment() {
   return typeof window !== 'undefined' && '__TAURI__' in window;
 }
 
-// ייצוא קבצים נייטיבי
-export async function exportFileNative(content: string, filename: string, format: 'json' | 'csv') {
+// Native file export
+export async function exportFileNative(content: string, filename: string, format: 'json' | 'csv' | 'xlsx') {
   try {
-    const savePath = await open({
+    const savePath = await openDialog({
       directory: false,
       multiple: false,
-      title: `שמור ${format.toUpperCase()}`,
+      title: `Save ${format.toUpperCase()}`,
       defaultPath: filename,
       filters: [{
         name: format.toUpperCase(),
         extensions: [format]
       }]
     });
-
+    
     if (savePath) {
-      await writeTextFile(savePath as string, content);
+      if (format === 'xlsx') {
+        // For xlsx need to write as binary
+        const bytes = new TextEncoder().encode(content);
+        await writeTextFile(savePath as string, content, { encoding: 'binary' });
+      } else {
+        await writeTextFile(savePath as string, content);
+      }
+      console.log(`File saved: ${savePath}`);
       return true;
     }
     return false;
