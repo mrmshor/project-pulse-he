@@ -6,7 +6,8 @@
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "bun run build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173"
+    "devUrl": "http://localhost:5173",
+    "withGlobalTauri": false
   },
   "app": {
     "windows": [
@@ -39,15 +40,5 @@
     "notification": {
       "enable": true
     }
-  },
-  "bundle": {
-    "active": true,
-    "category": "ProductivityApp",
-    "copyright": "",
-    "externalBin": [],
-    "longDescription": "",
-    "resources": [],
-    "shortDescription": "",
-    "targets": "all"
   }
 }
