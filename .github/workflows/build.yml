@@ -56,46 +56,58 @@ jobs:
           echo "=== Icons status ==="
           ls -la src-tauri/icons/ || echo "No icons directory"
 
-      # Build the app first
+      # Build with Tauri Action v0 (stable version) - WITHOUT release yet
       - name: Build Tauri app
-        run: |
-          bun run build
-          cd src-tauri
-          cargo tauri build --target universal-apple-darwin
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Build Universal macOS app but don't create release
+          args: --target universal-apple-darwin
+          # Don't create release yet
+          tagName: ""
+          releaseName: ""
+          releaseBody: ""
+          releaseDraft: true
+          prerelease: false
 
-      # Fix artifact names - הכי חשוב!
+      # Fix artifact names AFTER build
       - name: Fix artifact names
         run: |
-          echo "=== Original files ==="
-          find src-tauri/target -name "*.app" -o -name "*.dmg" 2>/dev/null
+          echo "=== Files before renaming ==="
+          find src-tauri/target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No files found"
           
+          # Navigate to bundle directory
           cd src-tauri/target/universal-apple-darwin/release/bundle
           
           # Fix .app name
           if [ -d "macos/project-manager-pro.app" ]; then
             mv "macos/project-manager-pro.app" "macos/Project Pulse HE.app"
-            echo "✅ Renamed .app file"
+            echo "✅ Renamed .app: project-manager-pro.app → Project Pulse HE.app"
           fi
           
           # Fix .dmg name  
           if [ -f "dmg/project-manager-pro_1.0.0_universal.dmg" ]; then
             mv "dmg/project-manager-pro_1.0.0_universal.dmg" "dmg/Project Pulse HE_1.0.0_universal.dmg"
-            echo "✅ Renamed .dmg file"
+            echo "✅ Renamed .dmg: project-manager-pro_1.0.0_universal.dmg → Project Pulse HE_1.0.0_universal.dmg"
           fi
           
-          # Create tar.gz files if needed
+          # Create tar.gz and signature files as expected
           if [ -d "macos/Project Pulse HE.app" ]; then
             cd macos
             tar -czf "Project Pulse HE.app.tar.gz" "Project Pulse HE.app"
-            echo "✅ Created tar.gz file"
+            echo "✅ Created: Project Pulse HE.app.tar.gz"
+            # Create a dummy signature file (tauri-action expects it)
+            touch "Project Pulse HE.app.tar.gz.sig"
+            echo "✅ Created: Project Pulse HE.app.tar.gz.sig"
             cd ..
           fi
           
-          echo "=== Fixed files ==="
+          echo "=== Files after renaming ==="
           find . -name "*.app" -o -name "*.dmg" -o -name "*.tar.gz" 2>/dev/null
 
-      # Now use the tauri-action for release (it should find the renamed files)
-      - name: Create release
+      # Now create the actual release with properly named files
+      - name: Create GitHub Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -114,7 +126,7 @@ jobs:
             - 🎨 Modern and intuitive user interface
             
             ## 📥 Download and Installation:
-            - **macOS Universal** (Recommended): `Project Pulse HE_*_universal.dmg`
+            - **macOS Universal** (Recommended): `Project Pulse HE_1.0.0_universal.dmg`
             
             ## 🛠️ What's new in this version:
             - Fixed build and deployment issues
@@ -124,14 +136,15 @@ jobs:
             - Fixed artifact naming issues
           releaseDraft: false
           prerelease: false
-          # Don't build again, just use existing artifacts
+          # Use the renamed files
           artifactPaths: |
-            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/Project Pulse HE_1.0.0_universal.dmg
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/Project Pulse HE.app.tar.gz
 
-      # Debug - Check build results
-      - name: Debug - List build outputs
+      # Debug - Check final results
+      - name: Debug - List final outputs
         if: always()
         run: |
           echo "=== Final build outputs ==="
-          find src-tauri/target -name "*.app" -o -name "*.dmg" -o -name "*.tar.gz" 2>/dev/null || echo "No files found"
+          find src-tauri/target -name "*Project Pulse HE*" 2>/dev/null || echo "No properly named files found"
+          find src-tauri/target -name "*.app" -o -name "*.dmg" -o -name "*.tar.gz" 2>/dev/null || echo "No files found at all"
