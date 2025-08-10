@@ -1,165 +1,85 @@
-import { open as openDialog } from '@tauri-apps/plugin-dialog';
-import { Command } from '@tauri-apps/plugin-shell';
-import { writeTextFile, readTextFile, mkdir, exists } from '@tauri-apps/plugin-fs';
-import { appDataDir } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/tauri';
+import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
 
-// Cross-platform URL/path opener using shell commands
-async function openUrlOrPath(urlOrPath: string): Promise<void> {
+export function isTauriEnvironment(): boolean {
+  return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+}
+
+export async function exportFileNative(content: string, filename: string, format: 'csv' | 'json'): Promise<void> {
   try {
-    const userAgent = navigator.userAgent.toLowerCase();
-    let command: string;
+    console.log('💾 Saving file to Downloads:', filename);
     
-    if (userAgent.includes('mac')) {
-      command = 'open';
-    } else if (userAgent.includes('win')) {
-      command = 'cmd';
-    } else {
-      command = 'xdg-open'; // Linux
-    }
-    
-    if (command === 'cmd') {
-      // Windows: cmd /c start "title" "url"
-      const cmd = Command.create('cmd', ['/c', 'start', '', urlOrPath]);
-      await cmd.execute();
-    } else {
-      // macOS/Linux: open "url" or xdg-open "url"
-      const cmd = Command.create(command, [urlOrPath]);
-      await cmd.execute();
-    }
+    await writeTextFile(filename, content, { dir: BaseDirectory.Download });
+    console.log('✅ File saved successfully to Downloads:', filename);
   } catch (error) {
-    console.error('Failed to open URL/path:', error);
-    throw error;
+    console.error('❌ Error saving file to Downloads, using browser fallback:', error);
+    
+    // Fallback to browser download
+    const mimeType = format === 'csv' ? 'text/csv' : 'application/json';
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
 
-export async function selectFolder() {
+export async function saveData(data: any): Promise<boolean> {
   try {
-    const folderPath = await openDialog({
-      directory: true,
-      title: 'Select Project Folder'
-    });
-    return folderPath;
-  } catch (error) {
-    console.error('Error selecting folder:', error);
-    return null;
-  }
-}
-
-export async function openWhatsApp(phone: string) {
-  try {
-    const cleanPhone = phone.replace(/\D/g, '');
-    const israeliPhone = cleanPhone.startsWith('0') 
-      ? `972${cleanPhone.substring(1)}` 
-      : cleanPhone;
+    console.log('💾 Saving data to AppData...');
     
-    // First attempt - Desktop WhatsApp
-    const whatsappUrl = `whatsapp://send?phone=${israeliPhone}`;
+    const jsonData = JSON.stringify(data, null, 2);
+    await writeTextFile('project-data.json', jsonData, { dir: BaseDirectory.AppData });
     
-    try {
-      await openUrlOrPath(whatsappUrl);
-      console.log('WhatsApp opened successfully:', israeliPhone);
-    } catch (desktopError) {
-      console.log('Desktop WhatsApp failed, trying web version...');
-      
-      // Fallback to web WhatsApp
-      const webUrl = `https://wa.me/${phone.replace(/\D/g, '').replace(/^0/, '972')}`;
-      await openUrlOrPath(webUrl);
-      console.log('WhatsApp Web opened:', webUrl);
-    }
-  } catch (error) {
-    console.error('WhatsApp failed completely:', error);
-  }
-}
-
-export async function openMail(email: string) {
-  try {
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${email}`;
-    
-    try {
-      await openUrlOrPath(gmailUrl);
-      console.log('Gmail opened for:', email);
-    } catch (gmailError) {
-      console.error('Gmail failed, trying mailto:', gmailError);
-      
-      await openUrlOrPath(`mailto:${email}`);
-      console.log('Mailto opened for:', email);
-    }
-  } catch (error) {
-    console.error('Email opening failed completely:', error);
-  }
-}
-
-export async function openPhone(phone: string) {
-  try {
-    await openUrlOrPath(`tel:${phone}`);
-    console.log('Phone dialer opened for:', phone);
-  } catch (error) {
-    console.error('Error opening phone dialer:', error);
-  }
-}
-
-export async function saveDataNative(data: any) {
-  try {
-    const appDir = await appDataDir();
-    const dataPath = `${appDir}/ProjectManager`;
-    
-    const dirExists = await exists(dataPath);
-    if (!dirExists) {
-      await mkdir(dataPath, { recursive: true });
-    }
-    
-    await writeTextFile(`${dataPath}/data.json`, JSON.stringify(data, null, 2));
-    console.log('Data saved to native storage');
+    console.log('✅ Data saved successfully to AppData');
     return true;
   } catch (error) {
-    console.error('Error saving data natively:', error);
+    console.error('❌ Error saving data to AppData:', error);
     return false;
   }
 }
 
-export async function loadDataNative() {
+export async function loadData(): Promise<any> {
   try {
-    const appDir = await appDataDir();
-    const dataPath = `${appDir}/ProjectManager/data.json`;
+    console.log('📁 Loading data from AppData...');
     
-    const fileExists = await exists(dataPath);
-    if (!fileExists) {
-      return null;
-    }
+    const content = await readTextFile('project-data.json', { dir: BaseDirectory.AppData });
+    const data = JSON.parse(content);
     
-    const content = await readTextFile(dataPath);
-    return JSON.parse(content);
+    console.log('✅ Data loaded successfully from AppData');
+    return data;
   } catch (error) {
-    console.error('Error loading data natively:', error);
+    console.error('⚠️ Error loading data from AppData (probably first time):', error);
     return null;
   }
 }
 
-export function isTauriEnvironment() {
-  return typeof window !== 'undefined' && '__TAURI__' in window;
-}
+// Additional utility functions for v1
+export async function checkTauriCapabilities(): Promise<void> {
+  if (!isTauriEnvironment()) {
+    console.log('🌐 Running in browser mode');
+    return;
+  }
 
-export async function exportFileNative(content: string, filename: string, format: 'json' | 'csv' | 'xlsx') {
+  console.log('🖥️ Running in Tauri desktop mode');
+  
   try {
-    const savePath = await openDialog({
-      directory: false,
-      multiple: false,
-      title: `Save ${format.toUpperCase()}`,
-      defaultPath: filename,
-      filters: [{
-        name: format.toUpperCase(),
-        extensions: [format]
-      }]
-    });
+    // Test basic capabilities
+    console.log('🔍 Testing Tauri capabilities...');
     
-    if (savePath) {
-      await writeTextFile(savePath as string, content);
-      console.log(`File saved: ${savePath}`);
-      return true;
-    }
-    return false;
+    // Test if we can access directories
+    const { exists } = await import('@tauri-apps/api/fs');
+    const appDataExists = await exists('', { dir: BaseDirectory.AppData });
+    console.log('📁 AppData access:', appDataExists ? '✅' : '❌');
+    
+    // Test shell capabilities
+    const { open } = await import('@tauri-apps/api/shell');
+    console.log('🐚 Shell API loaded successfully');
+    
+    console.log('✅ All Tauri capabilities available');
   } catch (error) {
-    console.error('Error exporting file:', error);
-    return false;
+    console.error('❌ Error testing Tauri capabilities:', error);
   }
 }
