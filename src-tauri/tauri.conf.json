@@ -1,12 +1,13 @@
 {
-  "productName": "Project Pulse HE",
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "project-manager-pro",
   "version": "1.0.0",
-  "identifier": "com.projectpulse.manager",
+  "identifier": "com.projectpulse.he",
   "build": {
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "bun run build",
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173"
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
   },
   "app": {
     "windows": [
@@ -14,30 +15,96 @@
         "title": "Project Pulse HE",
         "width": 1200,
         "height": 800,
+        "resizable": true,
+        "fullscreen": false,
         "minWidth": 800,
         "minHeight": 600
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   },
   "plugins": {
     "dialog": {
-      "enable": true
+      "all": true,
+      "ask": true,
+      "confirm": true,
+      "message": true,
+      "open": true,
+      "save": true
     },
     "fs": {
-      "enable": true,
-      "scope": ["$APPDATA/**", "$DOCUMENT/**", "$HOME/Documents/**"]
+      "all": false,
+      "readFile": true,
+      "writeFile": true,
+      "readDir": true,
+      "copyFile": true,
+      "createDir": true,
+      "removeDir": true,
+      "removeFile": true,
+      "renameFile": true,
+      "exists": true,
+      "scope": [
+        "$APPDATA",
+        "$APPDATA/*",
+        "$DOCUMENT",
+        "$DOCUMENT/*",
+        "$DESKTOP",
+        "$DESKTOP/*",
+        "$DOWNLOAD",
+        "$DOWNLOAD/*"
+      ]
     },
     "shell": {
-      "enable": true,
-      "open": {
-        "enable": true
-      }
+      "all": false,
+      "execute": true,
+      "sidecar": true,
+      "open": "https://shell.tauri.app/v1/",
+      "scope": [
+        {
+          "name": "open-folder",
+          "cmd": "open",
+          "args": [
+            {
+              "validator": "\\S+"
+            }
+          ]
+        },
+        {
+          "name": "open-whatsapp",
+          "cmd": "open",
+          "args": [
+            "-a",
+            "WhatsApp",
+            {
+              "validator": "whatsapp://.*"
+            }
+          ]
+        },
+        {
+          "name": "open-url",
+          "cmd": "open",
+          "args": [
+            {
+              "validator": "https?://.*"
+            }
+          ]
+        }
+      ]
     },
     "opener": {
-      "enable": true
+      "all": false,
+      "openUrl": true
     },
     "notification": {
-      "enable": true
+      "all": true,
+      "requestPermission": true,
+      "isPermissionGranted": true,
+      "sendNotification": true,
+      "show": true,
+      "cancel": true,
+      "cancelAll": true
     }
   }
 }
