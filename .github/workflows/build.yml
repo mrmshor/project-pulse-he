@@ -1,4 +1,4 @@
-name: "Build and Release - Tauri v1"
+name: "Build and Release"
 on:
   push:
     branches: [ main ]
@@ -7,186 +7,93 @@ jobs:
   build-macos:
     permissions:
       contents: write
-    runs-on: macos-12  # Changed from macos-14 for better Tauri v1 support
+    runs-on: macos-12
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      # Changed from Bun to npm for Tauri v1 compatibility
-      - name: Setup Node.js 18
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          
-      - name: Setup Rust stable
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
-          
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-          
-      # Fixed dependencies installation for Tauri v1
-      - name: Install dependencies for Tauri v1
-        run: |
-          echo "📦 Installing dependencies for Tauri v1..."
-          npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-          echo "✅ Dependencies installed"
-          
-      # Enhanced icon creation
-      - name: Create proper icons for v1
+      - name: Install dependencies
+        run: npm install
+      - name: Fix broken icons
         run: |
           mkdir -p src-tauri/icons
-          echo "🎨 Creating high-quality icons for Tauri v1..."
-          
-          # Try to create better icons with Python
-          cat > create_icons.py << 'EOF'
-          from PIL import Image, ImageDraw
-          import os
-          
-          def create_icon(size, filename):
-              # Create blue gradient background
-              img = Image.new('RGBA', (size, size), (30, 144, 255, 255))
-              draw = ImageDraw.Draw(img)
-              
-              # Add white border and inner design
-              margin = max(2, size // 8)
-              draw.rectangle([margin, margin, size-margin, size-margin], 
-                           outline=(255, 255, 255, 255), width=max(1, size//16))
-              
-              # Add center dot
-              center = size // 2
-              dot_size = size // 6
-              draw.ellipse([center-dot_size, center-dot_size, center+dot_size, center+dot_size], 
-                          fill=(255, 255, 255, 255))
-              
-              img.save(filename)
-              print(f"Created {filename} ({size}x{size})")
-          
-          # Create all required sizes
-          create_icon(32, 'src-tauri/icons/32x32.png')
-          create_icon(128, 'src-tauri/icons/128x128.png')
-          create_icon(256, 'src-tauri/icons/128x128@2x.png')
-          create_icon(512, 'src-tauri/icons/icon.png')
-          
-          # Copy for other formats
-          import shutil
-          shutil.copy('src-tauri/icons/icon.png', 'src-tauri/icons/icon.icns')
-          shutil.copy('src-tauri/icons/icon.png', 'src-tauri/icons/icon.ico')
-          
-          print("✅ All icons created successfully!")
-          EOF
-          
-          python3 create_icons.py 2>/dev/null || {
-            echo "⚠️ Python/PIL not available, using simple fallback..."
-            echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-            echo "✅ Fallback icons created"
-          }
-          
-          echo "📋 Icon files created:"
-          ls -la src-tauri/icons/
-          
-      # Enhanced debug for Tauri v1
-      - name: Debug Tauri v1 configuration
+          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
+          cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
+          cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
+          cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
+          cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
+          cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
+          echo "Icons fixed"
+      - name: Debug configuration
         run: |
-          echo "🔍 Checking Tauri v1 configuration..."
-          echo "=== package.json Tauri dependencies ==="
-          grep -A5 -B5 '"@tauri-apps' package.json || echo "❌ No Tauri deps found"
-          echo ""
-          echo "=== Cargo.toml Tauri version ==="
-          grep -A5 -B5 'tauri.*=' src-tauri/Cargo.toml || echo "❌ No Tauri in Cargo.toml"
-          echo ""
-          echo "=== tauri.conf.json format ==="
-          head -10 src-tauri/tauri.conf.json || echo "❌ No config file"
-          echo ""
-          echo "=== Project structure ==="
-          echo "✅ Source files:" && ls -la src/ | head -5
-          echo "✅ Tauri files:" && ls -la src-tauri/
-          
-      # Build with Tauri v1 optimizations
-      - name: Build and Release with Tauri v1
+          echo "=== package.json version ==="
+          cat package.json | grep '"version"'
+          echo "=== tauri.conf.json names ==="
+          cat src-tauri/tauri.conf.json | grep -E '"productName"|"mainBinaryName"|"version"'
+          echo "=== Cargo.toml name ==="
+          cat src-tauri/Cargo.toml | grep '^name'
+      - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: "v__VERSION__"
-          releaseName: "Project Pulse HE v__VERSION__ (Tauri v1 Fixed)"
+          releaseName: "Project Pulse HE v__VERSION__"
           releaseBody: |
-            🎉 **Project Pulse HE - מערכת ניהול פרויקטים מתקדמת בעברית**
+            Project Pulse HE - Advanced Project Management System in Hebrew
             
-            ## ✨ Tauri v1 - בעיות תוקנו!
-            - ✅ **פתיחת תיקיות עובדת** - Mac, Windows, Linux
-            - ✅ **WhatsApp integration מושלם** - Desktop + Web fallback
-            - ✅ **Gmail עם נושא אוטומטי** - נפתח עם כותרת הפרויקט
-            - ✅ **חיוג טלפון בלחיצה** - פועל במערכות שתומכות
-            - ✅ **מערכת עברית מלאה** - RTL ותמיכה ישראלית מושלמת
-            - ✅ **ביצועים משופרים** - Tauri v1 מהיר ויציב
+            Features:
+            - Advanced project and task management
+            - Real-time charts and analytics
+            - Full Hebrew and RTL support
+            - WhatsApp integration
+            - Modern and intuitive user interface
             
-            ## 📥 הורדה למק:
-            - **macOS Universal (Intel + Apple Silicon)**: הורד את קובץ ה-DMG
+            Download:
+            - macOS Universal: Project Pulse HE_1.0.0_universal.dmg
             
-            ## 🛠️ תיקונים בגרסה זו:
-            - פתיחת תיקיות פועלת בכל המערכות
-            - קישורי WhatsApp עובדים ללא חסימות
-            - פתיחת Gmail עם נושא מותאם לכל פרויקט
-            - ממשק עברית RTL מושלם
-            - התקנה פשוטה וחלקה
-            
-            **טכנולוגיה:** Tauri v1.5 (יציב ומוכח)
+            Fixed Issues:
+            - Fixed broken icons
+            - Fixed binary naming
+            - Proper artifact detection
+            - Complete build pipeline
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin
-          
-      # Enhanced debugging for build results
-      - name: Debug build results (Tauri v1)
+          artifactPaths: |
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+      - name: Debug what actually exists
         if: always()
         run: |
-          echo "🔍 Checking Tauri v1 build results..."
-          echo "=== Target directory overview ==="
-          find src-tauri/target -type d 2>/dev/null | grep -E "(release|bundle)" | head -10
+          echo "=== Checking entire target directory ==="
+          find src-tauri/target -type f 2>/dev/null | head -20
           echo ""
-          echo "=== Universal build check ==="
-          ls -la src-tauri/target/universal-apple-darwin/release/ 2>/dev/null || echo "❌ Universal release dir missing"
+          echo "=== Checking specifically for bundle ==="
+          find src-tauri/target -name "*bundle*" -type d 2>/dev/null
           echo ""
-          echo "=== Bundle directory contents ==="
-          find src-tauri/target -name "bundle" -type d -exec ls -la {} \; 2>/dev/null || echo "❌ No bundle dir"
+          echo "=== Checking for any .dmg files ==="
+          find src-tauri/target -name "*.dmg" 2>/dev/null
           echo ""
-          echo "=== DMG files ==="
-          find src-tauri/target -name "*.dmg" -type f 2>/dev/null || echo "❌ No DMG files found"
+          echo "=== Checking for any .app files ==="
+          find src-tauri/target -name "*.app" 2>/dev/null
           echo ""
-          echo "=== APP files ==="
-          find src-tauri/target -name "*.app" -type d 2>/dev/null || echo "❌ No APP files found"
-          echo ""
-          echo "=== Complete release structure ==="
-          find src-tauri/target/universal-apple-darwin/release/bundle/ -ls 2>/dev/null || echo "❌ Bundle structure missing"
-          
-      # Final verification
-      - name: Verify Tauri v1 build success
+          echo "=== Full directory structure ==="
+          ls -la src-tauri/target/universal-apple-darwin/release/ 2>/dev/null || echo "Directory doesn't exist"
+      - name: Verify build results
         if: always()
         run: |
-          echo "🎯 Final verification for Tauri v1..."
-          
-          DMG_COUNT=$(find src-tauri/target -name "*.dmg" 2>/dev/null | wc -l)
-          APP_COUNT=$(find src-tauri/target -name "*.app" 2>/dev/null | wc -l)
-          
-          echo "📊 Build summary:"
-          echo "   DMG files found: $DMG_COUNT"
-          echo "   APP files found: $APP_COUNT"
-          
-          if [ "$DMG_COUNT" -gt 0 ] || [ "$APP_COUNT" -gt 0 ]; then
-            echo "✅ BUILD SUCCESS - Files created!"
-            find src-tauri/target -name "*.dmg" -o -name "*.app" 2>/dev/null | head -5
-          else
-            echo "❌ BUILD FAILED - No installer files found"
-            echo "🔍 Checking for any build artifacts..."
-            find src-tauri/target -type f -name "*Project*" -o -name "*pulse*" 2>/dev/null | head -10
-          fi
+          echo "=== Final verification ==="
+          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "No bundle files"
