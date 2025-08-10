@@ -45,19 +45,7 @@
     ],
     "security": {
       "csp": null
-    },
-    "capabilities": [
-      {
-        "identifier": "main-capability",
-        "description": "Capability for main window functionality",
-        "windows": ["main"],
-        "permissions": [
-          "opener:default",
-          "dialog:default",
-          "fs:default",
-          "shell:default"
-        ]
-      }
-    ]
-  }
+    }
+  },
+  "plugins": {}
 }
