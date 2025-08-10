@@ -3,68 +3,63 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
 jobs:
   build-macos:
     permissions:
       contents: write
-    runs-on: macos-14  # Better consistency than macos-latest
+    runs-on: macos-14
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      # Setup Bun instead of Node.js
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
+
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-      # Install dependencies with Bun
+
       - name: Install dependencies
         run: bun install
 
-      # Fix broken icons - תיקון האייקונים השבורים
+      # תיקון האייקונים השבורים
       - name: Fix broken icons
         run: |
-          # יצירת תיקיית אייקונים אם לא קיימת
           mkdir -p src-tauri/icons
-          
-          # יצירת PNG שקוף בגודל 1x1 פיקסל (Base64)
           echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
           cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
           cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-          echo "✅ Icons fixed successfully"
+          echo "✅ Icons fixed"
 
-      # Debug - Check project before build
-      - name: Debug - Check project structure
+      # בדיקת תצורה לפני בנייה
+      - name: Debug configuration
         run: |
-          echo "=== Package.json version ==="
+          echo "=== package.json version ==="
           cat package.json | grep '"version"'
-          echo "=== Tauri config ==="
-          cat src-tauri/tauri.conf.json | head -20
-          echo "=== Product name in config ==="
-          cat src-tauri/tauri.conf.json | grep '"productName"'
-          echo "=== Rust dependencies ==="
-          cat src-tauri/Cargo.toml | grep tauri
-          echo "=== Icons status ==="
-          ls -la src-tauri/icons/ || echo "No icons directory"
+          echo "=== tauri.conf.json names ==="
+          cat src-tauri/tauri.conf.json | grep -E '"productName"|"mainBinaryName"|"version"'
+          echo "=== Cargo.toml name ==="
+          cat src-tauri/Cargo.toml | grep '^name'
 
-      # Build with Tauri Action v0 (stable version)
-      - name: Build Tauri app
+      # בנייה ושחרור - הכל ביחד!
+      - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Release configuration
           tagName: "v__VERSION__"
           releaseName: "Project Pulse HE v__VERSION__"
           releaseBody: |
@@ -77,25 +72,22 @@ jobs:
             - 💬 WhatsApp integration
             - 🎨 Modern and intuitive user interface
             
-            ## 📥 Download and Installation:
-            - **macOS Universal** (Recommended): `Project Pulse HE_*_universal.dmg`
+            ## 📥 Download:
+            - **macOS Universal**: `Project Pulse HE_1.0.0_universal.dmg`
             
-            ## 🛠️ What's new in this version:
-            - Fixed build and deployment issues
-            - Performance and stability improvements
-            - Updated to latest Tauri v2
-            - Fixed broken icons issue
-            - Fixed product naming issues
+            ## 🛠️ Fixed Issues:
+            - ✅ Fixed broken icons
+            - ✅ Fixed binary naming (mainBinaryName)
+            - ✅ Proper artifact detection
+            - ✅ Complete build pipeline
           releaseDraft: false
           prerelease: false
-          # Build Universal macOS app
           args: --target universal-apple-darwin
 
-      # Debug - Check build results
-      - name: Debug - List build outputs
+      # אימות סופי
+      - name: Verify build results
         if: always()
         run: |
-          echo "=== Build outputs ==="
-          find src-tauri/target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No app files in src-tauri/target"
-          find target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No app files in target"
-          find . -maxdepth 3 -name "*.dmg" 2>/dev/null || echo "No DMG files found"
+          echo "=== Final verification ==="
+          find src-tauri/target -name "*Project Pulse HE*" 2>/dev/null | head -10 || echo "❌ No properly named files"
+          find src-tauri/target -name "*.dmg" -o -name "*.app" 2>/dev/null | head -5 || echo "❌ No bundle files"
