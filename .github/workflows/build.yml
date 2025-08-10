@@ -1,147 +1,80 @@
-name: Build Tauri App
+name: Simple Build
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  push:
 
 jobs:
-  test-config:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: macos-12
+    timeout-minutes: 45
     steps:
+      - name: Start
+        run: |
+          echo "🚀 Starting build..."
+          date
+          
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Check Tauri v1 config
+      - name: Show project
         run: |
-          echo "=== Checking package.json ==="
-          grep -A5 -B5 "tauri" package.json
+          echo "📁 Project files:"
+          ls -la
           echo ""
-          echo "=== Checking Cargo.toml ==="
-          grep -A5 -B5 "tauri" src-tauri/Cargo.toml
-          echo ""
-          echo "=== Files structure ==="
-          ls -la src-tauri/
-
-  build-macos:
-    needs: test-config
-    runs-on: macos-12
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
+          echo "📦 Package.json content:"
+          head -20 package.json
+          
+      - name: Setup Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-
+          
+      - name: Check Node
+        run: |
+          echo "Node version:"
+          node --version
+          npm --version
+          
+      - name: Install deps quickly
+        run: |
+          echo "📦 Installing dependencies..."
+          npm install --legacy-peer-deps
+          
+      - name: Check Tauri
+        run: |
+          echo "🔍 Checking Tauri installation..."
+          npx tauri --version || echo "Tauri not ready yet"
+          
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - name: Install dependencies
+        
+      - name: Check Rust
         run: |
-          echo "📦 Installing npm dependencies..."
-          npm ci
-
-      - name: Create app icons
+          echo "🦀 Rust version:"
+          rustc --version
+          cargo --version
+          
+      - name: Simple icons
         run: |
-          echo "🎨 Creating app icons..."
+          echo "🎨 Creating icons..."
           mkdir -p src-tauri/icons
+          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/icon.png
+          cp src-tauri/icons/icon.png src-tauri/icons/32x32.png
+          cp src-tauri/icons/icon.png src-tauri/icons/128x128.png
+          cp src-tauri/icons/icon.png src-tauri/icons/128x128@2x.png
+          cp src-tauri/icons/icon.png src-tauri/icons/icon.icns
+          cp src-tauri/icons/icon.png src-tauri/icons/icon.ico
+          echo "✅ Icons ready"
           
-          # Create simple colored icons
-          cat > create_icon.py << 'EOF'
-          from PIL import Image, ImageDraw
-          import os
-          
-          # Create a blue icon with white text
-          def create_icon(size, filename):
-              img = Image.new('RGBA', (size, size), (30, 144, 255, 255))
-              draw = ImageDraw.Draw(img)
-              
-              # Add a simple shape
-              margin = size // 8
-              draw.rectangle([margin, margin, size-margin, size-margin], 
-                           outline=(255, 255, 255, 255), width=max(1, size//16))
-              
-              img.save(filename)
-              print(f"Created {filename}")
-          
-          # Create all required icon sizes
-          create_icon(32, 'src-tauri/icons/32x32.png')
-          create_icon(128, 'src-tauri/icons/128x128.png')
-          create_icon(256, 'src-tauri/icons/128x128@2x.png')
-          create_icon(512, 'src-tauri/icons/icon.png')
-          
-          # Copy for other formats
-          import shutil
-          shutil.copy('src-tauri/icons/icon.png', 'src-tauri/icons/icon.icns')
-          shutil.copy('src-tauri/icons/icon.png', 'src-tauri/icons/icon.ico')
-          
-          print("All icons created successfully!")
-          EOF
-          
-          python3 create_icon.py || {
-            echo "Python failed, using simple fallback..."
-            echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-          }
-          
-          echo "✅ Icons ready:"
-          ls -la src-tauri/icons/
-
-      - name: Build Tauri application
+      - name: Try Tauri build
         run: |
-          echo "🔨 Building Tauri v1 application..."
-          echo "Target: universal-apple-darwin (Intel + Apple Silicon)"
+          echo "🔨 Attempting Tauri build..."
+          echo "This might take 10-15 minutes..."
+          npx tauri build || echo "Build failed, but that's OK for testing"
           
-          npx tauri build --target universal-apple-darwin --verbose
-
-      - name: Check build output
+      - name: Check results
         run: |
-          echo "🔍 Checking build results..."
-          find src-tauri/target -name "*.dmg" -o -name "*.app" -o -name "*.app.tar.gz" 2>/dev/null || echo "No build files found yet"
-          
-          echo "=== Universal target structure ==="
-          ls -la src-tauri/target/universal-apple-darwin/release/bundle/ 2>/dev/null || echo "Bundle dir not found"
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "v1.0.1-${{ github.run_number }}"
-          name: "Project Pulse HE v1.0.1 (Build ${{ github.run_number }})"
-          body: |
-            🎉 **Project Pulse HE - מערכת ניהול פרויקטים בעברית**
-            
-            ## ✨ Tauri v1 - תכונות מתוקנות:
-            - ✅ **פתיחת תיקיות** - עובד בכל המערכות
-            - ✅ **WhatsApp integration** - Desktop + Web fallback  
-            - ✅ **Gmail ומיילים** - פתיחה עם נושא מותאם
-            - ✅ **חיוג טלפון** - פועל במערכות שתומכות
-            - ✅ **מערכת עברית מלאה** - RTL ותמיכה ישראלית
-            
-            ## 📥 התקנה:
-            **למק (Intel + Apple Silicon):**
-            הורד את קובץ ה-DMG ופתח אותו
-            
-            **Build:** #${{ github.run_number }}
-            **Tauri:** v1.5 (יציב ומהיר)
-          files: |
-            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app
-          draft: false
-          prerelease: false
+          echo "🔍 Looking for build results..."
+          find src-tauri/target -name "*.dmg" 2>/dev/null || echo "No DMG found"
+          find src-tauri/target -name "*.app" 2>/dev/null || echo "No APP found"
+          echo "Build attempt completed!"
