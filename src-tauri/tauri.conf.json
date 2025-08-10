@@ -49,24 +49,24 @@
   },
   "plugins": {
     "shell": {
-      "open": true,
-      "scope": [
-        {
-          "name": "open-folder",
-          "cmd": "open",
-          "args": true
-        },
-        {
-          "name": "open-whatsapp", 
-          "cmd": "open",
-          "args": ["-a", "WhatsApp"]
-        }
-      ]
+      "all": false,
+      "open": true
     },
     "fs": {
+      "all": false,
       "scope": ["$APPDATA", "$DOCUMENT", "$DESKTOP", "$DOWNLOAD"]
     },
-    "dialog": {},
-    "opener": {}
+    "dialog": {
+      "all": false,
+      "open": true,
+      "save": true
+    },
+    "opener": {
+      "all": false,
+      "openUrl": true
+    },
+    "notification": {
+      "all": false
+    }
   }
 }
