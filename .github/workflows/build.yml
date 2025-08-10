@@ -1,41 +1,27 @@
-name: Build
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+name: Test Build
+on: [push, workflow_dispatch]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        run: echo "GitHub Actions is working!"
-        
+    - name: Hello World
+      run: echo "Actions is working!"
+    
+    - name: Show date
+      run: date
+      
   build:
     runs-on: macos-12
-    needs: test
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
       
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          
-      - name: Install deps
-        run: npm install
-        
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        
-      - name: Check files
-        run: |
-          echo "=== Project structure ==="
-          ls -la
-          echo "=== Tauri files ==="
-          ls -la src-tauri/
-          
-      - name: Simple build test
-        run: |
-          echo "Testing if we can access Tauri..."
-          npx tauri --version || echo "Tauri not found"
+    - name: Show files
+      run: ls -la
+      
+    - name: Check package.json
+      run: cat package.json | head -10
+      
+    - name: Check if Tauri v1
+      run: grep "tauri" package.json || echo "No tauri found"
