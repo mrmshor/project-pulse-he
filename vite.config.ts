@@ -1,17 +1,16 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Tauri expects a fixed port, fail if that port is not available
+  // Tauri v1 expects port 8080
   server: {
     port: 8080,
     strictPort: true,
-    host: host || "::",
+    host: host || false,
     hmr: host
       ? {
           protocol: "ws",
@@ -26,23 +25,28 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && {
+      name: 'tauri-v1-dev',
+      configureServer(server) {
+        console.log('🔧 Vite configured for Tauri v1 development');
+      }
+    }
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // to make use of `TAURI_DEBUG` and other env variables
-  // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
+  // Tauri v1 environment variables
   envPrefix: ["VITE_", "TAURI_"],
   build: {
-    // Tauri supports es2021
+    // Tauri v1 supports es2021
     target: process.env.TAURI_PLATFORM == "windows" ? "chrome105" : "safari13",
     // don't minify for debug builds
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
   },
+  // Clear screen on rebuild
+  clearScreen: false,
 }));
