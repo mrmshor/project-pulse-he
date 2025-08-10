@@ -55,8 +55,47 @@ jobs:
           cat src-tauri/Cargo.toml | grep tauri
           echo "=== Icons status ==="
           ls -la src-tauri/icons/ || echo "No icons directory"
-      # Build with Tauri Action v0 (stable version)
+
+      # Build the app first
       - name: Build Tauri app
+        run: |
+          bun run build
+          cd src-tauri
+          cargo tauri build --target universal-apple-darwin
+
+      # Fix artifact names - הכי חשוב!
+      - name: Fix artifact names
+        run: |
+          echo "=== Original files ==="
+          find src-tauri/target -name "*.app" -o -name "*.dmg" 2>/dev/null
+          
+          cd src-tauri/target/universal-apple-darwin/release/bundle
+          
+          # Fix .app name
+          if [ -d "macos/project-manager-pro.app" ]; then
+            mv "macos/project-manager-pro.app" "macos/Project Pulse HE.app"
+            echo "✅ Renamed .app file"
+          fi
+          
+          # Fix .dmg name  
+          if [ -f "dmg/project-manager-pro_1.0.0_universal.dmg" ]; then
+            mv "dmg/project-manager-pro_1.0.0_universal.dmg" "dmg/Project Pulse HE_1.0.0_universal.dmg"
+            echo "✅ Renamed .dmg file"
+          fi
+          
+          # Create tar.gz files if needed
+          if [ -d "macos/Project Pulse HE.app" ]; then
+            cd macos
+            tar -czf "Project Pulse HE.app.tar.gz" "Project Pulse HE.app"
+            echo "✅ Created tar.gz file"
+            cd ..
+          fi
+          
+          echo "=== Fixed files ==="
+          find . -name "*.app" -o -name "*.dmg" -o -name "*.tar.gz" 2>/dev/null
+
+      # Now use the tauri-action for release (it should find the renamed files)
+      - name: Create release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -75,24 +114,24 @@ jobs:
             - 🎨 Modern and intuitive user interface
             
             ## 📥 Download and Installation:
-            - **macOS Universal** (Recommended): `project-pulse-he_*_universal.dmg`
-            - **macOS Intel**: `project-pulse-he_*_x64.dmg`
-            - **macOS Apple Silicon**: `project-pulse-he_*_aarch64.dmg`
+            - **macOS Universal** (Recommended): `Project Pulse HE_*_universal.dmg`
             
             ## 🛠️ What's new in this version:
             - Fixed build and deployment issues
             - Performance and stability improvements
             - Updated to latest Tauri v2
             - Fixed broken icons issue
+            - Fixed artifact naming issues
           releaseDraft: false
           prerelease: false
-          # Build Universal macOS app
-          args: --target universal-apple-darwin
+          # Don't build again, just use existing artifacts
+          artifactPaths: |
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+
       # Debug - Check build results
       - name: Debug - List build outputs
         if: always()
         run: |
-          echo "=== Build outputs ==="
-          find src-tauri/target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No app files in src-tauri/target"
-          find target -name "*.app" -o -name "*.dmg" 2>/dev/null || echo "No app files in target"
-          find . -maxdepth 3 -name "*.dmg" 2>/dev/null || echo "No DMG files found"
+          echo "=== Final build outputs ==="
+          find src-tauri/target -name "*.app" -o -name "*.dmg" -o -name "*.tar.gz" 2>/dev/null || echo "No files found"
