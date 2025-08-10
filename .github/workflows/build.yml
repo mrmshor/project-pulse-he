@@ -1,85 +1,27 @@
-name: "Build and Release - Tauri v1"
+name: Simple Test
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
   workflow_dispatch:
 
 jobs:
-  build-macos:
-    permissions:
-      contents: write
-    runs-on: macos-12
-    
+  hello:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Say Hello
+        run: |
+          echo "Hello World!"
+          echo "GitHub Actions is working!"
+          date
+          
+  check-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
-          
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-          
-      - name: Install dependencies
-        run: npm install
-        
-      - name: Create basic icons (if missing)
+      - name: List files
         run: |
-          mkdir -p src-tauri/icons
-          # Create a simple 1x1 PNG as fallback
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
-          cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-          echo "✅ Basic icons created"
-          
-      - name: Debug Tauri v1 configuration
-        run: |
-          echo "=== package.json Tauri version ==="
-          cat package.json | grep -A5 -B5 "@tauri-apps"
-          echo ""
-          echo "=== Cargo.toml version ==="
-          cat src-tauri/Cargo.toml | grep -A5 -B5 "tauri"
-          echo ""
-          echo "=== tauri.conf.json structure ==="
-          cat src-tauri/tauri.conf.json | head -20
-          
-      - name: Build and Release with Tauri v1
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: "v__VERSION__"
-          releaseName: "Project Pulse HE v__VERSION__ (Tauri v1)"
-          releaseBody: |
-            🎉 **Project Pulse HE - מנהל פרויקטים Pro**
-            
-            ## ✨ גרסה חדשה עם Tauri v1:
-            - ✅ תיקון בעיות פתיחת תיקיות 
-            - ✅ תיקון בעיות WhatsApp integration
-            - ✅ שיפור יציבות במק ולינוקס
-            - ✅ ביצועים משופרים
-            
-            ## 📥 הורדה:
-            - **macOS Universal**: `Project-Pulse-HE_1.0.0_universal.dmg`
-            
-            ## 🔧 תיקונים:
-            - פתיחת תיקיות עובדת בכל המערכות
-            - קישורי WhatsApp פועלים בצורה מושלמת
-            - Gmail ומיילים עובדים ללא בעיות
-            - חיוג טלפון פועל כראוי
-          releaseDraft: false
-          prerelease: false
-          args: --target universal-apple-darwin
+          echo "=== Project Files ==="
+          ls -la
+          echo "=== Package.json exists? ==="
+          test -f package.json && echo "YES" || echo "NO"
