@@ -3,7 +3,6 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build-macos:
     permissions:
@@ -13,25 +12,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
-
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-
       - name: Install dependencies
         run: bun install
-
       # תיקון האייקונים השבורים
       - name: Fix broken icons
         run: |
@@ -43,7 +37,6 @@ jobs:
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
           echo "✅ Icons fixed"
-
       # בדיקת תצורה לפני בנייה
       - name: Debug configuration
         run: |
@@ -53,8 +46,7 @@ jobs:
           cat src-tauri/tauri.conf.json | grep -E '"productName"|"mainBinaryName"|"version"'
           echo "=== Cargo.toml name ==="
           cat src-tauri/Cargo.toml | grep '^name'
-
-      # בנייה ושחרור - הכל ביחד!
+      # בנייה ושחרור - עם artifactPaths נכונים!
       - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -83,11 +75,13 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin
-
+          # הקטע הקריטי - לספר לaction איפה הקבצים!
+          artifactPaths: |
+            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
       # אימות סופי
       - name: Verify build results
         if: always()
         run: |
           echo "=== Final verification ==="
-          find src-tauri/target -name "*Project Pulse HE*" 2>/dev/null | head -10 || echo "❌ No properly named files"
-          find src-tauri/target -name "*.dmg" -o -name "*.app" 2>/dev/null | head -5 || echo "❌ No bundle files"
+          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "❌ No bundle files"
