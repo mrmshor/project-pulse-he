@@ -47,26 +47,5 @@
       "csp": null
     }
   },
-  "plugins": {
-    "shell": {
-      "all": false,
-      "open": true
-    },
-    "fs": {
-      "all": false,
-      "scope": ["$APPDATA", "$DOCUMENT", "$DESKTOP", "$DOWNLOAD"]
-    },
-    "dialog": {
-      "all": false,
-      "open": true,
-      "save": true
-    },
-    "opener": {
-      "all": false,
-      "openUrl": true
-    },
-    "notification": {
-      "all": false
-    }
-  }
+  "plugins": {}
 }
