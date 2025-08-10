@@ -47,5 +47,26 @@
       "csp": null
     }
   },
-  "plugins": {}
+  "plugins": {
+    "shell": {
+      "open": true,
+      "scope": [
+        {
+          "name": "open-folder",
+          "cmd": "open",
+          "args": true
+        },
+        {
+          "name": "open-whatsapp", 
+          "cmd": "open",
+          "args": ["-a", "WhatsApp"]
+        }
+      ]
+    },
+    "fs": {
+      "scope": ["$APPDATA", "$DOCUMENT", "$DESKTOP", "$DOWNLOAD"]
+    },
+    "dialog": {},
+    "opener": {}
+  }
 }
