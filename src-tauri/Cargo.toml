@@ -1,27 +1,28 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+[package]
+name = "project-pulse-he"
+version = "1.0.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
 
-#[tauri::command]
-fn open_folder(path: String) -> Result<(), String> {
-    tauri::api::shell::open(&path, None)
-        .map_err(|e| format!("Failed to open folder: {}", e))
-}
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
 
-#[tauri::command] 
-fn open_whatsapp(phone: String, message: Option<String>) -> Result<(), String> {
-    let url = if let Some(msg) = message {
-        format!("https://wa.me/{}?text={}", phone, urlencoding::encode(&msg))
-    } else {
-        format!("https://wa.me/{}", phone)
-    };
-    
-    tauri::api::shell::open(&url, None)
-        .map_err(|e| format!("Failed to open WhatsApp: {}", e))
-}
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+urlencoding = "2.1"
+tauri = { version = "1.5", features = [
+  "api-all",
+  "dialog-open",
+  "fs-all",
+  "shell-open",
+  "shell-execute",
+  "protocol-asset",
+  "window-all",
+  "macos-proxy"
+] }
 
-fn main() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![open_folder, open_whatsapp])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
