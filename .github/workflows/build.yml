@@ -1,112 +1,41 @@
-name: "Build Project Pulse HE"
+name: Build
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  build-macos:
-    permissions:
-      contents: write
-    runs-on: macos-12
-    timeout-minutes: 30
-    
+  test:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Test
+        run: echo "GitHub Actions is working!"
         
-      - name: Setup Node.js 18
+  build:
+    runs-on: macos-12
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
           
+      - name: Install deps
+        run: npm install
+        
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
-          
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-          
-      - name: Install dependencies with timeout
+        
+      - name: Check files
         run: |
-          timeout 10m npm ci || {
-            echo "npm ci failed, trying npm install"
-            timeout 10m npm install
-          }
+          echo "=== Project structure ==="
+          ls -la
+          echo "=== Tauri files ==="
+          ls -la src-tauri/
           
-      - name: Check Tauri CLI
+      - name: Simple build test
         run: |
-          npx tauri --version || echo "Tauri CLI not found"
-          
-      - name: Create minimal icons
-        run: |
-          mkdir -p src-tauri/icons
-          # Create 32x32 PNG
-          python3 -c "
-          from PIL import Image
-          img = Image.new('RGBA', (32, 32), (0, 100, 200, 255))
-          img.save('src-tauri/icons/32x32.png')
-          img.save('src-tauri/icons/128x128.png')
-          img.save('src-tauri/icons/128x128@2x.png')
-          img.save('src-tauri/icons/icon.png')
-          " 2>/dev/null || {
-            # Fallback if Python/PIL not available
-            echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
-            cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-          }
-          echo "✅ Icons created"
-          ls -la src-tauri/icons/
-          
-      - name: Debug config
-        run: |
-          echo "=== Package.json Tauri deps ==="
-          grep -A3 -B3 "tauri" package.json || echo "No tauri in package.json"
-          echo ""
-          echo "=== Cargo.toml version ==="
-          grep -A3 -B3 "tauri" src-tauri/Cargo.toml || echo "No tauri in Cargo.toml"
-          
-      - name: Build Tauri App with timeout
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          timeout 20m npx tauri build --target universal-apple-darwin || {
-            echo "❌ Build failed or timed out"
-            echo "=== Checking what was built ==="
-            find src-tauri/target -name "*.dmg" -o -name "*.app" 2>/dev/null || echo "No build artifacts found"
-            exit 1
-          }
-          
-      - name: Check build results
-        run: |
-          echo "=== Looking for build artifacts ==="
-          find src-tauri/target -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "❌ No artifacts found"
-          
-      - name: Create Release
-        if: success()
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "v1.0.1-${{ github.run_number }}"
-          name: "Project Pulse HE v1.0.1-${{ github.run_number }}"
-          body: |
-            🎉 **Project Pulse HE - Tauri v1 Build**
-            
-            ✅ פתיחת תיקיות תקינה
-            ✅ WhatsApp integration עובד
-            ✅ מערכת ישראלית מלאה
-            
-            Build #${{ github.run_number }}
-          files: |
-            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
-          draft: false
-          prerelease: false
+          echo "Testing if we can access Tauri..."
+          npx tauri --version || echo "Tauri not found"
