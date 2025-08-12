@@ -1,10 +1,7 @@
-import { invoke } from '@tauri-apps/api/tauri';
-import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
-import { open as openShell } from '@tauri-apps/api/shell';
-
-export function isTauriEnvironment(): boolean {
-  return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
-}
+import { invoke } from '@tauri-apps/api/core';
+import { writeTextFile, readTextFile, exists, mkdir } from '@tauri-apps/plugin-fs';
+import { appDataDir } from '@tauri-apps/api/path';
+import { open as openDialog } from '@tauri-apps/plugin-dialog';
 
 // ✅ פתיחת תיקיות במחשב
 export async function openFolder(folderPath: string): Promise<boolean> {
@@ -23,15 +20,7 @@ export async function openFolder(folderPath: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('❌ Error opening folder:', error);
-    
-    // Fallback לשימוש ב-shell
-    try {
-      await openShell(folderPath);
-      return true;
-    } catch (shellError) {
-      console.error('❌ Shell fallback failed:', shellError);
-      return false;
-    }
+    return false;
   }
 }
 
@@ -60,28 +49,11 @@ export async function openWhatsApp(phoneNumber: string, message?: string): Promi
     return true;
   } catch (error) {
     console.error('❌ Error opening WhatsApp:', error);
-    
-    // Fallback ל-shell
-    try {
-      const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
-      const whatsappUrl = `whatsapp://send?phone=${formattedPhone}`;
-      const webUrl = `https://wa.me/${formattedPhone}`;
-      
-      try {
-        await openShell(whatsappUrl);
-        return true;
-      } catch {
-        await openShell(webUrl);
-        return true;
-      }
-    } catch (shellError) {
-      console.error('❌ WhatsApp fallback failed:', shellError);
-      return false;
-    }
+    return false;
   }
 }
 
-// ✅ פתיחת אימייל במחשב - תיקון מלא
+// ✅ פתיחת אימייל במחשב
 export async function openMail(email: string, subject?: string, body?: string): Promise<boolean> {
   try {
     let mailtoUrl = `mailto:${email}`;
@@ -90,110 +62,152 @@ export async function openMail(email: string, subject?: string, body?: string): 
     if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
     if (body) params.push(`body=${encodeURIComponent(body)}`);
     
-    // ✅ תיקון: השלמת הקוד שהיה חסר
     if (params.length > 0) {
       mailtoUrl += '?' + params.join('&');
     }
 
     if (!isTauriEnvironment()) {
-      window.open(mailtoUrl);
+      // Fallback לדפדפן
+      window.open(mailtoUrl, '_blank');
       return true;
     }
 
     console.log('📧 Opening email for:', email);
     
-    // ניסיון ראשון: פונקציה נייטיבית של Rust
-    try {
-      await invoke('open_email', { 
-        email: email, 
-        subject: subject || null,
-        body: body || null
-      });
-      console.log('✅ Email opened via Rust command');
-      return true;
-    } catch (rustError) {
-      console.log('⚠️ Rust email command failed, trying shell fallback...', rustError);
-      
-      // ניסיון שני: shell fallback
-      await openShell(mailtoUrl);
-      console.log('✅ Email opened via shell');
-      return true;
-    }
+    // שימוש בפונקציה הנייטיבית של Rust
+    await invoke('open_email', { 
+      email: email,
+      subject: subject || null
+    });
+    
+    console.log('✅ Email opened successfully');
+    return true;
   } catch (error) {
     console.error('❌ Error opening email:', error);
     return false;
   }
 }
 
-// ✅ פתיחת חיוג במחשב
-export async function openPhone(phoneNumber: string): Promise<boolean> {
+export async function openPhone(phone: string) {
   try {
-    const telUrl = `tel:${phoneNumber}`;
-
+    const phoneUrl = `tel:${phone}`;
     if (!isTauriEnvironment()) {
-      window.open(telUrl);
+      window.open(phoneUrl, '_blank');
+      return;
+    }
+
+    await invoke('open_url', { url: phoneUrl });
+    console.log('Phone dialer opened for:', phone);
+  } catch (error) {
+    console.error('Error opening phone dialer:', error);
+  }
+}
+
+export async function saveDataNative(data: any) {
+  try {
+    if (!isTauriEnvironment()) {
+      console.log('Browser mode: Using localStorage');
+      localStorage.setItem('projectData', JSON.stringify(data));
       return true;
     }
 
-    console.log('📞 Opening phone for:', phoneNumber);
+    const appDir = await appDataDir();
+    const dataPath = `${appDir}/ProjectManager`;
     
-    // ניסיון ראשון: פונקציה נייטיבית של Rust
-    try {
-      await invoke('open_phone', { phone_number: phoneNumber });
-      console.log('✅ Phone dialer opened via Rust command');
-      return true;
-    } catch (rustError) {
-      console.log('⚠️ Rust phone command failed, trying shell fallback...', rustError);
-      
-      // ניסיון שני: shell fallback
-      await openShell(telUrl);
-      console.log('✅ Phone dialer opened via shell');
-      return true;
+    const dirExists = await exists(dataPath);
+    if (!dirExists) {
+      await mkdir(dataPath, { recursive: true });
     }
+    
+    await writeTextFile(`${dataPath}/data.json`, JSON.stringify(data, null, 2));
+    console.log('Data saved to native storage');
+    return true;
   } catch (error) {
-    console.error('❌ Error opening phone:', error);
+    console.error('Error saving data natively:', error);
     return false;
   }
 }
 
-// ✅ עזר: פורמט טלפון לישראל -> WhatsApp
-function formatPhoneForWhatsApp(phone: string): string {
-  // הסרת כל התווים הלא-מספריים
-  const digitsOnly = phone.replace(/[^\d]/g, '');
-  
-  // אם מתחיל ב-0, החלף ל-972 (קוד ישראל)
-  if (digitsOnly.startsWith('0')) {
-    return '972' + digitsOnly.substring(1);
+export async function loadDataNative() {
+  try {
+    if (!isTauriEnvironment()) {
+      console.log('Browser mode: Using localStorage');
+      const data = localStorage.getItem('projectData');
+      return data ? JSON.parse(data) : null;
+    }
+
+    const appDir = await appDataDir();
+    const dataPath = `${appDir}/ProjectManager/data.json`;
+    
+    const fileExists = await exists(dataPath);
+    if (!fileExists) {
+      return null;
+    }
+    
+    const content = await readTextFile(dataPath);
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('Error loading data natively:', error);
+    return null;
   }
-  
-  // אם לא מתחיל ב-972, הוסף
-  if (!digitsOnly.startsWith('972')) {
-    return '972' + digitsOnly;
-  }
-  
-  return digitsOnly;
 }
 
-// ✅ ייצוא קבצים - תיקון מלא
-export async function exportFileNative(content: string, filename: string, format: 'csv' | 'json'): Promise<void> {
+export function isTauriEnvironment(): boolean {
+  return typeof window !== 'undefined' && '__TAURI__' in window;
+}
+
+export async function exportFileNative(content: string, filename: string, format: 'json' | 'csv' | 'xlsx') {
   try {
-    console.log('💾 Saving file to Downloads:', filename);
+    if (!isTauriEnvironment()) {
+      // Fallback לדפדפן
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      return true;
+    }
+
+    const savePath = await openDialog({
+      directory: false,
+      multiple: false,
+      title: `Save ${format.toUpperCase()}`,
+      defaultPath: filename,
+      filters: [{
+        name: format.toUpperCase(),
+        extensions: [format]
+      }]
+    });
     
-    await writeTextFile(filename, content, { dir: BaseDirectory.Download });
-    console.log('✅ File saved successfully to Downloads:', filename);
+    if (savePath) {
+      await writeTextFile(savePath as string, content);
+      console.log(`File saved: ${savePath}`);
+      return true;
+    }
+    return false;
   } catch (error) {
-    console.error('❌ Error saving file to Downloads, using browser fallback:', error);
-    
-    // Fallback to browser download
-    const mimeType = format === 'csv' ? 'text/csv' : 'application/json';
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    console.error('Error exporting file:', error);
+    return false;
   }
+}
+
+// Helper function
+function formatPhoneForWhatsApp(phoneNumber: string): string {
+  // הסרת תווים שאינם ספרות
+  const cleaned = phoneNumber.replace(/[^0-9]/g, '');
+  
+  // המרה מפורמט ישראלי (0XX) לבינלאומי (972XX)
+  if (cleaned.startsWith('0')) {
+    return '972' + cleaned.substring(1);
+  }
+  
+  // אם כבר מתחיל ב-972, נחזיר כמו שהוא
+  if (cleaned.startsWith('972')) {
+    return cleaned;
+  }
+  
+  // אחרת, נניח שזה מספר ישראלי ללא 0 בהתחלה
+  return '972' + cleaned;
 }
