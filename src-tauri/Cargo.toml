@@ -1,28 +1,32 @@
 [package]
 name = "project-pulse-he"
 version = "1.0.0"
-description = "A Tauri App"
+description = "Project Pulse HE - Advanced Project Management System in Hebrew"
 authors = ["you"]
+license = ""
+repository = ""
+default-run = "project-pulse-he"
 edition = "2021"
+rust-version = "1.70"
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-urlencoding = "2.1"
-tauri = { version = "1.5", features = [
-  "api-all",
-  "dialog-open",
-  "fs-all",
-  "shell-open",
-  "shell-execute",
-  "protocol-asset",
-  "window-all",
-  "macos-proxy"
-] }
+urlencoding = "2.1"  # 🆕 הוספה עבור פונקציות WhatsApp
+tauri = { version = "2.0", features = [] }
+tauri-plugin-dialog = "2.3"
+tauri-plugin-fs = "2.3"
+tauri-plugin-shell = "2.3"
+tauri-plugin-opener = "2.3"
+tauri-plugin-notification = "2.3"
 
 [features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devUrl` is a "localhost" URL
 default = ["custom-protocol"]
+# this feature is used for production builds or when `devUrl` points to the filesystem
+# DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
