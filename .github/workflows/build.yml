@@ -1,8 +1,10 @@
-name: "Build and Release"
+name: "Build and Release macOS"
 on:
   push:
-    branches: [ main ]
+    tags:
+      - "v*"
   workflow_dispatch:
+
 jobs:
   build-macos:
     permissions:
@@ -13,20 +15,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
+          
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
+          
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+          
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+        
       - name: Fix broken icons
         run: |
           mkdir -p src-tauri/icons
@@ -37,64 +45,31 @@ jobs:
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
           echo "Icons fixed"
-      - name: Debug configuration
-        run: |
-          echo "=== package.json version ==="
-          cat package.json | grep '"version"'
-          echo "=== tauri.conf.json names ==="
-          cat src-tauri/tauri.conf.json | grep -E '"productName"|"mainBinaryName"|"version"'
-          echo "=== Cargo.toml name ==="
-          cat src-tauri/Cargo.toml | grep '^name'
+          
       - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: "v__VERSION__"
-          releaseName: "Project Pulse HE v__VERSION__"
+          releaseName: "מנהל פרויקטים Pro v__VERSION__"
           releaseBody: |
-            Project Pulse HE - Advanced Project Management System in Hebrew
+            🚀 מנהל פרויקטים Pro - מערכת ניהול פרויקטים מתקדמת בעברית
             
-            Features:
-            - Advanced project and task management
-            - Real-time charts and analytics
-            - Full Hebrew and RTL support
-            - WhatsApp integration
-            - Modern and intuitive user interface
+            ✨ תכונות:
+            - ניהול פרויקטים ומשימות מתקדם
+            - גרפים וניתוחים בזמן אמת  
+            - תמיכה מלאה בעברית ו-RTL
+            - אינטגרציה עם WhatsApp
+            - ממשק משתמש מודרני ואינטואיטיבי
             
-            Download:
-            - macOS Universal: Project Pulse HE_1.0.0_universal.dmg
+            📥 הורדה למק:
+            - 🍎 macOS Universal: מנהל-פרויקטים-Pro_v__VERSION___universal.dmg
             
-            Fixed Issues:
-            - Fixed broken icons
-            - Fixed binary naming
-            - Proper artifact detection
-            - Complete build pipeline
+            🔧 תיקונים בגרסה זו:
+            - תיקון פתיחת תיקיות במחשב
+            - תיקון פתיחת קישורי WhatsApp
+            - שיפור יציבות המערכת
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin
-          artifactPaths: |
-            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
-      - name: Debug what actually exists
-        if: always()
-        run: |
-          echo "=== Checking entire target directory ==="
-          find src-tauri/target -type f 2>/dev/null | head -20
-          echo ""
-          echo "=== Checking specifically for bundle ==="
-          find src-tauri/target -name "*bundle*" -type d 2>/dev/null
-          echo ""
-          echo "=== Checking for any .dmg files ==="
-          find src-tauri/target -name "*.dmg" 2>/dev/null
-          echo ""
-          echo "=== Checking for any .app files ==="
-          find src-tauri/target -name "*.app" 2>/dev/null
-          echo ""
-          echo "=== Full directory structure ==="
-          ls -la src-tauri/target/universal-apple-darwin/release/ 2>/dev/null || echo "Directory doesn't exist"
-      - name: Verify build results
-        if: always()
-        run: |
-          echo "=== Final verification ==="
-          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "No bundle files"
