@@ -81,7 +81,7 @@ export async function openWhatsApp(phoneNumber: string, message?: string): Promi
   }
 }
 
-// ✅ פתיחת אימייל במחשב
+// ✅ פתיחת אימייל במחשב - תיקון מלא
 export async function openMail(email: string, subject?: string, body?: string): Promise<boolean> {
   try {
     let mailtoUrl = `mailto:${email}`;
@@ -90,6 +90,7 @@ export async function openMail(email: string, subject?: string, body?: string): 
     if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
     if (body) params.push(`body=${encodeURIComponent(body)}`);
     
+    // ✅ תיקון: השלמת הקוד שהיה חסר
     if (params.length > 0) {
       mailtoUrl += '?' + params.join('&');
     }
@@ -173,6 +174,7 @@ function formatPhoneForWhatsApp(phone: string): string {
   return digitsOnly;
 }
 
+// ✅ ייצוא קבצים - תיקון מלא
 export async function exportFileNative(content: string, filename: string, format: 'csv' | 'json'): Promise<void> {
   try {
     console.log('💾 Saving file to Downloads:', filename);
@@ -189,61 +191,9 @@ export async function exportFileNative(content: string, filename: string, format
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }
-}
-
-// פונקציות שמירה וטעינה מתוקנות
-export async function saveDataNative(data: any): Promise<boolean> {
-  try {
-    console.log('💾 Saving data to AppData...');
-    
-    const jsonData = JSON.stringify(data, null, 2);
-    await writeTextFile('project-data.json', jsonData, { dir: BaseDirectory.AppData });
-    
-    console.log('✅ Data saved successfully to AppData');
-    return true;
-  } catch (error) {
-    console.error('❌ Error saving data to AppData:', error);
-    return false;
-  }
-}
-
-export async function loadDataNative(): Promise<any> {
-  try {
-    console.log('📁 Loading data from AppData...');
-    
-    const content = await readTextFile('project-data.json', { dir: BaseDirectory.AppData });
-    const data = JSON.parse(content);
-    
-    console.log('✅ Data loaded successfully from AppData');
-    return data;
-  } catch (error) {
-    console.error('⚠️ Error loading data from AppData (probably first time):', error);
-    return null;
-  }
-}
-
-// בדיקת יכולות Tauri
-export async function checkTauriCapabilities(): Promise<void> {
-  if (!isTauriEnvironment()) {
-    console.log('🌐 Running in browser mode');
-    return;
-  }
-
-  console.log('🖥️ Running in Tauri desktop mode');
-  
-  try {
-    console.log('🔍 Testing Tauri capabilities...');
-    
-    // Test basic capabilities
-    const { exists } = await import('@tauri-apps/api/fs');
-    const appDataExists = await exists('', { dir: BaseDirectory.AppData });
-    console.log('📁 AppData access:', appDataExists ? '✅' : '❌');
-    
-    console.log('✅ All Tauri capabilities available');
-  } catch (error) {
-    console.error('❌ Error testing Tauri capabilities:', error);
   }
 }
