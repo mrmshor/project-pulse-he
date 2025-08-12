@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          # הסרתי cache - כמו ב-workflow שעבד
           
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -50,20 +51,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: "v__VERSION__"
-          releaseName: "מנהל פרויקטים Pro v__VERSION__"
+          # תיקון: זה ייצור tag אוטומטי במקום לדרוש קיים
+          tagName: "v1.0.${{ github.run_number }}"
+          releaseName: "מנהל פרויקטים Pro v1.0.${{ github.run_number }}"
           releaseBody: |
             🚀 מנהל פרויקטים Pro - מערכת ניהול פרויקטים מתקדמת בעברית
             
             ✨ תכונות:
-            - ניהול פרויקטים ומשימות מתקדם
-            - גרפים וניתוחים בזמן אמת  
-            - תמיכה מלאה בעברית ו-RTL
-            - אינטגרציה עם WhatsApp
-            - ממשק משתמש מודרני ואינטואיטיבי
-            
-            📥 הורדה למק:
-            - 🍎 macOS Universal: מנהל-פרויקטים-Pro_v__VERSION___universal.dmg
+            - תיקון פתיחת תיקיות במחשב
+            - תיקון פתיחת קישורי WhatsApp
+            - שיפור יציבות המערכת
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin
