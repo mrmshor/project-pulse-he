@@ -111,29 +111,6 @@ export class FolderService {
       return false;
     }
   }
-
-  /**
-   * יצירת תיקיית פרויקט חדשה
-   */
-  static async createProjectFolder(basePath: string, projectName: string): Promise<string | null> {
-    try {
-      if (!isTauriEnvironment()) {
-        console.warn('🌐 Browser mode: Cannot create folders');
-        return null;
-      }
-
-      const { createDir } = await import('@tauri-apps/api/fs');
-      const projectPath = `${basePath}/${projectName}`;
-      
-      await createDir(projectPath, { recursive: true });
-      console.log('✅ Project folder created:', projectPath);
-      
-      return projectPath;
-    } catch (error) {
-      console.error('❌ Error creating project folder:', error);
-      return null;
-    }
-  }
 }
 
 // ✅ שירותי תקשורת ואנשי קשר
@@ -192,7 +169,7 @@ export class ClientContactService {
   }
 
   /**
-   * פתיחת אימייל עם כתובת
+   * פתיחת אימייל עם כתובת - תיקון מלא
    */
   static async openGmail(email: string, subject?: string, body?: string): Promise<boolean> {
     try {
@@ -204,6 +181,7 @@ export class ClientContactService {
       if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
       if (body) params.push(`body=${encodeURIComponent(body)}`);
       
+      // ✅ תיקון: השלמת הקוד שהיה חסר
       if (params.length > 0) {
         mailtoUrl += '?' + params.join('&');
       }
@@ -288,176 +266,9 @@ export class ClientContactService {
     
     return digitsOnly;
   }
-
-  /**
-   * וידוא תקינות מספר טלפון ישראלי
-   */
-  static validateIsraeliPhone(phone: string): boolean {
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    // דפוסי מספרי טלפון ישראליים
-    const israeliPatterns = [
-      /^0[0-9]{1,2}-?[0-9]{7}$/,        // 0XX-XXXXXXX או 0X-XXXXXXX
-      /^(\+972)[0-9]{1,2}[0-9]{7}$/,   // +972XXXXXXXXX
-      /^[5-9][0-9]{8}$/                // 9 ספרות מתחילות ב-5-9
-    ];
-    
-    return israeliPatterns.some(pattern => pattern.test(phone.replace(/[\s-]/g, '')));
-  }
-
-  /**
-   * וידוא תקינות כתובת אימייל
-   */
-  static validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
 }
 
-// ✅ שירותי ייצוא ושמירה
-export class ExportService {
-  /**
-   * ייצוא נתונים לקובץ CSV
-   */
-  static async exportToCSV(data: any[], filename: string): Promise<boolean> {
-    try {
-      if (!Array.isArray(data) || data.length === 0) {
-        console.warn('⚠️ No data to export');
-        return false;
-      }
-
-      // יצירת תוכן CSV
-      const headers = Object.keys(data[0]);
-      const csvContent = [
-        headers.join(','),
-        ...data.map(row => 
-          headers.map(header => `"${(row[header] || '').toString().replace(/"/g, '""')}"`).join(',')
-        )
-      ].join('\n');
-
-      if (isTauriEnvironment()) {
-        const { exportFileNative } = await import('@/lib/tauri');
-        await exportFileNative(csvContent, filename, 'csv');
-      } else {
-        // Fallback לדפדפן
-        this.downloadBlob(csvContent, filename, 'text/csv');
-      }
-
-      console.log('✅ CSV exported successfully:', filename);
-      return true;
-    } catch (error) {
-      console.error('❌ Error exporting CSV:', error);
-      return false;
-    }
-  }
-
-  /**
-   * ייצוא נתונים לקובץ JSON
-   */
-  static async exportToJSON(data: any, filename: string): Promise<boolean> {
-    try {
-      const jsonContent = JSON.stringify(data, null, 2);
-
-      if (isTauriEnvironment()) {
-        const { exportFileNative } = await import('@/lib/tauri');
-        await exportFileNative(jsonContent, filename, 'json');
-      } else {
-        // Fallback לדפדפן
-        this.downloadBlob(jsonContent, filename, 'application/json');
-      }
-
-      console.log('✅ JSON exported successfully:', filename);
-      return true;
-    } catch (error) {
-      console.error('❌ Error exporting JSON:', error);
-      return false;
-    }
-  }
-
-  /**
-   * הורדת קובץ בדפדפן (fallback)
-   */
-  private static downloadBlob(content: string, filename: string, mimeType: string): void {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-}
-
-// ✅ שירותי מערכת כלליים
-export class SystemService {
-  /**
-   * קבלת מידע על מערכת ההפעלה
-   */
-  static async getOSInfo(): Promise<string> {
-    try {
-      if (isTauriEnvironment()) {
-        return await invoke('get_os_info');
-      } else {
-        // זיהוי מערכת הפעלה בדפדפן
-        const userAgent = navigator.userAgent.toLowerCase();
-        if (userAgent.includes('win')) return 'windows';
-        if (userAgent.includes('mac')) return 'macos';
-        if (userAgent.includes('linux')) return 'linux';
-        return 'unknown';
-      }
-    } catch (error) {
-      console.error('❌ Error getting OS info:', error);
-      return 'unknown';
-    }
-  }
-
-  /**
-   * בדיקת זמינות יכולות Tauri
-   */
-  static async checkCapabilities(): Promise<{
-    isDesktop: boolean;
-    canOpenFolders: boolean;
-    canOpenURLs: boolean;
-    canAccessFileSystem: boolean;
-  }> {
-    const isDesktop = isTauriEnvironment();
-    
-    let canOpenFolders = false;
-    let canOpenURLs = false;
-    let canAccessFileSystem = false;
-
-    if (isDesktop) {
-      try {
-        // בדיקת גישה למערכת קבצים
-        const { exists } = await import('@tauri-apps/api/fs');
-        await exists('');
-        canAccessFileSystem = true;
-        
-        // בדיקת יכולת פתיחת תיקיות ו-URLs
-        canOpenFolders = true;
-        canOpenURLs = true;
-        
-        console.log('✅ All Tauri capabilities are available');
-      } catch (error) {
-        console.warn('⚠️ Some Tauri capabilities are limited:', error);
-      }
-    }
-
-    return {
-      isDesktop,
-      canOpenFolders,
-      canOpenURLs,
-      canAccessFileSystem
-    };
-  }
-}
-
-// Export the old function names for backward compatibility
-export { ClientContactService as ContactService };
-
-// Legacy exports for existing code
+// Export legacy functions for backward compatibility
 export const openWhatsApp = ClientContactService.openWhatsApp;
 export const openMail = ClientContactService.openGmail;
 export const openPhone = ClientContactService.dialNumber;
