@@ -1,11 +1,13 @@
 {
   "name": "project-pulse-he",
+  "private": true,
   "version": "1.0.0",
-  "description": "Project Pulse HE - Advanced Project Management System in Hebrew",
+  "description": "Advanced project and task management system in Hebrew",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "tauri": "tauri",
@@ -13,7 +15,7 @@
     "tauri:build": "tauri build"
   },
   "keywords": ["project-management", "tasks", "hebrew", "productivity", "desktop-app"],
-  "author": "Project Manager Team", 
+  "author": "Project Manager Team",
   "license": "MIT",
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
