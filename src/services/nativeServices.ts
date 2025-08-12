@@ -1,18 +1,9 @@
-import { open } from '@tauri-apps/api/dialog';
-import { open as openShell } from '@tauri-apps/api/shell';
-import { invoke } from '@tauri-apps/api/tauri';
-import { isTauriEnvironment } from '@/lib/tauri';
+import { open as openDialog } from '@tauri-apps/plugin-dialog';
+import { openPath, openUrl } from '@tauri-apps/plugin-opener';  // 🆕 שימוש ב-plugin-opener
 
-// Cross-platform URL/path opener - FIXED for v1
-async function openUrlOrPath(urlOrPath: string): Promise<void> {
-  try {
-    console.log('🚀 Opening:', urlOrPath);
-    await openShell(urlOrPath);
-    console.log('✅ Successfully opened:', urlOrPath);
-  } catch (error) {
-    console.error('❌ Failed to open URL/path:', error);
-    throw error;
-  }
+// בדיקה אם אנחנו בסביבת Tauri
+function isTauriEnvironment(): boolean {
+  return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
 }
 
 // ✅ שירותי תיקיות ופרויקטים
@@ -29,7 +20,7 @@ export class FolderService {
         return null;
       }
       
-      const folderPath = await open({
+      const folderPath = await openDialog({
         directory: true,
         multiple: false,
         title: 'בחר תיקיית פרויקט'
@@ -64,24 +55,10 @@ export class FolderService {
         return false;
       }
       
-      // ניסיון ראשון: פונקציה נייטיבית של Rust
-      try {
-        await invoke('open_folder', { path: folderPath });
-        console.log('✅ Folder opened successfully via Rust command');
-        return true;
-      } catch (rustError) {
-        console.log('⚠️ Rust command failed, trying shell fallback...', rustError);
-        
-        // ניסיון שני: shell API של Tauri
-        try {
-          await openUrlOrPath(folderPath);
-          console.log('✅ Folder opened successfully via shell');
-          return true;
-        } catch (shellError) {
-          console.error('❌ All methods failed to open folder:', shellError);
-          return false;
-        }
-      }
+      // 🆕 שימוש ב-plugin-opener במקום invoke
+      await openPath(folderPath);
+      console.log('✅ Folder opened successfully');
+      return true;
     } catch (error) {
       console.error('❌ Error opening folder:', error);
       return false;
@@ -98,7 +75,8 @@ export class FolderService {
       }
 
       if (isTauriEnvironment()) {
-        const { exists } = await import('@tauri-apps/api/fs');
+        // בסביבת Tauri - נשתמש ב-fs plugin לבדיקה
+        const { exists } = await import('@tauri-apps/plugin-fs');
         const pathExists = await exists(folderPath);
         console.log('📁 Folder validation:', pathExists ? '✅ EXISTS' : '❌ NOT FOUND', 'for:', folderPath);
         return pathExists;
@@ -132,35 +110,23 @@ export class ClientContactService {
         return true;
       }
 
-      // ניסיון ראשון: פונקציה נייטיבית של Rust
+      // 🆕 שימוש ב-plugin-opener במקום invoke
       try {
-        await invoke('open_whatsapp', { 
-          phone: formattedPhone, 
-          message: message || null 
-        });
-        console.log('✅ WhatsApp opened via Rust command');
-        return true;
-      } catch (rustError) {
-        console.log('⚠️ Rust WhatsApp command failed, trying fallback...', rustError);
-        
-        // ניסיון שני: WhatsApp Desktop
+        // ניסיון ראשון: WhatsApp Desktop
         const whatsappUrl = `whatsapp://send?phone=${formattedPhone}`;
+        await openUrl(whatsappUrl);
+        console.log('✅ WhatsApp Desktop opened successfully');
+        return true;
+      } catch (desktopError) {
+        console.log('⚠️ Desktop WhatsApp failed, trying web version...');
         
-        try {
-          await openUrlOrPath(whatsappUrl);
-          console.log('✅ WhatsApp Desktop opened successfully');
-          return true;
-        } catch (desktopError) {
-          console.log('⚠️ Desktop WhatsApp failed, trying web version...');
-          
-          // ניסיון שלישי: WhatsApp Web
-          const webUrl = message 
-            ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
-            : `https://wa.me/${formattedPhone}`;
-          await openUrlOrPath(webUrl);
-          console.log('✅ WhatsApp Web opened successfully');
-          return true;
-        }
+        // ניסיון שני: WhatsApp Web
+        const webUrl = message 
+          ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
+          : `https://wa.me/${formattedPhone}`;
+        await openUrl(webUrl);
+        console.log('✅ WhatsApp Web opened successfully');
+        return true;
       }
     } catch (error) {
       console.error('❌ Error opening WhatsApp:', error);
@@ -169,7 +135,7 @@ export class ClientContactService {
   }
 
   /**
-   * פתיחת אימייל עם כתובת - תיקון מלא
+   * פתיחת אימייל עם כתובת
    */
   static async openGmail(email: string, subject?: string, body?: string): Promise<boolean> {
     try {
@@ -181,33 +147,20 @@ export class ClientContactService {
       if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
       if (body) params.push(`body=${encodeURIComponent(body)}`);
       
-      // ✅ תיקון: השלמת הקוד שהיה חסר
       if (params.length > 0) {
         mailtoUrl += '?' + params.join('&');
       }
-
+      
       if (!isTauriEnvironment()) {
-        window.open(mailtoUrl);
+        // Fallback לדפדפן
+        window.open(mailtoUrl, '_blank');
         return true;
       }
 
-      // ניסיון ראשון: פונקציה נייטיבית של Rust
-      try {
-        await invoke('open_email', { 
-          email: email, 
-          subject: subject || null,
-          body: body || null
-        });
-        console.log('✅ Email opened via Rust command');
-        return true;
-      } catch (rustError) {
-        console.log('⚠️ Rust email command failed, trying fallback...', rustError);
-        
-        // ניסיון שני: shell fallback
-        await openUrlOrPath(mailtoUrl);
-        console.log('✅ Email opened via shell');
-        return true;
-      }
+      // 🆕 שימוש ב-plugin-opener במקום invoke
+      await openUrl(mailtoUrl);
+      console.log('✅ Email opened successfully');
+      return true;
     } catch (error) {
       console.error('❌ Error opening email:', error);
       return false;
@@ -215,60 +168,23 @@ export class ClientContactService {
   }
 
   /**
-   * פתיחת חיוג עם מספר טלפון
+   * המרת מספר טלפון לפורמט בינלאומי
    */
-  static async dialNumber(phoneNumber: string): Promise<boolean> {
-    try {
-      console.log('📞 Opening phone dialer for:', phoneNumber);
-      
-      const telUrl = `tel:${phoneNumber}`;
-
-      if (!isTauriEnvironment()) {
-        window.open(telUrl);
-        return true;
-      }
-
-      // ניסיון ראשון: פונקציה נייטיבית של Rust
-      try {
-        await invoke('open_phone', { phone_number: phoneNumber });
-        console.log('✅ Phone dialer opened via Rust command');
-        return true;
-      } catch (rustError) {
-        console.log('⚠️ Rust phone command failed, trying fallback...', rustError);
-        
-        // ניסיון שני: shell fallback
-        await openUrlOrPath(telUrl);
-        console.log('✅ Phone dialer opened via shell');
-        return true;
-      }
-    } catch (error) {
-      console.error('❌ Error opening phone dialer:', error);
-      return false;
-    }
-  }
-
-  /**
-   * פורמט מספר טלפון לפורמט ישראלי בינלאומי
-   */
-  static formatToInternational(phoneNumber: string): string {
-    // הסרת כל התווים שאינם ספרות
-    const digitsOnly = phoneNumber.replace(/[^\d]/g, '');
+  private static formatToInternational(phoneNumber: string): string {
+    // הסרת תווים שאינם ספרות
+    const cleaned = phoneNumber.replace(/[^0-9]/g, '');
     
-    // אם המספר מתחיל ב-0, החלף ל-972 (קוד ישראל)
-    if (digitsOnly.startsWith('0')) {
-      return '972' + digitsOnly.substring(1);
+    // המרה מפורמט ישראלי (0XX) לבינלאומי (972XX)
+    if (cleaned.startsWith('0')) {
+      return '972' + cleaned.substring(1);
     }
     
-    // אם המספר לא מתחיל ב-972, הוסף אותו
-    if (!digitsOnly.startsWith('972')) {
-      return '972' + digitsOnly;
+    // אם כבר מתחיל ב-972, נחזיר כמו שהוא
+    if (cleaned.startsWith('972')) {
+      return cleaned;
     }
     
-    return digitsOnly;
+    // אחרת, נניח שזה מספר ישראלי ללא 0 בהתחלה
+    return '972' + cleaned;
   }
 }
-
-// Export legacy functions for backward compatibility
-export const openWhatsApp = ClientContactService.openWhatsApp;
-export const openMail = ClientContactService.openGmail;
-export const openPhone = ClientContactService.dialNumber;
