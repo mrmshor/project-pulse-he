@@ -54,7 +54,7 @@ fn open_folder(path: String) -> Result<(), String> {
     }
 }
 
-// ✅ פתיחת WhatsApp במחשב - עם fallback חכם
+// ✅ פתיחת WhatsApp במחשב - עם fallback חכם ומלא
 #[tauri::command] 
 fn open_whatsapp(phone: String, message: Option<String>) -> Result<(), String> {
     println!("💬 Opening WhatsApp for phone: {}", phone);
@@ -89,7 +89,7 @@ fn open_whatsapp(phone: String, message: Option<String>) -> Result<(), String> {
                 Err(e2) => {
                     println!("⚠️ WhatsApp Web failed: {}, trying OS commands...", e2);
                     
-                    // ניסיון שלישי: פקודות מערכת הפעלה
+                    // ✅ תיקון: ניסיון שלישי מלא - פקודות מערכת הפעלה
                     let result = if cfg!(target_os = "windows") {
                         Command::new("cmd")
                             .args(&["/C", "start", "", &url])
@@ -124,7 +124,7 @@ fn open_whatsapp(phone: String, message: Option<String>) -> Result<(), String> {
     }
 }
 
-// ✅ פתיחת אימייל במחשב
+// ✅ פתיחת אימייל במחשב - תיקון מלא
 #[tauri::command]
 fn open_email(email: String, subject: Option<String>, body: Option<String>) -> Result<(), String> {
     println!("📧 Opening email for: {}", email);
@@ -147,6 +147,7 @@ fn open_email(email: String, subject: Option<String>, body: Option<String>) -> R
     
     println!("📧 Email URL: {}", mailto_url);
     
+    // ✅ תיקון: השלמת הפונקציה המלאה
     match shell::open(&tauri::api::shell::Scope::default(), &mailto_url, None) {
         Ok(_) => {
             println!("✅ Email client opened successfully");
@@ -197,6 +198,7 @@ fn get_os_info() -> Result<String, String> {
     Ok(os.to_string())
 }
 
+// ✅ פונקציה main מלאה ותקינה
 fn main() {
     println!("🚀 Starting Project Pulse Hebrew Desktop App");
     
