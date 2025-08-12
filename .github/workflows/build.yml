@@ -1,106 +1,94 @@
-name: "Build and Release"
+name: Build and Release Native Apps
+
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
+
 jobs:
-  build-macos:
-    permissions:
-      contents: write
-    runs-on: macos-14
-    
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target universal-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - name: Setup Rust
+
+      - name: Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
       - name: Install dependencies
         run: bun install
-      # תיקון האייקונים השבורים
-      - name: Fix broken icons
-        run: |
-          mkdir -p src-tauri/icons
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' | base64 -d > src-tauri/icons/32x32.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/128x128.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/128x128@2x.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
-          cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
-          cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-          echo "✅ Icons fixed"
-      # בדיקת תצורה לפני בנייה
-      - name: Debug configuration
-        run: |
-          echo "=== package.json version ==="
-          cat package.json | grep '"version"'
-          echo "=== tauri.conf.json names ==="
-          cat src-tauri/tauri.conf.json | grep -E '"productName"|"mainBinaryName"|"version"'
-          echo "=== Cargo.toml name ==="
-          cat src-tauri/Cargo.toml | grep '^name'
-      # בנייה ושחרור
-      - name: Build and Release
+
+      - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: "v__VERSION__"
-          releaseName: "Project Pulse HE v__VERSION__"
+          tagName: v__VERSION__
+          releaseName: 'Project Pulse HE v__VERSION__'
           releaseBody: |
             🚀 **Project Pulse HE - Advanced Project Management System in Hebrew**
             
             ## ✨ Features:
             - 📊 Advanced project and task management
-            - 📈 Real-time charts and analytics
+            - 📈 Real-time charts and analytics  
             - 🇮🇱 Full Hebrew and RTL support
             - 💬 WhatsApp integration
             - 🎨 Modern and intuitive user interface
             
             ## 📥 Download:
             - **macOS Universal**: `Project Pulse HE_1.0.0_universal.dmg`
+            - **Windows**: `Project Pulse HE_1.0.0_x64.msi`
+            - **Linux**: `Project Pulse HE_1.0.0_amd64.AppImage`
             
             ## 🛠️ Fixed Issues:
-            - ✅ Fixed broken icons
-            - ✅ Fixed binary naming (mainBinaryName)
-            - ✅ Proper artifact detection
+            - ✅ Fixed Tauri 2.x configuration
+            - ✅ Fixed native functions for folder/WhatsApp opening
             - ✅ Complete build pipeline
+            - ✅ Proper artifact detection
           releaseDraft: false
           prerelease: false
-          args: --target universal-apple-darwin
-          artifactPaths: |
-            src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+          args: ${{ matrix.args }}
+          includeDebug: false
+          includeRelease: true
+          includeUpdaterJson: true
+          updaterJsonKeepUniversal: false
 
-      # ← הוסף את השלב הזה כאן! ←
       - name: Debug what actually exists
-        if: always()
         run: |
           echo "=== Checking entire target directory ==="
-          find src-tauri/target -type f 2>/dev/null | head -20
-          echo ""
-          echo "=== Checking specifically for bundle ==="
-          find src-tauri/target -name "*bundle*" -type d 2>/dev/null
-          echo ""
-          echo "=== Checking for any .dmg files ==="
-          find src-tauri/target -name "*.dmg" 2>/dev/null
-          echo ""
-          echo "=== Checking for any .app files ==="
-          find src-tauri/target -name "*.app" 2>/dev/null
-          echo ""
-          echo "=== Full directory structure ==="
-          ls -la src-tauri/target/universal-apple-darwin/release/ 2>/dev/null || echo "Directory doesn't exist"
+          find src-tauri/target -type f -name "*.dmg" -o -name "*.app*" -o -name "*.msi" -o -name "*.AppImage" 2>/dev/null || echo "No bundle files found"
 
-      # אימות סופי
-      - name: Verify build results
-        if: always()
+      - name: Final verification
         run: |
           echo "=== Final verification ==="
-          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "❌ No bundle files"
+          find src-tauri/target -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "❌ No bundle files"
