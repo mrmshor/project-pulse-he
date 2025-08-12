@@ -1,131 +1,116 @@
 {
-  "package": {
-    "productName": "Project Pulse HE",
-    "version": "1.0.0"
-  },
+  "$schema": "https://tauri.app/schema/config/2.0",
+  "productName": "Project Pulse HE",
+  "version": "1.0.0",
+  "identifier": "com.project.pulse.he",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:8080",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:8080"
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true,
-        "execute": true,
-        "sidecar": false,
-        "scope": [
-          "whatsapp://*",
-          "https://wa.me/*",
-          "https://mail.google.com/*",
-          "mailto:*",
-          "tel:*"
-        ]
-      },
-      "dialog": {
-        "all": false,
-        "open": true,
-        "save": false
-      },
-      "fs": {
-        "all": false,
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "copyFile": true,
-        "createDir": true,
-        "removeFile": true,
-        "removeDir": true,
-        "renameFile": true,
-        "exists": true,
-        "scope": ["$APPDATA", "$DOWNLOAD", "$DOCUMENT", "$DESKTOP", "$HOME"]
-      },
-      "window": {
-        "all": false,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true
-      },
-      "globalShortcut": {
-        "all": false
-      },
-      "os": {
-        "all": false
-      },
-      "path": {
-        "all": true
-      },
-      "protocol": {
-        "all": false,
-        "asset": true,
-        "assetScope": ["$APPDATA", "$RESOURCE"]
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": ["dmg", "app"],
-      "identifier": "com.projectpulse.he",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png", 
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "10.13",
-        "entitlements": null,
-        "exceptionDomain": "",
-        "signingIdentity": null,
-        "providerShortName": null,
-        "dmg": {
-          "appPosition": {
-            "x": 180,
-            "y": 170
-          },
-          "applicationFolderPosition": {
-            "x": 480,
-            "y": 170
-          },
-          "windowSize": {
-            "width": 660,
-            "height": 400
-          }
-        }
-      },
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
+  "app": {
     "windows": [
       {
-        "title": "Project Pulse HE",
+        "label": "main",
+        "title": "Project Pulse HE - מנהל פרויקטים מתקדם",
         "width": 1200,
         "height": 800,
-        "resizable": true,
-        "fullscreen": false,
         "minWidth": 800,
         "minHeight": 600,
-        "center": true,
+        "resizable": true,
+        "fullscreen": false,
         "decorations": true,
         "alwaysOnTop": false,
         "skipTaskbar": false,
-        "focus": true
+        "theme": "auto"
       }
-    ]
+    ],
+    "security": {
+      "csp": "default-src 'self' 'unsafe-inline' data: blob: https: tauri: http://localhost:*; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline';"
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png", 
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "Project Manager Team",
+    "copyright": "Copyright © 2024 Project Manager Team",
+    "category": "Productivity",
+    "shortDescription": "Advanced Project Management System in Hebrew",
+    "longDescription": "Project Pulse HE is an advanced project management system with full Hebrew support, task tracking, analytics, and WhatsApp integration.",
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.13",
+      "exceptionDomain": "",
+      "entitlements": null,
+      "signingIdentity": null,
+      "dmg": {
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        },
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        }
+      }
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
+  },
+  "plugins": {
+    "dialog": {
+      "all": true,
+      "ask": true,
+      "confirm": true,
+      "message": true,
+      "open": true,
+      "save": true
+    },
+    "fs": {
+      "all": true,
+      "copyFile": true,
+      "create": true,
+      "exists": true,
+      "readDir": true,
+      "readFile": true,
+      "remove": true,
+      "rename": true,
+      "stat": true,
+      "writeFile": true,
+      "mkdir": true
+    },
+    "opener": {
+      "all": true,
+      "openUrl": true,
+      "openPath": true
+    },
+    "shell": {
+      "all": true,
+      "execute": true,
+      "sidecar": true,
+      "open": true
+    },
+    "notification": {
+      "all": true
+    }
   }
 }
