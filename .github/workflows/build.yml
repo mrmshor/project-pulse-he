@@ -48,6 +48,9 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Build frontend
+        run: bun run build
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -72,9 +75,9 @@ jobs:
             
             ## 🛠️ Fixed Issues:
             - ✅ Fixed Tauri 2.x configuration  
+            - ✅ Fixed frontend build process
             - ✅ Fixed native functions for folder/WhatsApp opening
             - ✅ Complete build pipeline
-            - ✅ Proper artifact detection
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
