@@ -100,10 +100,24 @@ export async function openMail(email: string, subject?: string, body?: string): 
     }
 
     console.log('📧 Opening email for:', email);
-    await openShell(mailtoUrl);
     
-    console.log('✅ Email opened successfully');
-    return true;
+    // ניסיון ראשון: פונקציה נייטיבית של Rust
+    try {
+      await invoke('open_email', { 
+        email: email, 
+        subject: subject || null,
+        body: body || null
+      });
+      console.log('✅ Email opened via Rust command');
+      return true;
+    } catch (rustError) {
+      console.log('⚠️ Rust email command failed, trying shell fallback...', rustError);
+      
+      // ניסיון שני: shell fallback
+      await openShell(mailtoUrl);
+      console.log('✅ Email opened via shell');
+      return true;
+    }
   } catch (error) {
     console.error('❌ Error opening email:', error);
     return false;
@@ -121,10 +135,20 @@ export async function openPhone(phoneNumber: string): Promise<boolean> {
     }
 
     console.log('📞 Opening phone for:', phoneNumber);
-    await openShell(telUrl);
     
-    console.log('✅ Phone opened successfully');
-    return true;
+    // ניסיון ראשון: פונקציה נייטיבית של Rust
+    try {
+      await invoke('open_phone', { phone_number: phoneNumber });
+      console.log('✅ Phone dialer opened via Rust command');
+      return true;
+    } catch (rustError) {
+      console.log('⚠️ Rust phone command failed, trying shell fallback...', rustError);
+      
+      // ניסיון שני: shell fallback
+      await openShell(telUrl);
+      console.log('✅ Phone dialer opened via shell');
+      return true;
+    }
   } catch (error) {
     console.error('❌ Error opening phone:', error);
     return false;
