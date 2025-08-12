@@ -71,7 +71,7 @@ jobs:
             - **Linux**: `Project Pulse HE_1.0.0_amd64.AppImage`
             
             ## 🛠️ Fixed Issues:
-            - ✅ Fixed Tauri 2.x configuration
+            - ✅ Fixed Tauri 2.x configuration  
             - ✅ Fixed native functions for folder/WhatsApp opening
             - ✅ Complete build pipeline
             - ✅ Proper artifact detection
