@@ -1,5 +1,6 @@
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
-import { openPath, openUrl } from '@tauri-apps/plugin-opener';  // 🆕 שימוש ב-plugin-opener
+import { openPath, openUrl } from '@tauri-apps/plugin-opener';
+import { exists } from '@tauri-apps/plugin-fs';
 
 // בדיקה אם אנחנו בסביבת Tauri
 function isTauriEnvironment(): boolean {
@@ -76,7 +77,6 @@ export class FolderService {
 
       if (isTauriEnvironment()) {
         // בסביבת Tauri - נשתמש ב-fs plugin לבדיקה
-        const { exists } = await import('@tauri-apps/plugin-fs');
         const pathExists = await exists(folderPath);
         console.log('📁 Folder validation:', pathExists ? '✅ EXISTS' : '❌ NOT FOUND', 'for:', folderPath);
         return pathExists;
