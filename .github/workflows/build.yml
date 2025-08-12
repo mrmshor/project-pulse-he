@@ -7,16 +7,15 @@ jobs:
   build-macos:
     permissions:
       contents: write
-    runs-on: macos-12
-    timeout-minutes: 45
+    runs-on: macos-14
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 18
+          bun-version: latest
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -26,7 +25,8 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
       - name: Install dependencies
-        run: npm install
+        run: bun install
+      # תיקון האייקונים השבורים
       - name: Fix broken icons
         run: |
           mkdir -p src-tauri/icons
@@ -36,7 +36,8 @@ jobs:
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.png
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.icns
           cp src-tauri/icons/32x32.png src-tauri/icons/icon.ico
-          echo "Icons fixed"
+          echo "✅ Icons fixed"
+      # בדיקת תצורה לפני בנייה
       - name: Debug configuration
         run: |
           echo "=== package.json version ==="
@@ -45,6 +46,7 @@ jobs:
           cat src-tauri/tauri.conf.json | grep -E '"productName"|"mainBinaryName"|"version"'
           echo "=== Cargo.toml name ==="
           cat src-tauri/Cargo.toml | grep '^name'
+      # בנייה ושחרור
       - name: Build and Release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -53,29 +55,31 @@ jobs:
           tagName: "v__VERSION__"
           releaseName: "Project Pulse HE v__VERSION__"
           releaseBody: |
-            Project Pulse HE - Advanced Project Management System in Hebrew
+            🚀 **Project Pulse HE - Advanced Project Management System in Hebrew**
             
-            Features:
-            - Advanced project and task management
-            - Real-time charts and analytics
-            - Full Hebrew and RTL support
-            - WhatsApp integration
-            - Modern and intuitive user interface
+            ## ✨ Features:
+            - 📊 Advanced project and task management
+            - 📈 Real-time charts and analytics
+            - 🇮🇱 Full Hebrew and RTL support
+            - 💬 WhatsApp integration
+            - 🎨 Modern and intuitive user interface
             
-            Download:
-            - macOS Universal: Project Pulse HE_1.0.0_universal.dmg
+            ## 📥 Download:
+            - **macOS Universal**: `Project Pulse HE_1.0.0_universal.dmg`
             
-            Fixed Issues:
-            - Fixed broken icons
-            - Fixed binary naming
-            - Proper artifact detection
-            - Complete build pipeline
+            ## 🛠️ Fixed Issues:
+            - ✅ Fixed broken icons
+            - ✅ Fixed binary naming (mainBinaryName)
+            - ✅ Proper artifact detection
+            - ✅ Complete build pipeline
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin
           artifactPaths: |
             src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
             src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+
+      # ← הוסף את השלב הזה כאן! ←
       - name: Debug what actually exists
         if: always()
         run: |
@@ -93,8 +97,10 @@ jobs:
           echo ""
           echo "=== Full directory structure ==="
           ls -la src-tauri/target/universal-apple-darwin/release/ 2>/dev/null || echo "Directory doesn't exist"
+
+      # אימות סופי
       - name: Verify build results
         if: always()
         run: |
           echo "=== Final verification ==="
-          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "No bundle files"
+          find src-tauri/target/universal-apple-darwin/release/bundle -name "*.dmg" -o -name "*.app*" 2>/dev/null || echo "❌ No bundle files"
