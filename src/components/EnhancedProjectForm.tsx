@@ -1,632 +1,614 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
-import { FolderService, ClientContactService } from '@/services/nativeServices';
-import { Project } from '@/types';
+import { Project, Contact, ProjectStatus, Priority, PaymentStatus } from '@/types';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useToast } from '@/hooks/use-toast';
+import { StatusSelector } from './StatusSelector';
+import { PrioritySelector } from './PrioritySelector';
 import { 
-  FolderOpen, 
-  Phone, 
-  Mail, 
-  MessageCircle, 
-  User, 
-  Building,
-  Loader2,
-  Check,
-  X,
-  CreditCard,
+  Calendar,
   DollarSign,
+  User,
+  FileText,
+  FolderOpen,
+  Clock,
+  Target,
+  Building,
   Plus,
-  Trash2
+  X,
+  AlertCircle
 } from 'lucide-react';
-
-interface ClientFormData {
-  name: string;
-  whatsappNumbers: {
-    id: string;
-    number: string;
-    label: string;
-    isPrimary: boolean;
-  }[];
-  email: string;
-  phone: string;
-  company: string;
-  notes: string;
-}
+import { cn } from '@/lib/utils';
 
 interface EnhancedProjectFormProps {
-  project?: Project;
-  onSave: () => void;
+  project?: Project | null;
+  onSubmit: (project: Project) => void;
   onCancel: () => void;
+  className?: string;
 }
 
-export function EnhancedProjectForm({ project, onSave, onCancel }: EnhancedProjectFormProps) {
-  const { addProject, updateProject } = useProjectStore();
-  // נתוני הטופס הקיימים
+export function EnhancedProjectForm({ 
+  project, 
+  onSubmit, 
+  onCancel, 
+  className 
+}: EnhancedProjectFormProps) {
+  const { contacts, addProject, updateProject } = useProjectStore();
+  const { toast } = useToast();
+  
   const [formData, setFormData] = useState({
-    name: project?.name || '',
-    description: project?.description || '',
-    status: project?.status || 'תכנון',
-    priority: project?.priority || 'בינונית',
-    startDate: project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-    dueDate: project?.dueDate ? new Date(project.dueDate).toISOString().split('T')[0] : '',
+    name: '',
+    description: '',
+    status: 'תכנון' as ProjectStatus,
+    priority: 'בינונית' as Priority,
+    startDate: '',
+    dueDate: '',
+    budget: '',
+    paidAmount: '',
+    paymentStatus: 'ממתין לתשלום' as PaymentStatus,
+    clientId: '',
+    folderPath: '',
+    tags: [] as string[],
+    notes: ''
   });
 
-  // נתונים חדשים - תיקיה ולקוח
-  const [folderPath, setFolderPath] = useState(project?.folderPath || '');
-  const [client, setClient] = useState<ClientFormData>({
-    name: project?.client?.name || '',
-    whatsappNumbers: project?.client?.whatsappNumbers || [
-      { id: '1', number: '', label: 'אישי', isPrimary: true }
-    ],
-    email: project?.client?.email || '',
-    phone: project?.client?.phone || '',
-    company: project?.client?.company || '',
-    notes: project?.client?.notes || ''
-  });
-  
-  // נתוני תשלום
-  const [payment, setPayment] = useState({
-    amount: project?.payment?.amount || '',
-    currency: project?.payment?.currency || 'ILS',
-    isPaid: project?.payment?.isPaid || false,
-    notes: project?.payment?.notes || ''
-  });
-  
-  const [isSelectingFolder, setIsSelectingFolder] = useState(false);
-  const [validations, setValidations] = useState({
-    phone: true,
-    whatsappNumbers: client.whatsappNumbers.map(() => true),
-    email: true
-  });
+  const [newTag, setNewTag] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // ולידציה בזמן אמת
+  // Initialize form data
   useEffect(() => {
-    setValidations({
-      phone: !client.phone || ClientContactService.validateInternationalPhone(client.phone),
-      whatsappNumbers: client.whatsappNumbers.map(whatsapp => 
-        !whatsapp.number || ClientContactService.validateInternationalPhone(whatsapp.number)
-      ),
-      email: !client.email || ClientContactService.validateEmail(client.email)
-    });
-  }, [client.phone, client.whatsappNumbers, client.email]);
+    if (project) {
+      setFormData({
+        name: project.name || '',
+        description: project.description || '',
+        status: project.status || 'תכנון',
+        priority: project.priority || 'בינונית',
+        startDate: project.startDate ? project.startDate.split('T')[0] : '',
+        dueDate: project.dueDate ? project.dueDate.split('T')[0] : '',
+        budget: project.budget ? project.budget.toString() : '',
+        paidAmount: project.paidAmount ? project.paidAmount.toString() : '',
+        paymentStatus: project.paymentStatus || 'ממתין לתשלום',
+        clientId: project.client?.id || '',
+        folderPath: project.folderPath || '',
+        tags: project.tags || [],
+        notes: project.notes || ''
+      });
+    } else {
+      // Set default start date to today
+      const today = new Date().toISOString().split('T')[0];
+      setFormData(prev => ({
+        ...prev,
+        startDate: today
+      }));
+    }
+  }, [project]);
 
-  // בחירת תיקיה
-  const handleSelectFolder = async () => {
-    setIsSelectingFolder(true);
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const handleAddTag = () => {
+    if (!newTag.trim() || formData.tags.includes(newTag.trim())) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      tags: [...prev.tags, newTag.trim()]
+    }));
+    setNewTag('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'שם הפרויקט הוא שדה חובה';
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'תיאור הפרויקט הוא שדה חובה';
+    }
+
+    if (!formData.startDate) {
+      newErrors.startDate = 'תאריך התחלה הוא שדה חובה';
+    }
+
+    if (formData.dueDate && formData.startDate && 
+        new Date(formData.dueDate) < new Date(formData.startDate)) {
+      newErrors.dueDate = 'תאריך יעד לא יכול להיות לפני תאריך ההתחלה';
+    }
+
+    if (formData.budget && (isNaN(Number(formData.budget)) || Number(formData.budget) < 0)) {
+      newErrors.budget = 'תקציב חייב להיות מספר חיובי';
+    }
+
+    if (formData.paidAmount && (isNaN(Number(formData.paidAmount)) || Number(formData.paidAmount) < 0)) {
+      newErrors.paidAmount = 'סכום ששולם חייב להיות מספר חיובי';
+    }
+
+    if (formData.budget && formData.paidAmount && 
+        Number(formData.paidAmount) > Number(formData.budget)) {
+      newErrors.paidAmount = 'סכום ששולם לא יכול להיות גדול מהתקציב';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast({
+        title: "שגיאות בטופס",
+        description: "אנא תקן את השגיאות ונסה שוב",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      const selectedPath = await FolderService.selectProjectFolder();
-      if (selectedPath) {
-        setFolderPath(selectedPath);
+      const selectedClient = formData.clientId 
+        ? contacts.find(c => c.id === formData.clientId) 
+        : undefined;
+
+      const projectData: Omit<Project, 'id'> = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        status: formData.status,
+        priority: formData.priority,
+        startDate: new Date(formData.startDate).toISOString(),
+        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
+        budget: formData.budget ? Number(formData.budget) : undefined,
+        paidAmount: formData.paidAmount ? Number(formData.paidAmount) : undefined,
+        paymentStatus: formData.paymentStatus,
+        client: selectedClient,
+        folderPath: formData.folderPath.trim() || undefined,
+        tags: formData.tags,
+        notes: formData.notes.trim() || undefined,
+        createdAt: project?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      if (project) {
+        const updatedProject = { ...projectData, id: project.id };
+        await updateProject(updatedProject);
+        onSubmit(updatedProject);
+        
+        toast({
+          title: "פרויקט עודכן",
+          description: `הפרויקט "${formData.name}" עודכן בהצלחה`,
+        });
+      } else {
+        const newProject = await addProject(projectData);
+        onSubmit(newProject);
+        
+        toast({
+          title: "פרויקט נוסף",
+          description: `הפרויקט "${formData.name}" נוסף בהצלחה`,
+        });
       }
     } catch (error) {
-      console.error('שגיאה בבחירת תיקיה:', error);
-      alert('שגיאה בבחירת תיקיה');
+      toast({
+        title: "שגיאה",
+        description: "אירעה שגיאה בשמירת הפרויקט",
+        variant: "destructive"
+      });
     } finally {
-      setIsSelectingFolder(false);
+      setIsSubmitting(false);
     }
   };
 
-  // בדיקת תיקיה קיימת
-  const handleValidateFolder = async () => {
-    if (folderPath) {
-      const isValid = await FolderService.validateFolderPath(folderPath);
-      if (!isValid) {
-        alert('התיקיה לא נמצאה. אנא בחר תיקיה חדשה.');
-      } else {
-        alert('התיקיה קיימת ותקינה!');
-      }
-    }
-  };
-
-  // שמירת פרויקט עם הנתונים החדשים
-  const handleSave = () => {
-    // ולידציה
-    if (!formData.name.trim()) {
-      alert('יש להזין שם פרויקט');
-      return;
-    }
-
-    if (!client.name.trim()) {
-      alert('יש להזין שם לקוח');
-      return;
-    }
-
-    if (!validations.phone || !validations.whatsappNumbers.every(v => v) || !validations.email) {
-      alert('יש לתקן את השגיאות בטופס');
-      return;
-    }
-
-    const projectData = {
-      name: formData.name,
-      description: formData.description,
-      status: formData.status,
-      priority: formData.priority,
-      startDate: new Date(formData.startDate),
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
-      folderPath: folderPath || undefined,
-      client: client,
-      payment: {
-        amount: payment.amount ? Number(payment.amount) : undefined,
-        currency: payment.currency as 'ILS' | 'USD' | 'EUR',
-        isPaid: payment.isPaid,
-        paidDate: payment.isPaid ? (project?.payment?.paidDate || new Date()) : undefined,
-        notes: payment.notes || undefined
-      },
-      tags: project?.tags || [],
-      reminders: project?.reminders || []
-    };
-    
-    if (project) {
-      // עריכת פרויקט קיים
-      updateProject(project.id, projectData);
-    } else {
-      // יצירת פרויקט חדש
-      addProject(projectData);
-    }
-    
-    onSave();
-  };
-
-  const handleClientChange = (field: keyof ClientFormData, value: string | ClientFormData['whatsappNumbers']) => {
-    setClient(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handlePaymentChange = (field: string, value: string | boolean) => {
-    setPayment(prev => ({ ...prev, [field]: value }));
-  };
-
-  // פונקציות עבור וואטסאפ מרובה
-  const addWhatsAppNumber = () => {
-    const newId = Date.now().toString();
-    setClient(prev => ({
-      ...prev,
-      whatsappNumbers: [
-        ...prev.whatsappNumbers,
-        { id: newId, number: '', label: 'נוסף', isPrimary: false }
-      ]
-    }));
-  };
-
-  const removeWhatsAppNumber = (id: string) => {
-    setClient(prev => ({
-      ...prev,
-      whatsappNumbers: prev.whatsappNumbers.filter(w => w.id !== id)
-    }));
-  };
-
-  const updateWhatsAppNumber = (id: string, field: 'number' | 'label' | 'isPrimary', value: string | boolean) => {
-    setClient(prev => ({
-      ...prev,
-      whatsappNumbers: prev.whatsappNumbers.map(w => 
-        w.id === id 
-          ? { 
-              ...w, 
-              [field]: value,
-              // אם מסמן כראשי, צריך לבטל את הראשי הקודם
-              ...(field === 'isPrimary' && value === true 
-                ? { isPrimary: true }
-                : field === 'isPrimary' && value === false
-                ? { isPrimary: false }
-                : {}
-              )
-            }
-          : field === 'isPrimary' && value === true 
-            ? { ...w, isPrimary: false }
-            : w
-      )
-    }));
+  const formatCurrency = (value: string) => {
+    if (!value) return '';
+    const num = Number(value);
+    return new Intl.NumberFormat('he-IL', {
+      style: 'currency',
+      currency: 'ILS',
+      minimumFractionDigits: 0
+    }).format(num);
   };
 
   return (
-    <div className="space-y-6 p-1">
-      {/* כותרת מעוצבת */}
-      <div className="text-center pb-6">
-        <div className="relative">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight mb-2">
+    <div className={cn('space-y-6', className)}>
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-primary/10 rounded-lg">
+          <FolderOpen className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold">
             {project ? 'עריכת פרויקט' : 'פרויקט חדש'}
           </h2>
-          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full"></div>
+          <p className="text-sm text-muted-foreground">
+            {project ? 'ערוך את פרטי הפרויקט' : 'הוסף פרויקט חדש למערכת'}
+          </p>
         </div>
-        <p className="text-muted-foreground mt-3">מלא את פרטי הפרויקט והלקוח</p>
       </div>
 
-      {/* פרטי פרויקט בסיסיים */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <FolderOpen className="w-5 h-5 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">פרטי פרויקט</h3>
-          </div>
-        </div>
-        <div className="p-6 space-y-4">
+      {/* Basic Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            מידע בסיסי
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">שם הפרויקט *</label>
+              <Label htmlFor="name" className="flex items-center gap-1">
+                שם הפרויקט <span className="text-red-500">*</span>
+              </Label>
               <Input
+                id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="הזן שם הפרויקט"
-                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-                required
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="הכנס שם פרויקט..."
+                className={cn('rtl', errors.name && 'border-red-500')}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.name}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="client">לקוח</Label>
+              <Select
+                value={formData.clientId}
+                onValueChange={(value) => handleInputChange('clientId', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר לקוח..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">ללא לקוח</SelectItem>
+                  {contacts.map((contact) => (
+                    <SelectItem key={contact.id} value={contact.id}>
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        {contact.name}
+                        {contact.company && (
+                          <span className="text-xs text-muted-foreground">
+                            ({contact.company})
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description" className="flex items-center gap-1">
+              תיאור הפרויקט <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="תאר את הפרויקט..."
+              rows={3}
+              className={cn('rtl', errors.description && 'border-red-500')}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {errors.description}
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>סטטוס פרויקט</Label>
+              <StatusSelector
+                value={formData.status}
+                onChange={(status) => handleInputChange('status', status)}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">סטטוס</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({...formData, status: e.target.value as any})}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="תכנון">תכנון</option>
-                <option value="פעיל">פעיל</option>
-                <option value="הושלם">הושלם</option>
-                <option value="בהמתנה">בהמתנה</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">עדיפות</label>
-              <select
+              <Label>עדיפות</Label>
+              <PrioritySelector
                 value={formData.priority}
-                onChange={(e) => setFormData({...formData, priority: e.target.value as any})}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="נמוכה">נמוכה</option>
-                <option value="בינונית">בינונית</option>
-                <option value="גבוהה">גבוהה</option>
-              </select>
+                onChange={(priority) => handleInputChange('priority', priority)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dates */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            תאריכים
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startDate" className="flex items-center gap-1">
+                תאריך התחלה <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => handleInputChange('startDate', e.target.value)}
+                className={cn(errors.startDate && 'border-red-500')}
+              />
+              {errors.startDate && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.startDate}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">תאריך יעד</label>
+              <Label htmlFor="dueDate">תאריך יעד</Label>
               <Input
+                id="dueDate"
                 type="date"
                 value={formData.dueDate}
-                onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
-                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
+                onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                className={cn(errors.dueDate && 'border-red-500')}
               />
+              {errors.dueDate && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.dueDate}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Financial Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4" />
+            מידע כספי
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="budget">תקציב (₪)</Label>
+              <Input
+                id="budget"
+                type="number"
+                min="0"
+                value={formData.budget}
+                onChange={(e) => handleInputChange('budget', e.target.value)}
+                placeholder="0"
+                className={cn('ltr', errors.budget && 'border-red-500')}
+              />
+              {errors.budget && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.budget}
+                </p>
+              )}
+              {formData.budget && (
+                <p className="text-xs text-muted-foreground">
+                  {formatCurrency(formData.budget)}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="paidAmount">סכום ששולם (₪)</Label>
+              <Input
+                id="paidAmount"
+                type="number"
+                min="0"
+                max={formData.budget || undefined}
+                value={formData.paidAmount}
+                onChange={(e) => handleInputChange('paidAmount', e.target.value)}
+                placeholder="0"
+                className={cn('ltr', errors.paidAmount && 'border-red-500')}
+              />
+              {errors.paidAmount && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.paidAmount}
+                </p>
+              )}
+              {formData.paidAmount && (
+                <p className="text-xs text-muted-foreground">
+                  {formatCurrency(formData.paidAmount)}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>סטטוס תשלום</Label>
+              <Select
+                value={formData.paymentStatus}
+                onValueChange={(value) => handleInputChange('paymentStatus', value as PaymentStatus)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ממתין לתשלום">ממתין לתשלום</SelectItem>
+                  <SelectItem value="שולם חלקית">שולם חלקית</SelectItem>
+                  <SelectItem value="שולם במלואו">שולם במלואו</SelectItem>
+                  <SelectItem value="לא רלוונטי">לא רלוונטי</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
+          {/* Payment Summary */}
+          {formData.budget && (
+            <div className="p-3 bg-muted/30 rounded-lg">
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">תקציב:</span>
+                  <p className="font-medium">{formatCurrency(formData.budget)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">שולם:</span>
+                  <p className="font-medium text-green-600">
+                    {formatCurrency(formData.paidAmount || '0')}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">נותר:</span>
+                  <p className="font-medium text-orange-600">
+                    {formatCurrency(
+                      (Number(formData.budget) - Number(formData.paidAmount || 0)).toString()
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Additional Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-4 h-4" />
+            מידע נוסף
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">תיאור</label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="תאר את הפרויקט..."
-              className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-              rows={3}
+            <Label htmlFor="folderPath" className="flex items-center gap-1">
+              <FolderOpen className="w-4 h-4" />
+              נתיב תיקייה
+            </Label>
+            <Input
+              id="folderPath"
+              value={formData.folderPath}
+              onChange={(e) => handleInputChange('folderPath', e.target.value)}
+              placeholder="C:\Projects\ProjectName"
+              dir="ltr"
             />
           </div>
-        </div>
-      </div>
 
-      {/* תיקיית פרויקט */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <FolderOpen className="w-5 h-5 text-amber-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">תיקיית פרויקט</h3>
-          </div>
-        </div>
-        <div className="p-6">
-          {folderPath ? (
-            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-700">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <FolderOpen className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                  <span className="truncate text-sm font-medium">{folderPath}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => FolderService.openInFinder(folderPath)}
-                    size="sm"
-                    variant="outline"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
-                  >
-                    פתח
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSelectFolder}
-                    size="sm"
-                    variant="outline"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
-                  >
-                    שנה
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setFolderPath('')}
-                    size="sm"
-                    variant="destructive"
-                  >
-                    הסר
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <Button
-              type="button"
-              onClick={handleSelectFolder}
-              disabled={isSelectingFolder}
-              variant="outline"
-              className="w-full gap-2 h-16 border-dashed border-2 border-gray-300 dark:border-gray-600 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-            >
-              {isSelectingFolder ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <FolderOpen className="w-5 h-5" />
-              )}
-              {isSelectingFolder ? 'בוחר תיקיה...' : 'בחר תיקיית פרויקט'}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* פרטי לקוח */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <User className="w-5 h-5 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">פרטי לקוח</h3>
-          </div>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <User className="w-4 h-4" />
-                שם הלקוח *
-              </label>
+          {/* Tags */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1">
+              <Building className="w-4 h-4" />
+              תגיות
+            </Label>
+            <div className="flex gap-2">
               <Input
-                value={client.name}
-                onChange={(e) => handleClientChange('name', e.target.value)}
-                placeholder="שם מלא של הלקוח"
-                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-                required
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="הוסף תגית..."
+                onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+                className="rtl"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddTag}
+                disabled={!newTag.trim()}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
             </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <Building className="w-4 h-4" />
-                חברה
-              </label>
-              <Input
-                value={client.company}
-                onChange={(e) => handleClientChange('company', e.target.value)}
-                placeholder="שם החברה"
-                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <Phone className="w-4 h-4" />
-                טלפון
-                {client.phone && (
-                  validations.phone ? 
-                    <Check className="w-4 h-4 text-green-600" /> : 
-                    <X className="w-4 h-4 text-red-600" />
-                )}
-              </label>
-              <Input
-                type="tel"
-                value={client.phone}
-                onChange={(e) => handleClientChange('phone', e.target.value)}
-                placeholder="+972-XX-XXXXXXX או 0XX-XXXXXXX"
-                className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.phone ? 'border-red-300' : ''}`}
-              />
-              {!validations.phone && (
-                <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין. השתמש ב: +972-XX-XXXXXXX או 0XX-XXXXXXX</span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <MessageCircle className="w-4 h-4" />
-                  מספרי WhatsApp
-                </label>
-                <Button
-                  type="button"
-                  onClick={addWhatsAppNumber}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1 text-xs"
-                >
-                  <Plus size={14} />
-                  הוסף מספר
-                </Button>
-              </div>
-              
-              <div className="space-y-3">
-                {client.whatsappNumbers.map((whatsapp, index) => (
-                  <div key={whatsapp.id} className="flex gap-2 items-start">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex gap-2">
-                        <Input
-                          type="tel"
-                          value={whatsapp.number}
-                          onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'number', e.target.value)}
-                          placeholder="+972-XX-XXXXXXX או 0XX-XXXXXXX"
-                          className={`flex-1 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.whatsappNumbers[index] ? 'border-red-300' : ''}`}
-                        />
-                        <Input
-                          value={whatsapp.label}
-                          onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'label', e.target.value)}
-                          placeholder="תווית"
-                          className="w-20 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary text-xs"
-                        />
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="radio"
-                            checked={whatsapp.isPrimary}
-                            onChange={(e) => updateWhatsAppNumber(whatsapp.id, 'isPrimary', e.target.checked)}
-                            className="w-4 h-4"
-                            title="ראשי"
-                          />
-                          {client.whatsappNumbers.length > 1 && (
-                            <Button
-                              type="button"
-                              onClick={() => removeWhatsAppNumber(whatsapp.id)}
-                              size="sm"
-                              variant="ghost"
-                              className="w-8 h-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      {!validations.whatsappNumbers[index] && (
-                        <span className="text-red-600 text-xs">פורמט מספר טלפון לא תקין. השתמש ב: +972-XX-XXXXXXX או 0XX-XXXXXXX</span>
-                      )}
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {whatsapp.number && validations.whatsappNumbers[index] && (
-                          <Check className="w-3 h-3 text-green-600" />
-                        )}
-                        {whatsapp.isPrimary && (
-                          <span className="text-primary font-medium">ראשי</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+            {formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags.map((tag, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {tag}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 hover:bg-transparent"
+                      onClick={() => handleRemoveTag(tag)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </Badge>
                 ))}
               </div>
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <Mail className="w-4 h-4" />
-                אימייל
-                {client.email && (
-                  validations.email ? 
-                    <Check className="w-4 h-4 text-green-600" /> : 
-                    <X className="w-4 h-4 text-red-600" />
-                )}
-              </label>
-              <Input
-                type="email"
-                value={client.email}
-                onChange={(e) => handleClientChange('email', e.target.value)}
-                placeholder="client@example.com"
-                className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary ${!validations.email ? 'border-red-300' : ''}`}
-              />
-              {!validations.email && (
-                <span className="text-red-600 text-xs">כתובת אימייל לא תקינה</span>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">הערות</label>
+            <Label htmlFor="notes">הערות</Label>
             <Textarea
-              value={client.notes}
-              onChange={(e) => handleClientChange('notes', e.target.value)}
-              placeholder="הערות נוספות על הלקוח..."
-              className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-              rows={3}
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              placeholder="הערות נוספות על הפרויקט..."
+              rows={4}
+              className="rtl"
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* פרטי תשלום */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-              <CreditCard className="w-5 h-5 text-emerald-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">פרטי תשלום</h3>
-          </div>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <DollarSign className="w-4 h-4" />
-                סכום
-              </label>
-              <Input
-                type="number"
-                value={payment.amount}
-                onChange={(e) => handlePaymentChange('amount', e.target.value)}
-                placeholder="0"
-                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">מטבע</label>
-              <select
-                value={payment.currency}
-                onChange={(e) => handlePaymentChange('currency', e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="ILS">שקל (₪)</option>
-                <option value="USD">דולר ($)</option>
-                <option value="EUR">יורו (€)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isPaid"
-              checked={payment.isPaid}
-              onCheckedChange={(checked) => handlePaymentChange('isPaid', checked === true)}
-            />
-            <label htmlFor="isPaid" className="text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer">
-              התקבל תשלום
-            </label>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">הערות תשלום</label>
-            <Textarea
-              value={payment.notes}
-              onChange={(e) => handlePaymentChange('notes', e.target.value)}
-              placeholder="הערות על התשלום..."
-              className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-600 focus:border-primary"
-              rows={2}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* כפתורי פעולה */}
-      <div className="flex gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+      {/* Actions */}
+      <div className="flex justify-end gap-2 pt-4">
         <Button
-          onClick={handleSave}
-          className="flex-1 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-          size="lg"
-        >
-          {project ? 'עדכן פרויקט' : 'צור פרויקט'}
-        </Button>
-        <Button
-          onClick={onCancel}
           variant="outline"
-          className="flex-1 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-          size="lg"
+          onClick={onCancel}
+          disabled={isSubmitting}
         >
           ביטול
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting || !formData.name.trim() || !formData.description.trim()}
+        >
+          {isSubmitting ? 'שומר...' : project ? 'עדכן פרויקט' : 'צור פרויקט'}
         </Button>
       </div>
     </div>
