@@ -10,11 +10,11 @@ export interface Reminder {
   id: string;
   type: 'deadline' | 'followup' | 'meeting' | 'custom';
   message: string;
-  triggerDate: Date;
+  triggerDate: string; // ✅ FIXED: ISO string instead of Date
   isActive: boolean;
   recurring?: {
     frequency: 'daily' | 'weekly' | 'monthly';
-    endDate?: Date;
+    endDate?: string; // ✅ FIXED: ISO string instead of Date
   };
 }
 
@@ -22,16 +22,23 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  status: 'תכנון' | 'פעיל' | 'הושלם' | 'בהמתנה';
+  status: 'תכנון' | 'פעיל' | 'הושלם' | 'מושהה' | 'בוטל'; // ✅ FIXED: Added missing statuses
   priority: 'נמוכה' | 'בינונית' | 'גבוהה';
-  startDate: Date;
-  dueDate?: Date;
-  tasks: Task[];
-  contacts: Contact[];
-  tags: Tag[];
-  reminders: Reminder[];
+  startDate: string; // ✅ FIXED: ISO string instead of Date
+  dueDate?: string; // ✅ FIXED: ISO string instead of Date
+  createdAt: string; // ✅ ADDED: Missing field used by components
+  updatedAt: string; // ✅ ADDED: Missing field used by components
+  budget?: number; // ✅ ADDED: Missing field used by components
+  paidAmount?: number; // ✅ ADDED: Missing field used by components
+  paymentStatus?: PaymentStatus; // ✅ ADDED: Missing field used by components
+  tasks?: Task[]; // ✅ FIXED: Made optional since tasks are stored separately
+  contacts?: Contact[]; // ✅ FIXED: Made optional since contacts are stored separately
+  tags?: Tag[]; // ✅ FIXED: Made optional
+  reminders?: Reminder[]; // ✅ FIXED: Made optional
   folderPath?: string; // נתיב לתיקיה המקושרת
-  client: {
+  notes?: string; // ✅ ADDED: Missing field used by components
+  client?: { // ✅ FIXED: Made optional
+    id?: string; // ✅ ADDED: Contact ID reference
     name: string;
     whatsappNumbers?: {
       id: string;
@@ -44,12 +51,12 @@ export interface Project {
     company?: string;
     notes?: string;
   };
-  // פרטי תשלום
-  payment: {
+  // פרטי תשלום - DEPRECATED: Use budget, paidAmount, paymentStatus instead
+  payment?: {
     amount?: number;
     currency: 'ILS' | 'USD' | 'EUR';
     isPaid: boolean;
-    paidDate?: Date;
+    paidDate?: string; // ✅ FIXED: ISO string instead of Date
     notes?: string;
   };
 }
@@ -58,20 +65,24 @@ export interface Task {
   id: string;
   projectId: string;
   title: string;
-  status: 'לביצוע' | 'בתהליך' | 'הושלמה';
+  description?: string; // ✅ ADDED: Missing field used by components
+  status: 'ממתין' | 'בעבודה' | 'הושלם'; // ✅ FIXED: Updated to match component usage
   priority: 'נמוכה' | 'בינונית' | 'גבוהה';
-  dueDate?: Date;
+  completed: boolean; // ✅ ADDED: Missing field used by components
+  dueDate?: string; // ✅ FIXED: ISO string instead of Date
+  createdAt: string; // ✅ ADDED: Missing field used by components
+  updatedAt: string; // ✅ ADDED: Missing field used by components
   timeEntries?: TimeEntry[];
-  tags: Tag[];
-  order: number;
+  tags?: Tag[]; // ✅ FIXED: Made optional
+  order?: number; // ✅ FIXED: Made optional
   estimatedTime?: number; // in minutes
 }
 
 export interface TimeEntry {
   id: string;
   taskId: string;
-  startTime: Date;
-  endTime?: Date;
+  startTime: string; // ✅ FIXED: ISO string instead of Date
+  endTime?: string; // ✅ FIXED: ISO string instead of Date
   duration: number; // in minutes
   description?: string;
 }
@@ -81,12 +92,22 @@ export interface Contact {
   name: string;
   email?: string;
   phone?: string; // פורמט ישראלי 05X-XXXXXXX
-  projectIds: string[];
-  tags: Tag[];
+  company?: string; // ✅ ADDED: Missing field used by components
+  address?: string; // ✅ ADDED: Missing field used by components
+  notes?: string; // ✅ ADDED: Missing field used by components
+  type?: 'לקוח' | 'ספק' | 'שותף' | 'עמית' | 'אחר'; // ✅ ADDED: Missing field used by components
+  createdAt: string; // ✅ ADDED: Missing field used by components
+  updatedAt: string; // ✅ ADDED: Missing field used by components
+  projectIds?: string[]; // ✅ FIXED: Made optional
+  tags?: Tag[]; // ✅ FIXED: Made optional
 }
 
+// ✅ ADDED: Missing PaymentStatus type used by components
+export type PaymentStatus = 'ממתין לתשלום' | 'שולם חלקית' | 'שולם במלואו' | 'לא רלוונטי';
+
+// Type exports
 export type ProjectStatus = Project['status'];
-export type TaskStatus = Task['status'];
+export type TaskStatus = Task['status']; // ✅ FIXED: Now uses correct Task status values
 export type Priority = Project['priority'];
 
 // משימות אישיות - נפרדות מהפרויקטים
@@ -95,6 +116,11 @@ export interface PersonalTask {
   title: string;
   completed: boolean;
   priority: Priority;
-  createdAt: Date;
-  completedAt?: Date;
+  createdAt: string; // ✅ FIXED: ISO string instead of Date for consistency
+  completedAt?: string; // ✅ FIXED: ISO string instead of Date for consistency
 }
+
+// ✅ ADDED: Export useful utility types
+export type ContactType = Contact['type'];
+export type ReminderType = Reminder['type'];
+export type TagCategory = Tag['category'];
