@@ -7,7 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ContactDialog } from '@/components/ContactDialog';
-import { isTauriEnvironment, openWhatsApp, openMail, openPhone, exportFileNative } from '@/lib/tauri';
+import { 
+  isTauriEnvironment, 
+  openWhatsApp, 
+  openMail, 
+  openPhone, 
+  exportFileNative,
+  formatPhoneForWhatsApp 
+} from '@/lib/tauri';
 
 export function Contacts() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,47 +48,46 @@ export function Contacts() {
   };
 
   const handleExport = async () => {
-    const content = exportToCSV('contacts');
-    
-    if (isTauriEnvironment()) {
-      await exportFileNative(content, 'contacts.csv', 'csv');
-    } else {
-      const blob = new Blob([content], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'contacts.csv';
-      a.click();
-      URL.revokeObjectURL(url);
+    try {
+      const content = exportToCSV('contacts');
+      
+      if (isTauriEnvironment()) {
+        await exportFileNative(content, 'contacts.csv', 'csv');
+      } else {
+        const blob = new Blob([content], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'contacts.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Error exporting contacts:', error);
     }
   };
 
-  const formatPhone = (phone: string) => {
-    // Convert Israeli phone format for WhatsApp (remove dashes, add country code)
-    return phone.replace(/[^0-9]/g, '').replace(/^0/, '972');
-  };
-
   const handleEmailClick = async (email: string) => {
-    if (isTauriEnvironment()) {
+    try {
       await openMail(email);
-    } else {
-      window.open(`mailto:${email}`);
+    } catch (error) {
+      console.error('Error opening email:', error);
     }
   };
 
   const handlePhoneClick = async (phone: string) => {
-    if (isTauriEnvironment()) {
+    try {
       await openPhone(phone);
-    } else {
-      window.open(`tel:${phone}`);
+    } catch (error) {
+      console.error('Error opening phone:', error);
     }
   };
 
   const handleWhatsAppClick = async (phone: string) => {
-    if (isTauriEnvironment()) {
+    try {
       await openWhatsApp(phone);
-    } else {
-      window.open(`https://wa.me/${formatPhone(phone)}`);
+    } catch (error) {
+      console.error('Error opening WhatsApp:', error);
     }
   };
 
@@ -90,10 +96,14 @@ export function Contacts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">אנשי קשר</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} className="gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            className="gap-2"
+          >
             <Download size={16} />
-            CSV
+            יצוא CSV
           </Button>
           <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
             <Plus size={16} />
@@ -104,7 +114,7 @@ export function Contacts() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+        <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
         <Input
           placeholder="חיפוש אנשי קשר..."
           value={searchTerm}
@@ -114,63 +124,70 @@ export function Contacts() {
       </div>
 
       {/* Contacts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredContacts.map((contact) => {
-          const contactProjects = contact.projectIds
-            .map((id) => projects.find((p) => p.id === id))
-            .filter(Boolean);
-          
-          return (
-            <Card key={contact.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
+      {filteredContacts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <MessageCircle className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">
+            {searchTerm ? 'לא נמצאו אנשי קשר' : 'אין אנשי קשר עדיין'}
+          </h3>
+          <p className="text-muted-foreground">
+            {searchTerm ? 'נסה לשנות את מילות החיפוש' : 'התחל להוסיף אנשי קשר לפרויקטים שלך'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredContacts.map((contact) => (
+            <Card key={contact.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{contact.name}</CardTitle>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(contact)}
-                    >
-                      <Edit size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(contact.id)}
-                      className="text-danger hover:text-danger"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg font-semibold truncate">
+                      {contact.name}
+                    </CardTitle>
+                    {contact.email && (
+                      <p className="text-sm text-muted-foreground truncate mt-1">
+                        {contact.email}
+                      </p>
+                    )}
+                    {contact.phone && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {contact.phone}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Contact Info */}
-                <div className="space-y-2">
-                  {contact.email && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail size={16} className="text-muted-foreground" />
-                      <span>{contact.email}</span>
-                    </div>
-                  )}
-                  {contact.phone && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone size={16} className="text-muted-foreground" />
-                      <span>{contact.phone}</span>
-                    </div>
-                  )}
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 flex-wrap">
+              <CardContent className="pt-0">
+                {/* פרויקטים קשורים */}
+                {contact.projectIds && contact.projectIds.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">פרויקטים:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {contact.projectIds.map((projectId) => {
+                        const project = projects.find(p => p.id === projectId);
+                        return project ? (
+                          <Badge key={projectId} variant="secondary" className="text-xs">
+                            {project.name}
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* כפתורי תקשורת */}
+                <div className="flex items-center gap-2 mb-4">
                   {contact.email && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEmailClick(contact.email!)}
-                      className="gap-1"
+                      className="gap-2 flex-1"
                     >
-                      <Mail size={14} />
+                      <Mail className="w-4 h-4" />
                       אימייל
                     </Button>
                   )}
@@ -180,56 +197,60 @@ export function Contacts() {
                         variant="outline"
                         size="sm"
                         onClick={() => handlePhoneClick(contact.phone!)}
-                        className="gap-1"
+                        className="gap-2 flex-1"
                       >
-                        <Phone size={14} />
-                        התקשר
+                        <Phone className="w-4 h-4" />
+                        חייג
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleWhatsAppClick(contact.phone!)}
-                        className="gap-1"
+                        className="gap-2 flex-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                       >
-                        <MessageCircle size={14} />
+                        <MessageCircle className="w-4 h-4" />
                         WhatsApp
                       </Button>
                     </>
                   )}
                 </div>
 
-                {/* Projects */}
-                {contactProjects.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-muted-foreground">פרויקטים:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {contactProjects.map((project) => (
-                        <Badge key={project!.id} variant="secondary" className="text-xs">
-                          {project!.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* כפתורי פעולה */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(contact)}
+                    className="gap-2 flex-1"
+                  >
+                    <Edit className="w-4 h-4" />
+                    עריכה
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(contact.id)}
+                    className="gap-2 flex-1 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    מחיקה
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
-
-      {filteredContacts.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">לא נמצאו אנשי קשר</p>
+          ))}
         </div>
       )}
 
+      {/* Contact Dialog */}
       <ContactDialog
         open={isDialogOpen}
-        onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) setEditingContact(null);
-        }}
+        onOpenChange={setIsDialogOpen}
         contact={editingContact}
+        onSave={() => {
+          setIsDialogOpen(false);
+          setEditingContact(null);
+        }}
       />
     </div>
   );
