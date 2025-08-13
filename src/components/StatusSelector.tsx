@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,102 +6,129 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ProjectStatus } from '@/types';
-import { ChevronDown, Check, PenTool, Play, CheckCircle2, Pause } from 'lucide-react';
+import { ChevronDown, Check, Clock, Play, CheckCircle, Pause, Archive } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StatusSelectorProps {
-  currentStatus: ProjectStatus;
-  onStatusChange: (status: ProjectStatus) => void;
+  value: ProjectStatus;
+  onChange: (status: ProjectStatus) => void;
   disabled?: boolean;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-const statusOptions: { 
-  value: ProjectStatus; 
-  label: string; 
-  color: string;
-  bgColor: string;
-  icon: React.ReactNode;
-}[] = [
-  { 
-    value: 'תכנון', 
-    label: 'תכנון', 
-    color: 'text-slate-700 dark:text-slate-300', 
-    bgColor: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600',
-    icon: <PenTool className="w-3 h-3" />
+const statusConfig = {
+  'תכנון': {
+    label: 'תכנון',
+    color: 'bg-gray-100 text-gray-700 border-gray-200',
+    icon: Clock,
+    description: 'פרויקט בשלב התכנון'
   },
-  { 
-    value: 'פעיל', 
-    label: 'פעיל', 
-    color: 'text-blue-700 dark:text-blue-300', 
-    bgColor: 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600',
-    icon: <Play className="w-3 h-3" />
+  'פעיל': {
+    label: 'פעיל',
+    color: 'bg-blue-100 text-blue-700 border-blue-200',
+    icon: Play,
+    description: 'פרויקט פעיל'
   },
-  { 
-    value: 'הושלם', 
-    label: 'הושלם', 
-    color: 'text-green-700 dark:text-green-300', 
-    bgColor: 'bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-600',
-    icon: <CheckCircle2 className="w-3 h-3" />
+  'הושלם': {
+    label: 'הושלם',
+    color: 'bg-green-100 text-green-700 border-green-200',
+    icon: CheckCircle,
+    description: 'פרויקט הושלם בהצלחה'
   },
-  { 
-    value: 'בהמתנה', 
-    label: 'בהמתנה', 
-    color: 'text-yellow-700 dark:text-yellow-300', 
-    bgColor: 'bg-yellow-100 dark:bg-yellow-900 border-yellow-300 dark:border-yellow-600',
-    icon: <Pause className="w-3 h-3" />
+  'מושהה': {
+    label: 'מושהה',
+    color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    icon: Pause,
+    description: 'פרויקט מושהה זמנית'
   },
-];
+  'בוטל': {
+    label: 'בוטל',
+    color: 'bg-red-100 text-red-700 border-red-200',
+    icon: Archive,
+    description: 'פרויקט בוטל'
+  }
+} as const;
 
-export function StatusSelector({ currentStatus, onStatusChange, disabled = false }: StatusSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const currentOption = statusOptions.find(option => option.value === currentStatus);
-  
-  const handleStatusSelect = (status: ProjectStatus) => {
-    onStatusChange(status);
-    setIsOpen(false);
+export function StatusSelector({ 
+  value, 
+  onChange, 
+  disabled = false, 
+  className,
+  size = 'md' 
+}: StatusSelectorProps) {
+  const currentStatus = statusConfig[value];
+  const CurrentIcon = currentStatus.icon;
+
+  const sizeClasses = {
+    sm: 'h-7 px-2 text-xs gap-1',
+    md: 'h-8 px-3 text-sm gap-2',
+    lg: 'h-10 px-4 text-base gap-2'
   };
 
-  if (disabled) {
-    return (
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border ${currentOption?.color} ${currentOption?.bgColor}`}>
-        {currentOption?.icon}
-        {currentOption?.label}
-      </div>
-    );
-  }
-
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-auto p-0 hover:bg-transparent group"
+          variant="outline"
+          disabled={disabled}
+          className={cn(
+            'border justify-between font-medium transition-all duration-200 hover:shadow-sm',
+            currentStatus.color,
+            sizeClasses[size],
+            className
+          )}
         >
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border transition-all duration-200 cursor-pointer group-hover:shadow-sm group-hover:scale-105 ${currentOption?.color} ${currentOption?.bgColor}`}>
-            {currentOption?.icon}
-            <span>{currentOption?.label}</span>
-            <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
+          <div className="flex items-center gap-1">
+            <CurrentIcon className="w-3 h-3" />
+            <span>{currentStatus.label}</span>
           </div>
+          <ChevronDown className="w-3 h-3 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="w-36 glass">
-        {statusOptions.map((option) => (
-          <DropdownMenuItem
-            key={option.value}
-            onClick={() => handleStatusSelect(option.value)}
-            className="flex items-center justify-between cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              {option.icon}
-              <span>{option.label}</span>
-            </div>
-            {currentStatus === option.value && (
-              <Check className="w-4 h-4 text-primary" />
-            )}
-          </DropdownMenuItem>
-        ))}
+      
+      <DropdownMenuContent align="end" className="w-48 rtl">
+        {(Object.keys(statusConfig) as ProjectStatus[]).map((status) => {
+          const config = statusConfig[status];
+          const Icon = config.icon;
+          
+          return (
+            <DropdownMenuItem
+              key={status}
+              onClick={() => onChange(status)}
+              className={cn(
+                'flex items-center justify-between cursor-pointer transition-colors duration-150',
+                'hover:bg-muted/50 focus:bg-muted/50',
+                value === status && 'bg-muted'
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <Icon className="w-4 h-4" />
+                <div className="flex flex-col">
+                  <span className="font-medium">{config.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {config.description}
+                  </span>
+                </div>
+              </div>
+              
+              {value === status && (
+                <Check className="w-4 h-4 text-primary" />
+              )}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
+// Hook for getting status color and icon
+export const useStatusConfig = (status: ProjectStatus) => {
+  return statusConfig[status];
+};
+
+// Utility function for status badge
+export const getStatusBadgeClass = (status: ProjectStatus): string => {
+  return statusConfig[status].color;
+};
