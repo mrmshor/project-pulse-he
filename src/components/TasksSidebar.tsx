@@ -29,6 +29,20 @@ import { usePersonalTasksStore } from '@/store/usePersonalTasksStore';
 import { PersonalTask, Priority } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
+// ✅ FIXED: הוסף פונקציה חסרה
+const getPriorityIcon = (priority: Priority) => {
+  switch (priority) {
+    case 'גבוהה':
+      return <ArrowUp className="w-3 h-3 text-red-500" />;
+    case 'בינונית':
+      return <ArrowRight className="w-3 h-3 text-yellow-500" />;
+    case 'נמוכה':
+      return <ArrowDown className="w-3 h-3 text-green-500" />;
+    default:
+      return <ArrowRight className="w-3 h-3 text-gray-400" />;
+  }
+};
+
 export function TasksSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [newTask, setNewTask] = useState('');
@@ -43,7 +57,7 @@ export function TasksSidebar() {
   } = usePersonalTasksStore();
   const { toast } = useToast();
 
-  // משימות לא מושלמות, ממוינות לפי עדיפות
+  // משימות לא מושלמות, ממויינות לפי עדיפות
   const pendingTasks = tasks
     .filter(task => !task.completed)
     .sort((a, b) => {
@@ -65,6 +79,11 @@ export function TasksSidebar() {
     addTask(newTask, newTaskPriority);
     setNewTask('');
     setNewTaskPriority('בינונית');
+    
+    toast({
+      title: "משימה נוספה!",
+      description: `המשימה "${newTask}" נוספה בהצלחה`,
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -86,7 +105,7 @@ export function TasksSidebar() {
     }
 
     const tasksList = pendingTasks.map(task => 
-      `• ${task.title}`
+      `• ${task.title} (${task.priority})`
     ).join('\n');
 
     try {
@@ -96,9 +115,10 @@ export function TasksSidebar() {
         description: `${pendingTasks.length} משימות הועתקו ללוח`,
       });
     } catch (error) {
+      console.error('Failed to copy tasks:', error);
       toast({
         title: "שגיאה",
-        description: "לא ניתן להעתיק ללוח",
+        description: "לא ניתן להעתיק את המשימות",
         variant: "destructive"
       });
     }
@@ -110,61 +130,60 @@ export function TasksSidebar() {
     
     clearCompleted();
     toast({
-      title: "נוקו משימות",
-      description: `${completedTasks.length} משימות מושלמות הוסרו`,
+      title: "נוקה בהצלחה!",
+      description: `${completedTasks.length} משימות מושלמות נמחקו`,
     });
   };
 
-  // שינוי עדיפות משימה
-  const handlePriorityChange = (taskId: string, priority: Priority) => {
-    updateTask(taskId, { priority });
-  };
-
-  const getPriorityIcon = (priority: Priority) => {
-    switch (priority) {
-      case 'גבוהה': return <ArrowUp className="w-3 h-3 text-red-500" />;
-      case 'בינונית': return <ArrowRight className="w-3 h-3 text-yellow-500" />;
-      case 'נמוכה': return <ArrowDown className="w-3 h-3 text-green-500" />;
+  const handleTaskToggle = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    toggleTask(taskId);
+    
+    if (!task.completed) {
+      toast({
+        title: "כל הכבוד! ✅",
+        description: `המשימה "${task.title}" הושלמה`,
+      });
     }
   };
 
-  const getPriorityColor = (priority: Priority) => {
-    switch (priority) {
-      case 'גבוהה': return 'border-red-200 bg-red-50';
-      case 'בינונית': return 'border-yellow-200 bg-yellow-50';
-      case 'נמוכה': return 'border-green-200 bg-green-50';
-    }
+  const handleTaskDelete = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    deleteTask(taskId);
+    toast({
+      title: "משימה נמחקה",
+      description: `המשימה "${task.title}" נמחקה בהצלחה`,
+    });
+  };
+
+  const handlePriorityChange = (taskId: string, newPriority: Priority) => {
+    updateTask(taskId, { priority: newPriority });
+    toast({
+      title: "עדיפות עודכנה",
+      description: `העדיפות עודכנה ל${newPriority}`,
+    });
   };
 
   return (
-    <div
-      className={cn(
-        'h-full bg-white dark:bg-gray-900 transition-all duration-300 shadow-lg flex flex-col border-gray-200 dark:border-gray-700',
-        isCollapsed ? 'w-16' : 'w-full'
-      )}
-    >
+    <div className="h-full flex flex-col bg-white border-r border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+      <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center gap-3">
-              <div className="relative p-2 bg-gradient-to-br from-primary/20 to-green-500/20 rounded-xl shadow-sm">
-                <CheckSquare className="w-5 h-5 text-primary" />
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-xl animate-pulse"></div>
-              </div>
-              <div>
-                <div className="relative">
-                  <h2 className="text-lg font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                    משימות אישיות
-                  </h2>
-                  <div className="absolute -bottom-0.5 right-0 w-12 h-0.5 bg-gradient-to-l from-primary/60 to-transparent rounded-full"></div>
-                </div>
-              </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <CheckSquare className="w-4 h-4 text-white" />
             </div>
-          )}
+            {!isCollapsed && (
+              <h2 className="font-semibold text-gray-800">משימות אישיות</h2>
+            )}
+          </div>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            className="p-1 hover:bg-white/50 rounded-md transition-colors"
           >
             {isCollapsed ? <Menu size={18} /> : <X size={18} />}
           </button>
@@ -253,150 +272,120 @@ export function TasksSidebar() {
           <ScrollArea className="flex-1 p-4">
             {tasks.length === 0 ? (
               <div className="text-center py-8">
-                <CheckSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">אין משימות עדיין</p>
-                <p className="text-sm text-muted-foreground mt-1">הוסף משימה ראשונה למעלה</p>
+                <CheckSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-muted-foreground font-medium">אין משימות עדיין</p>
+                <p className="text-sm text-muted-foreground mt-1">התחל להוסיף משימות אישיות</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {/* משימות פתוחות */}
                 {pendingTasks.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-foreground mb-2">
-                      פתוחות ({pendingTasks.length})
-                    </h3>
-                    <div className="space-y-2">
-                      {pendingTasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className={cn(
-                            "p-3 border rounded-lg hover:shadow-sm transition-all group",
-                            getPriorityColor(task.priority)
-                          )}
-                        >
-                          <div className="flex items-start gap-2">
-                            <Checkbox
-                              checked={false}
-                              onCheckedChange={() => toggleTask(task.id)}
-                              className="mt-0.5"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1 mb-1">
-                                {getPriorityIcon(task.priority)}
-                                <p className="text-sm font-medium leading-tight">
-                                  {task.title}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {/* תפריט עדיפות */}
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0"
-                                  >
-                                    <MoreVertical className="w-3 h-3" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-32">
-                                  <DropdownMenuItem 
-                                    onClick={() => handlePriorityChange(task.id, 'גבוהה')}
-                                    className="gap-2"
-                                  >
-                                    <ArrowUp className="w-3 h-3 text-red-500" />
-                                    גבוהה
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handlePriorityChange(task.id, 'בינונית')}
-                                    className="gap-2"
-                                  >
-                                    <ArrowRight className="w-3 h-3 text-yellow-500" />
-                                    בינונית
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handlePriorityChange(task.id, 'נמוכה')}
-                                    className="gap-2"
-                                  >
-                                    <ArrowDown className="w-3 h-3 text-green-500" />
-                                    נמוכה
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              
-                              {/* כפתור מחיקה */}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteTask(task.id)}
-                                className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">משימות פתוחות</h3>
+                    {pendingTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="group flex items-start gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-all"
+                      >
+                        <Checkbox
+                          checked={task.completed}
+                          onCheckedChange={() => handleTaskToggle(task.id)}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 break-words">
+                            {task.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge 
+                              variant="outline" 
+                              className={cn(
+                                "text-xs",
+                                task.priority === 'גבוהה' && "border-red-200 text-red-700 bg-red-50",
+                                task.priority === 'בינונית' && "border-yellow-200 text-yellow-700 bg-yellow-50",
+                                task.priority === 'נמוכה' && "border-green-200 text-green-700 bg-green-50"
+                              )}
+                            >
+                              {getPriorityIcon(task.priority)}
+                              {task.priority}
+                            </Badge>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <MoreVertical className="w-3 h-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handlePriorityChange(task.id, 'גבוהה')}>
+                                <ArrowUp className="w-3 h-3 mr-2 text-red-500" />
+                                עדיפות גבוהה
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handlePriorityChange(task.id, 'בינונית')}>
+                                <ArrowRight className="w-3 h-3 mr-2 text-yellow-500" />
+                                עדיפות בינונית
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handlePriorityChange(task.id, 'נמוכה')}>
+                                <ArrowDown className="w-3 h-3 mr-2 text-green-500" />
+                                עדיפות נמוכה
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleTaskDelete(task.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="w-3 h-3 mr-2" />
+                                מחק משימה
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
                 {/* משימות מושלמות */}
                 {completedTasks.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                      הושלמו ({completedTasks.length})
-                    </h3>
-                    <div className="space-y-2">
-                      {completedTasks.slice(0, 5).map((task) => (
-                        <div
-                          key={task.id}
-                          className="p-3 border rounded-lg bg-muted/30 group"
-                        >
-                          <div className="flex items-start gap-2">
-                            <Checkbox
-                              checked={true}
-                              onCheckedChange={() => toggleTask(task.id)}
-                              className="mt-0.5"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm line-through text-muted-foreground leading-tight">
-                                {task.title}
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteTask(task.id)}
-                              className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">הושלמו</h3>
+                    {completedTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="group flex items-start gap-3 p-3 bg-gray-50 border border-gray-100 rounded-lg opacity-75"
+                      >
+                        <Checkbox
+                          checked={task.completed}
+                          onCheckedChange={() => handleTaskToggle(task.id)}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-600 line-through break-words">
+                            {task.title}
+                          </p>
+                          {task.completedAt && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              הושלמה ב-{new Date(task.completedAt).toLocaleDateString('he-IL')}
+                            </p>
+                          )}
                         </div>
-                      ))}
-                      {completedTasks.length > 5 && (
-                        <p className="text-xs text-center text-muted-foreground">
-                          ועוד {completedTasks.length - 5} משימות...
-                        </p>
-                      )}
-                    </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleTaskDelete(task.id)}
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
             )}
           </ScrollArea>
         </>
-      )}
-
-      {/* במצב מוקטן - מספר משימות פתוחות */}
-      {isCollapsed && pendingTasks.length > 0 && (
-        <div className="p-2">
-          <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold mx-auto">
-            {pendingTasks.length}
-          </div>
-        </div>
       )}
     </div>
   );
