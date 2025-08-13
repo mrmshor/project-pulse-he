@@ -1,11 +1,8 @@
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { openPath, openUrl } from '@tauri-apps/plugin-opener';
 import { exists } from '@tauri-apps/plugin-fs';
-
-// בדיקה אם אנחנו בסביבת Tauri
-function isTauriEnvironment(): boolean {
-  return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
-}
+import { invoke } from '@tauri-apps/api/core';
+import { formatPhoneForWhatsApp, isTauriEnvironment } from '@/lib/tauri';
 
 // ✅ שירותי תיקיות ופרויקטים
 export class FolderService {
@@ -56,8 +53,8 @@ export class FolderService {
         return false;
       }
       
-      // 🆕 שימוש ב-plugin-opener במקום invoke
-      await openPath(folderPath);
+      // שימוש בפונקציה המאוחדת מ-tauri.ts
+      await invoke('open_folder', { path: folderPath });
       console.log('✅ Folder opened successfully');
       return true;
     } catch (error) {
@@ -91,14 +88,14 @@ export class FolderService {
   }
 }
 
-// ✅ שירותי תקשורת ואנשי קשר
+// ✅ שירותי תקשורת ואנשי קשר  
 export class ClientContactService {
   /**
    * פתיחת WhatsApp עם מספר טלפון
    */
   static async openWhatsApp(phoneNumber: string, message?: string): Promise<boolean> {
     try {
-      const formattedPhone = this.formatToInternational(phoneNumber);
+      const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
       console.log('💬 Opening WhatsApp for:', formattedPhone);
       
       if (!isTauriEnvironment()) {
@@ -110,27 +107,29 @@ export class ClientContactService {
         return true;
       }
 
-      // 🆕 שימוש ב-plugin-opener במקום invoke
-      try {
-        // ניסיון ראשון: WhatsApp Desktop
-        const whatsappUrl = `whatsapp://send?phone=${formattedPhone}`;
-        await openUrl(whatsappUrl);
-        console.log('✅ WhatsApp Desktop opened successfully');
-        return true;
-      } catch (desktopError) {
-        console.log('⚠️ Desktop WhatsApp failed, trying web version...');
-        
-        // ניסיון שני: WhatsApp Web
-        const webUrl = message 
-          ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
-          : `https://wa.me/${formattedPhone}`;
-        await openUrl(webUrl);
-        console.log('✅ WhatsApp Web opened successfully');
-        return true;
-      }
+      // שימוש בפונקציה המאוחדת מ-tauri.ts
+      await invoke('open_whatsapp', { 
+        phone: formattedPhone,
+        message: message || null
+      });
+      
+      console.log('✅ WhatsApp opened successfully');
+      return true;
     } catch (error) {
       console.error('❌ Error opening WhatsApp:', error);
-      return false;
+      
+      // Fallback לדפדפן במקרה של שגיאה
+      try {
+        const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
+        const url = message 
+          ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
+          : `https://wa.me/${formattedPhone}`;
+        window.open(url, '_blank');
+        return true;
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+        return false;
+      }
     }
   }
 
@@ -141,50 +140,104 @@ export class ClientContactService {
     try {
       console.log('📧 Opening email for:', email);
       
-      let mailtoUrl = `mailto:${email}`;
-      const params = [];
-      
-      if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
-      if (body) params.push(`body=${encodeURIComponent(body)}`);
-      
-      if (params.length > 0) {
-        mailtoUrl += '?' + params.join('&');
-      }
-      
       if (!isTauriEnvironment()) {
         // Fallback לדפדפן
+        let mailtoUrl = `mailto:${email}`;
+        const params: string[] = [];
+        
+        if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+        if (body) params.push(`body=${encodeURIComponent(body)}`);
+        
+        if (params.length > 0) {
+          mailtoUrl += '?' + params.join('&');
+        }
+        
         window.open(mailtoUrl, '_blank');
         return true;
       }
 
-      // 🆕 שימוש ב-plugin-opener במקום invoke
-      await openUrl(mailtoUrl);
+      // שימוש בפונקציה המאוחדת מ-tauri.ts
+      await invoke('open_email', { 
+        email: email,
+        subject: subject || null,
+        body: body || null
+      });
+      
       console.log('✅ Email opened successfully');
       return true;
     } catch (error) {
       console.error('❌ Error opening email:', error);
-      return false;
+      
+      // Fallback לדפדפן במקרה של שגיאה
+      try {
+        let mailtoUrl = `mailto:${email}`;
+        const params: string[] = [];
+        
+        if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+        if (body) params.push(`body=${encodeURIComponent(body)}`);
+        
+        if (params.length > 0) {
+          mailtoUrl += '?' + params.join('&');
+        }
+        
+        window.open(mailtoUrl, '_blank');
+        return true;
+      } catch (fallbackError) {
+        console.error('❌ Email fallback also failed:', fallbackError);
+        return false;
+      }
     }
   }
 
   /**
-   * המרת מספר טלפון לפורמט בינלאומי
+   * פתיחת חייגן טלפון
    */
-  private static formatToInternational(phoneNumber: string): string {
-    // הסרת תווים שאינם ספרות
-    const cleaned = phoneNumber.replace(/[^0-9]/g, '');
-    
-    // המרה מפורמט ישראלי (0XX) לבינלאומי (972XX)
-    if (cleaned.startsWith('0')) {
-      return '972' + cleaned.substring(1);
+  static async openPhone(phoneNumber: string): Promise<boolean> {
+    try {
+      console.log('📞 Opening phone dialer for:', phoneNumber);
+      
+      const phoneUrl = `tel:${phoneNumber}`;
+      
+      if (!isTauriEnvironment()) {
+        window.open(phoneUrl, '_blank');
+        return true;
+      }
+
+      // שימוש בפונקציה המאוחדת מ-tauri.ts
+      await invoke('open_url', { url: phoneUrl });
+      
+      console.log('✅ Phone dialer opened successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error opening phone dialer:', error);
+      
+      // Fallback לדפדפן במקרה של שגיאה
+      try {
+        window.open(`tel:${phoneNumber}`, '_blank');
+        return true;
+      } catch (fallbackError) {
+        console.error('❌ Phone fallback also failed:', fallbackError);
+        return false;
+      }
     }
-    
-    // אם כבר מתחיל ב-972, נחזיר כמו שהוא
-    if (cleaned.startsWith('972')) {
-      return cleaned;
+  }
+
+  /**
+   * בדיקת חיבור Tauri (לטסטים)
+   */
+  static async testTauriConnection(): Promise<boolean> {
+    try {
+      if (!isTauriEnvironment()) {
+        console.log('🌐 Browser mode: Tauri not available');
+        return false;
+      }
+
+      const result = await invoke('test_connection');
+      console.log('🔍 Tauri connection test:', result);
+      return true;
+    } catch (error) {
+      console.error('❌ Tauri connection test failed:', error);
+      return false;
     }
-    
-    // אחרת, נניח שזה מספר ישראלי ללא 0 בהתחלה
-    return '972' + cleaned;
   }
 }
