@@ -26,7 +26,7 @@ export const usePersonalTasksStore = create<PersonalTasksStore>()(
               title: title.trim(),
               completed: false,
               priority,
-              createdAt: new Date()
+              createdAt: new Date().toISOString(), // FIXED: Use ISO string like the rest
             },
             ...state.tasks
           ]
@@ -39,7 +39,7 @@ export const usePersonalTasksStore = create<PersonalTasksStore>()(
               ? {
                   ...task,
                   completed: !task.completed,
-                  completedAt: !task.completed ? new Date() : undefined
+                  completedAt: !task.completed ? new Date().toISOString() : undefined // FIXED: Use ISO string
                 }
               : task
           )
