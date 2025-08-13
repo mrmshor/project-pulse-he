@@ -10,21 +10,21 @@ interface ProjectStore {
   contacts: Contact[];
   timeEntries: TimeEntry[];
 
-  // Project actions
-  addProject: (projectData: Omit<Project, 'id'>) => void;
-  updateProject: (id: string, projectData: Partial<Project>) => void;
+  // Project actions - FIXED: Updated signatures to match component usage
+  addProject: (projectData: Omit<Project, 'id'>) => Promise<Project>;
+  updateProject: (project: Project) => void;
   deleteProject: (id: string) => void;
   getProjectById: (id: string) => Project | undefined;
 
-  // Task actions
+  // Task actions - FIXED: Updated signatures
   addTask: (taskData: Omit<Task, 'id'>) => void;
-  updateTask: (id: string, taskData: Partial<Task>) => void;
+  updateTask: (task: Task) => void;
   deleteTask: (id: string) => void;
   getTasksByProject: (projectId: string) => Task[];
 
-  // Contact actions
-  addContact: (contactData: Omit<Contact, 'id'>) => void;
-  updateContact: (id: string, contactData: Partial<Contact>) => void;
+  // Contact actions - FIXED: Updated signatures
+  addContact: (contactData: Omit<Contact, 'id'>) => Promise<Contact>;
+  updateContact: (contact: Contact) => void;
   deleteContact: (id: string) => void;
   getContactsByProject: (projectId: string) => Contact[];
 
@@ -54,21 +54,31 @@ export const useProjectStore = create<ProjectStore>()(
       contacts: [],
       timeEntries: [],
 
-      // Project actions
-      addProject: (projectData) => {
+      // Project actions - FIXED
+      addProject: async (projectData) => {
         const newProject: Project = {
           ...projectData,
           id: generateId(),
+          createdAt: projectData.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
+        
         set((state) => ({
           projects: [...state.projects, newProject],
         }));
+        
+        return newProject;
       },
 
-      updateProject: (id, projectData) => {
+      updateProject: (project) => {
+        const updatedProject = {
+          ...project,
+          updatedAt: new Date().toISOString()
+        };
+        
         set((state) => ({
-          projects: state.projects.map((project) =>
-            project.id === id ? { ...project, ...projectData } : project
+          projects: state.projects.map((p) =>
+            p.id === project.id ? updatedProject : p
           ),
         }));
       },
@@ -77,10 +87,9 @@ export const useProjectStore = create<ProjectStore>()(
         set((state) => ({
           projects: state.projects.filter((project) => project.id !== id),
           tasks: state.tasks.filter((task) => task.projectId !== id),
-          contacts: state.contacts.map((contact) => ({
-            ...contact,
-            projectIds: contact.projectIds.filter((pId) => pId !== id),
-          })),
+          contacts: state.contacts.filter((contact) => 
+            !contact.projectIds || !contact.projectIds.includes(id)
+          ),
         }));
       },
 
@@ -88,21 +97,29 @@ export const useProjectStore = create<ProjectStore>()(
         return get().projects.find((project) => project.id === id);
       },
 
-      // Task actions
+      // Task actions - FIXED
       addTask: (taskData) => {
         const newTask: Task = {
           ...taskData,
           id: generateId(),
+          createdAt: taskData.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
+        
         set((state) => ({
           tasks: [...state.tasks, newTask],
         }));
       },
 
-      updateTask: (id, taskData) => {
+      updateTask: (task) => {
+        const updatedTask = {
+          ...task,
+          updatedAt: new Date().toISOString()
+        };
+        
         set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, ...taskData } : task
+          tasks: state.tasks.map((t) =>
+            t.id === task.id ? updatedTask : t
           ),
         }));
       },
@@ -118,21 +135,31 @@ export const useProjectStore = create<ProjectStore>()(
         return get().tasks.filter((task) => task.projectId === projectId);
       },
 
-      // Contact actions
-      addContact: (contactData) => {
+      // Contact actions - FIXED
+      addContact: async (contactData) => {
         const newContact: Contact = {
           ...contactData,
           id: generateId(),
+          createdAt: contactData.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
+        
         set((state) => ({
           contacts: [...state.contacts, newContact],
         }));
+        
+        return newContact;
       },
 
-      updateContact: (id, contactData) => {
+      updateContact: (contact) => {
+        const updatedContact = {
+          ...contact,
+          updatedAt: new Date().toISOString()
+        };
+        
         set((state) => ({
-          contacts: state.contacts.map((contact) =>
-            contact.id === id ? { ...contact, ...contactData } : contact
+          contacts: state.contacts.map((c) =>
+            c.id === contact.id ? updatedContact : c
           ),
         }));
       },
@@ -145,62 +172,11 @@ export const useProjectStore = create<ProjectStore>()(
 
       getContactsByProject: (projectId) => {
         return get().contacts.filter((contact) =>
-          contact.projectIds.includes(projectId)
+          contact.projectIds && contact.projectIds.includes(projectId)
         );
       },
 
-      // Export functions
-      exportToJSON: () => {
-        const { projects, tasks, contacts, timeEntries } = get();
-        return JSON.stringify({ projects, tasks, contacts, timeEntries }, null, 2);
-      },
-
-      exportToCSV: (type) => {
-        const { projects, tasks, contacts } = get();
-
-        if (type === 'projects') {
-          const headers = ['שם', 'תיאור', 'סטטוס', 'עדיפות', 'תאריך התחלה', 'תאריך יעד'];
-          const rows = projects.map((p) => [
-            p.name,
-            p.description,
-            p.status,
-            p.priority,
-            new Date(p.startDate).toLocaleDateString('he-IL'),
-            p.dueDate ? new Date(p.dueDate).toLocaleDateString('he-IL') : '',
-          ]);
-          return [headers, ...rows].map((row) => row.join(',')).join('\n');
-        }
-
-        if (type === 'tasks') {
-          const headers = ['כותרת', 'פרויקט', 'סטטוס', 'עדיפות', 'תאריך יעד'];
-          const rows = tasks.map((t) => {
-            const project = projects.find((p) => p.id === t.projectId);
-            return [
-              t.title,
-              project?.name || '',
-              t.status,
-              t.priority,
-              t.dueDate ? new Date(t.dueDate).toLocaleDateString('he-IL') : '',
-            ];
-          });
-          return [headers, ...rows].map((row) => row.join(',')).join('\n');
-        }
-
-        if (type === 'contacts') {
-          const headers = ['שם', 'אימייל', 'טלפון', 'פרויקטים'];
-          const rows = contacts.map((c) => [
-            c.name,
-            c.email || '',
-            c.phone || '',
-            c.projectIds.map((id) => projects.find((p) => p.id === id)?.name).filter(Boolean).join('; '),
-          ]);
-          return [headers, ...rows].map((row) => row.join(',')).join('\n');
-        }
-
-        return '';
-      },
-
-      // Time Entries
+      // Time Entry actions
       addTimeEntry: (timeEntryData) => {
         const newTimeEntry: TimeEntry = {
           ...timeEntryData,
@@ -229,53 +205,103 @@ export const useProjectStore = create<ProjectStore>()(
         return get().timeEntries.filter((entry) => entry.taskId === taskId);
       },
 
+      // Export functions
+      exportToJSON: () => {
+        const { projects, tasks, contacts, timeEntries } = get();
+        return JSON.stringify({ projects, tasks, contacts, timeEntries }, null, 2);
+      },
+
+      exportToCSV: (type) => {
+        const { projects, tasks, contacts } = get();
+
+        if (type === 'projects') {
+          const headers = ['שם', 'תיאור', 'סטטוס', 'עדיפות', 'תאריך התחלה', 'תאריך יעד'];
+          const rows = projects.map((p) => [
+            p.name,
+            p.description,
+            p.status,
+            p.priority,
+            new Date(p.startDate).toLocaleDateString('he-IL'),
+            p.dueDate ? new Date(p.dueDate).toLocaleDateString('he-IL') : '',
+          ]);
+          return [headers, ...rows].map((row) => row.join(',')).join('\n');
+        }
+
+        if (type === 'tasks') {
+          const headers = ['כותרת', 'פרויקט', 'סטטוס', 'עדיפות', 'הושלם'];
+          const rows = tasks.map((t) => {
+            const project = projects.find((p) => p.id === t.projectId);
+            return [
+              t.title,
+              project?.name || '',
+              t.status || 'ממתין',
+              t.priority,
+              t.completed ? 'כן' : 'לא',
+            ];
+          });
+          return [headers, ...rows].map((row) => row.join(',')).join('\n');
+        }
+
+        if (type === 'contacts') {
+          const headers = ['שם', 'אימייל', 'טלפון', 'חברה', 'סוג'];
+          const rows = contacts.map((c) => [
+            c.name,
+            c.email || '',
+            c.phone || '',
+            c.company || '',
+            c.type || 'לקוח',
+          ]);
+          return [headers, ...rows].map((row) => row.join(',')).join('\n');
+        }
+
+        return '';
+      },
+
       // Native save/load functions
       saveToNative: async () => {
-        try {
-          if (isTauriEnvironment()) {
-            const { projects, tasks, contacts, timeEntries } = get();
-            return await saveDataNative({ projects, tasks, contacts, timeEntries });
-          }
+        if (!isTauriEnvironment()) {
+          console.warn('Not in Tauri environment, cannot save to native storage');
           return false;
+        }
+
+        try {
+          const { projects, tasks, contacts, timeEntries } = get();
+          const data = { projects, tasks, contacts, timeEntries };
+          await saveDataNative(JSON.stringify(data));
+          console.log('✅ Data saved to native storage successfully');
+          return true;
         } catch (error) {
-          console.error('Error saving to native:', error);
+          console.error('❌ Error saving to native storage:', error);
           return false;
         }
       },
 
       loadFromNative: async () => {
+        if (!isTauriEnvironment()) {
+          console.warn('Not in Tauri environment, cannot load from native storage');
+          return;
+        }
+
         try {
-          if (isTauriEnvironment()) {
-            const data = await loadDataNative();
-            if (data) {
-              set({
-                projects: data.projects || [],
-                tasks: data.tasks || [],
-                contacts: data.contacts || [],
-                timeEntries: data.timeEntries || []
-              });
-            }
+          const data = await loadDataNative();
+          if (data) {
+            const parsed = JSON.parse(data);
+            set({
+              projects: parsed.projects || [],
+              tasks: parsed.tasks || [],
+              contacts: parsed.contacts || [],
+              timeEntries: parsed.timeEntries || [],
+            });
+            console.log('✅ Data loaded from native storage successfully');
           }
         } catch (error) {
-          console.error('Error loading from native:', error);
+          console.error('❌ Error loading from native storage:', error);
         }
       },
     }),
     {
       name: 'project-store',
+      version: 1,
     }
   )
 );
-
-// Helper selectors to prevent infinite loops
-export const useProjectStats = () => {
-  const projects = useProjectStore((state) => state.projects);
-  const tasks = useProjectStore((state) => state.tasks);
-
-  return {
-    totalProjects: projects.length,
-    activeTasks: tasks.filter((task) => task.status !== 'הושלמה').length,
-    completedThisWeek: tasks.filter((task) => task.status === 'הושלמה').length,
-    activeProjects: projects.filter((project) => project.status === 'פעיל').length,
-  };
-};
