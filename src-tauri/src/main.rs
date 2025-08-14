@@ -16,14 +16,14 @@ async fn open_folder(app: tauri::AppHandle, path: String) -> Result<(), String> 
         })
 }
 
-// 💬 פונקציה לפתיחת WhatsApp עם מספר טלפון (FIXED: הוסף support למסר)
+// 💬 פונקציה לפתיחת WhatsApp עם מספר טלפון (FIXED: תוקן moved value)
 #[tauri::command]
 async fn open_whatsapp(app: tauri::AppHandle, phone: String, message: Option<String>) -> Result<(), String> {
     println!("💬 Opening WhatsApp for: {} with message: {:?}", phone, message);
     
-    // נבנה את ה-URL של WhatsApp
-    let whatsapp_url = if let Some(msg) = message {
-        format!("whatsapp://send?phone={}&text={}", phone, urlencoding::encode(&msg))
+    // ✅ FIXED: נשתמש ב-reference במקום לזוז את הערך
+    let whatsapp_url = if let Some(ref msg) = message {
+        format!("whatsapp://send?phone={}&text={}", phone, urlencoding::encode(msg))
     } else {
         format!("whatsapp://send?phone={}", phone)
     };
@@ -37,9 +37,9 @@ async fn open_whatsapp(app: tauri::AppHandle, phone: String, message: Option<Str
         Err(desktop_error) => {
             println!("⚠️ Desktop WhatsApp failed: {}, trying web version...", desktop_error);
             
-            // ניסיון שני: WhatsApp Web
-            let web_url = if let Some(msg) = message {
-                format!("https://wa.me/{}?text={}", phone, urlencoding::encode(&msg))
+            // ✅ FIXED: עכשיו אפשר להשתמש ב-message שוב
+            let web_url = if let Some(ref msg) = message {
+                format!("https://wa.me/{}?text={}", phone, urlencoding::encode(msg))
             } else {
                 format!("https://wa.me/{}", phone)
             };
