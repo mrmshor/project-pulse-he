@@ -24,6 +24,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create dummy icon
+        run: |
+          mkdir -p src-tauri/icons
+          curl -o src-tauri/icons/icon.png "https://via.placeholder.com/512x512/4A90E2/ffffff?text=App"
+          ls -la src-tauri/icons/icon.png
+        shell: bash
+        
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
