@@ -31,9 +31,6 @@ jobs:
           cargo clean || true
         shell: bash
         
-      - name: Install dependencies
-        run: npm install
-        
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
