@@ -305,3 +305,35 @@ export const useProjectStore = create<ProjectStore>()(
     }
   )
 );
+
+// ✅ NEW: Hook לחישוב סטטיסטיקות פרויקט (הפונקציה החסרה!)
+export const useProjectStats = () => {
+  const projects = useProjectStore((state) => state.projects);
+  const tasks = useProjectStore((state) => state.tasks);
+  
+  return {
+    totalProjects: projects.length,
+    activeProjects: projects.filter(p => p.status === 'פעיל').length,
+    completedProjects: projects.filter(p => p.status === 'הושלם').length,
+    plannedProjects: projects.filter(p => p.status === 'תכנון').length,
+    onHoldProjects: projects.filter(p => p.status === 'בהמתנה').length,
+    
+    totalTasks: tasks.length,
+    completedTasks: tasks.filter(t => t.status === 'הושלמה').length,
+    pendingTasks: tasks.filter(t => t.status !== 'הושלמה').length,
+    inProgressTasks: tasks.filter(t => t.status === 'בתהליך').length,
+    urgentTasks: tasks.filter(t => t.status !== 'הושלמה' && t.priority === 'גבוהה').length,
+    
+    completionRate: tasks.length > 0 ? (tasks.filter(t => t.status === 'הושלמה').length / tasks.length) * 100 : 0,
+    projectCompletionRate: projects.length > 0 ? (projects.filter(p => p.status === 'הושלם').length / projects.length) * 100 : 0,
+    
+    // סטטיסטיקות לפי עדיפות
+    highPriorityTasks: tasks.filter(t => t.priority === 'גבוהה').length,
+    mediumPriorityTasks: tasks.filter(t => t.priority === 'בינונית').length,
+    lowPriorityTasks: tasks.filter(t => t.priority === 'נמוכה').length,
+    
+    highPriorityProjects: projects.filter(p => p.priority === 'גבוהה').length,
+    mediumPriorityProjects: projects.filter(p => p.priority === 'בינונית').length,
+    lowPriorityProjects: projects.filter(p => p.priority === 'נמוכה').length,
+  };
+};
