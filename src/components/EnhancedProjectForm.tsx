@@ -326,12 +326,12 @@ export function EnhancedProjectForm({
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <FolderOpen className="w-6 h-6 text-primary" />
+      <div className="flex items-center gap-3 pb-4 border-b">
+        <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+          <FolderOpen className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-lg font-semibold">
             {project ? 'עריכת פרויקט' : 'פרויקט חדש'}
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -341,9 +341,9 @@ export function EnhancedProjectForm({
       </div>
 
       {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
             <FileText className="w-4 h-4" />
             מידע בסיסי
           </CardTitle>
