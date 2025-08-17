@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,15 +13,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { 
   Plus, 
-  Edit, 
   Trash2, 
   Clock, 
   CheckCircle2, 
   MoreVertical,
-  Calendar,
-  ArrowUp,
-  ArrowRight,
-  ArrowDown,
   ListTodo
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

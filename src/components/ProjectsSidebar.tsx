@@ -15,9 +15,6 @@ import {
   X, 
   Search,
   ExternalLink,
-  Calendar,
-  CheckCircle2,
-  Clock,
   ArrowUp,
   ArrowRight,
   ArrowDown,
@@ -25,7 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectStore } from '@/store/useProjectStore';
-import { Project, ProjectStatus, Priority } from '@/types';
+import { Project, Priority } from '@/types';
 
 export function ProjectsSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -64,15 +61,7 @@ export function ProjectsSidebar() {
     }
   };
 
-  const getStatusColor = (status: ProjectStatus) => {
-    switch (status) {
-      case 'תכנון': return 'bg-gray-100 text-gray-700';
-      case 'פעיל': return 'bg-blue-100 text-blue-700';
-      case 'הושלם': return 'bg-green-100 text-green-700';
-      case 'מושהה': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
+// removed unused getStatusColor
 
   const getPriorityColor = (priority: Priority) => {
     switch (priority) {
@@ -235,7 +224,7 @@ export function ProjectsSidebar() {
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredProjects.map((project, index) => {
+                {filteredProjects.map((project, _index) => {
                   const stats = getProjectStats(project);
                   return (
                     <div
