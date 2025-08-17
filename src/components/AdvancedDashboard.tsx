@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useProjectStore } from '@/store/useProjectStore';
-import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 const chartConfig = {
@@ -43,9 +43,9 @@ export function AdvancedDashboard() {
 
       return {
         date: dayStr,
-        completed: tasksForDay.filter(task => task.status === 'הושלמה').length,
-        active: tasksForDay.filter(task => task.status === 'בתהליך').length,
-        planned: tasksForDay.filter(task => task.status === 'לביצוע').length,
+        completed: tasksForDay.filter(task => task.status === 'הושלם').length,
+        active: tasksForDay.filter(task => task.status === 'בעבודה').length,
+        planned: tasksForDay.filter(task => task.status === 'ממתין').length,
       };
     });
   }, [tasks]);
@@ -175,7 +175,7 @@ export function AdvancedDashboard() {
                     outerRadius={90}
                     paddingAngle={2}
                     label={({ name, value, percent }) => 
-                      value > 0 ? `${name} (${(percent * 100).toFixed(0)}%)` : null
+                      (value || 0) > 0 ? `${name} (${((percent || 0) * 100).toFixed(0)}%)` : null
                     }
                     labelLine={false}
                   >

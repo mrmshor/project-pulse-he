@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
@@ -12,7 +10,7 @@ import {
   Mail, 
   MessageCircle, 
   User, 
-  Building,
+  
   ExternalLink,
   Calendar,
   CheckCircle
@@ -30,9 +28,9 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
   const [folderExists, setFolderExists] = useState<boolean | null>(null);
 
   const projectTasks = tasks.filter(task => task.projectId === project.id);
-  const completedTasks = projectTasks.filter(task => task.status === 'הושלמה');
+  const completedTasks = projectTasks.filter(task => task.status === 'הושלם');
   const projectContacts = contacts.filter(contact => 
-    contact.projectIds.includes(project.id)
+    contact.projectIds?.includes(project.id) || false
   );
 
   useEffect(() => {
@@ -55,6 +53,8 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
 
   // פתיחת WhatsApp
   const handleOpenWhatsApp = async (whatsappNumber?: string) => {
+    if (!project.client) return;
+    
     if (!whatsappNumber) {
       const primaryWhatsApp = project.client.whatsappNumbers?.find(w => w.isPrimary && w.number);
       whatsappNumber = primaryWhatsApp?.number || project.client.whatsappNumbers?.[0]?.number;
@@ -70,7 +70,7 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
 
   // פתיחת Gmail
   const handleOpenGmail = async () => {
-    if (project.client.email) {
+    if (project.client?.email) {
       const success = await ClientContactService.openGmail(
         project.client.email, 
         `בנוגע לפרויקט: ${project.name}`
@@ -83,8 +83,8 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
 
   // חיוג
   const handleDialPhone = async () => {
-    if (project.client.phone) {
-      const success = await ClientContactService.dialNumber(project.client.phone);
+    if (project.client?.phone) {
+      const success = await ClientContactService.openPhone(project.client.phone);
       if (!success) {
         alert('לא ניתן לחייג');
       }
@@ -131,18 +131,18 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
       
       <CardContent className="space-y-4">
         {/* פרטי לקוח */}
-        {project.client.name && (
+        {project.client?.name && (
           <div className="glass p-3 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <User className="w-4 h-4 text-primary" />
-              <span className="font-medium">{project.client.name}</span>
-              {project.client.company && (
+              <span className="font-medium">{project.client?.name}</span>
+              {project.client?.company && (
                 <span className="text-muted-foreground text-sm">• {project.client.company}</span>
               )}
             </div>
             
             <div className="flex gap-2">
-              {project.client.whatsappNumbers?.filter(w => w.number && w.number.trim()).map((whatsapp, index) => (
+              {project.client?.whatsappNumbers?.filter(w => w.number && w.number.trim()).map((whatsapp, index) => (
                 <Button
                   key={whatsapp.id || index}
                   onClick={() => handleOpenWhatsApp(whatsapp.number)}
@@ -151,13 +151,13 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
                   title={`פתח WhatsApp - ${whatsapp.label || 'WhatsApp'}${whatsapp.isPrimary ? ' (עיקרי)' : ''}`}
                 >
                   <MessageCircle size={14} />
-                  {project.client.whatsappNumbers?.filter(w => w.number && w.number.trim()).length > 1 && (
+                  {(project.client?.whatsappNumbers?.filter(w => w.number && w.number.trim()).length || 0) > 1 && (
                     <span className="text-xs ml-1">{index + 1}</span>
                   )}
                 </Button>
               ))}
               
-              {project.client.email && (
+              {project.client?.email && (
                 <Button
                   onClick={handleOpenGmail}
                   size="sm"
@@ -168,7 +168,7 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
                 </Button>
               )}
               
-              {project.client.phone && (
+              {project.client?.phone && (
                 <Button
                   onClick={handleDialPhone}
                   size="sm"

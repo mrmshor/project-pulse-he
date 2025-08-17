@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,7 +33,7 @@ import {
   Plus,
   X
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 
 interface ContactDialogProps {
   isOpen: boolean;
@@ -176,7 +176,8 @@ export function ContactDialog({
       const contactData: Omit<Contact, 'id'> = {
         ...formData,
         createdAt: contact?.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        tags: formData.tags.map(tag => ({ name: tag, color: '#3B82F6', id: Date.now().toString() + Math.random().toString() }))
       };
 
       if (contact) {
