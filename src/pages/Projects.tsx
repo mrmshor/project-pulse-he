@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { Plus, Search, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle } from 'lucide-react';
+import { Plus, Search, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { StatusSelector } from '@/components/StatusSelector';
 import { PrioritySelector } from '@/components/PrioritySelector';
-import { ProjectTaskList } from '@/components/ProjectTaskList';
+
 import { PaymentStatusButton } from '@/components/PaymentStatusButton';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+
 import { 
   Select, 
   SelectContent, 
@@ -35,6 +35,7 @@ export function Projects() {
     updateProject,
     exportToCSV,
     exportToJSON,
+    getTasksByProject,
   } = useProjectStore();
 
   const filteredProjects = projects.filter((project) => {
@@ -200,153 +201,149 @@ export function Projects() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="rounded-2xl bg-white dark:bg-card border border-border shadow-sm hover:shadow-md transition-all duration-200">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold text-blue-700 dark:text-blue-400">
-                      {project.name}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      {project.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {project.status}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {project.priority}
-                      </Badge>
-                    </div>
-                    {project.budget != null && (
-                      <div className="mt-2 text-sm font-medium text-green-600">
-                        ₪{Number(project.budget).toLocaleString('he-IL')}
-                      </div>
-                    )}
-                  </CardHeader>
+              {filteredProjects.map((project) => {
+                const tasks = getTasksByProject(project.id);
+                const completedCount = tasks.filter((t) => t.completed).length;
+                const progress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 
-                  <CardContent className="pt-0 space-y-4">
-                    {/* פרטי לקוח */}
-                    {project.client && (
-                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-sm">{project.client.name}</span>
-                        </div>
-                        {(project.client.email || project.client.phone || project.client.whatsapp || project.client.whatsappNumbers?.length) && (
-                          <div className="flex items-center gap-2">
-                            {project.client?.email && (
-                              <Button
-                                asChild
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 text-xs"
-                              >
-                                <a
-                                  href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
-                                  target="_top"
-                                  rel="noreferrer noopener"
-                                  aria-label="שלח אימייל"
-                                >
-                                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> מייל</span>
-                                </a>
-                              </Button>
-                            )}
-                            {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const simple = project.client?.whatsapp;
-                                  const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
-                                  const numberToUse = simple || primaryNumber?.number;
-                                  if (numberToUse) {
-                                    ClientContactService.openWhatsApp(numberToUse);
-                                  }
-                                }}
-                                className="h-8 px-3 text-xs"
-                              >
-                                <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> וואטסאפ</span>
-                              </Button>
-                            )}
-                            {project.client?.phone && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => ClientContactService.openPhone(project.client!.phone!)}
-                                className="h-8 px-3 text-xs"
-                              >
-                                <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> חייג</span>
-                              </Button>
-                            )}
+                return (
+                  <Card
+                    key={project.id}
+                    className={`border-r-4 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer bg-white dark:bg-card border border-border ${
+                      ({ 'גבוהה': 'border-r-red-500', 'בינונית': 'border-r-amber-500', 'נמוכה': 'border-r-emerald-500' } as const)[project.priority]
+                    }`}
+                  >
+                    {/* Header Section */}
+                    <div className="p-6 pb-3 bg-gradient-to-r from-white/50 to-transparent backdrop-blur">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-700 via-purple-600 to-blue-800 bg-clip-text text-transparent mb-2 leading-tight line-clamp-2 tracking-wide hover:from-blue-600 hover:via-purple-500 hover:to-blue-700 transition-colors duration-300">
+                            {project.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <User className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                              {project.client?.name || '—'}
+                            </span>
                           </div>
-                        )}
+                        </div>
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600" onClick={() => handleEdit(project)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-100 text-red-500" onClick={() => handleDelete(project.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* תיקיית פרויקט */}
-                    {project.folderPath && (
-                      <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => FolderService.openInFinder(project.folderPath!)}
-                          className="gap-2 w-full h-9 text-sm"
-                        >
-                          <FolderOpen className="w-4 h-4" />
-                          פתח תיקייה
-                        </Button>
+                      {/* Status and Priority Selectors */}
+                      <div className="flex gap-2 mb-3">
+                        <StatusSelector value={project.status} onChange={(status) => handleStatusChange(project.id, status)} />
+                        <PrioritySelector value={project.priority} onChange={(priority) => handlePriorityChange(project.id, priority)} />
                       </div>
-                    )}
+                    </div>
 
-                    {/* תאריכים */}
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div>התחלה: {new Date(project.startDate).toLocaleDateString('he-IL')}</div>
-                      {project.dueDate && (
-                        <div>יעד: {new Date(project.dueDate).toLocaleDateString('he-IL')}</div>
+                    <div className="px-6 space-y-4">
+                      {/* Description */}
+                      {project.description && (
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-3 rounded-lg border border-gray-200/50">
+                          <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed italic">
+                            "{project.description}"
+                          </p>
+                        </div>
                       )}
-                    </div>
 
-                    {/* כפתורי פעולה */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-1">
-                        <StatusSelector 
-                          value={project.status} 
-                          onChange={(status) => handleStatusChange(project.id, status)}
-                        />
-                        <PrioritySelector 
-                          value={project.priority} 
-                          onChange={(priority) => handlePriorityChange(project.id, priority)}
-                        />
+                      {/* Price Section */}
+                      {(project.budget != null) && (
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200/50">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm font-semibold text-green-600">
+                              {`₪${Number(project.budget).toLocaleString('he-IL')}`}
+                            </div>
+                            <div className="flex gap-2">
+                              <PaymentStatusButton project={project} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Contact Actions */}
+                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200/50">
+                        <div className="flex flex-wrap gap-2">
+                          {project.client?.email && (
+                            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs">
+                              <a
+                                href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
+                                target="_top"
+                                rel="noreferrer noopener"
+                                aria-label="שלח אימייל"
+                              >
+                                <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> מייל</span>
+                              </a>
+                            </Button>
+                          )}
+                          {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const simple = project.client?.whatsapp;
+                                const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
+                                const numberToUse = simple || primaryNumber?.number;
+                                if (numberToUse) {
+                                  ClientContactService.openWhatsApp(numberToUse);
+                                }
+                              }}
+                              className="h-8 px-3 text-xs"
+                            >
+                              <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> וואטסאפ</span>
+                            </Button>
+                          )}
+                          {project.client?.phone && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => ClientContactService.openPhone(project.client!.phone!)}
+                              className="h-8 px-3 text-xs"
+                            >
+                              <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> חייג</span>
+                            </Button>
+                          )}
+                          {project.folderPath && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => FolderService.openInFinder(project.folderPath!)}
+                              className="text-xs hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
+                            >
+                              <FolderOpen className="h-3 w-3 mr-1" />
+                              פתח תיקיה
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(project)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(project.id)}
-                          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+
+                      {/* Tasks Section */}
+                      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200/50">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-indigo-600" />
+                            משימות ({completedCount}/{tasks.length})
+                          </h4>
+                          <span className="text-xs text-muted-foreground">{progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full overflow-hidden h-2">
+                          <div
+                            className="bg-gradient-to-r from-indigo-500 to-blue-600 h-full transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-
-                    {/* רשימת משימות */}
-                    <ProjectTaskList projectId={project.id} />
-
-                    {/* סטטוס תשלום */}
-                    <PaymentStatusButton project={project} />
-                  </CardContent>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
