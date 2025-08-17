@@ -70,18 +70,6 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
     }
   };
 
-  // פתיחת Gmail
-  const handleOpenGmail = async () => {
-    if (project.client?.email) {
-      const success = await ClientContactService.openGmail(
-        project.client.email, 
-        `בנוגע לפרויקט: ${project.name}`
-      );
-      if (!success) {
-        alert('לא ניתן לפתוח Gmail');
-      }
-    }
-  };
 
   // חיוג
   const handleDialPhone = async () => {
@@ -174,12 +162,19 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
               
               {project.client?.email && (
                 <Button
-                  onClick={handleOpenGmail}
+                  asChild
                   size="sm"
                   className="btn-glass hover:bg-blue-500 hover:text-white transition-smooth"
                   title="שלח אימייל"
                 >
-                  <Mail size={14} />
+                  <a
+                    href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
+                    target="_top"
+                    rel="noreferrer noopener"
+                    aria-label="שלח אימייל"
+                  >
+                    <Mail size={14} />
+                  </a>
                 </Button>
               )}
               

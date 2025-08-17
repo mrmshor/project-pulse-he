@@ -318,12 +318,19 @@ export function Projects() {
                           <div className="flex items-center gap-1">
                             {project.client?.email && (
                               <Button
+                                asChild
                                 variant="outline"
                                 size="sm"
-                                onClick={() => ClientContactService.openGmail(project.client!.email!)}
                                 className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                               >
-                                <Mail className="w-3 h-3" />
+                                <a
+                                  href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
+                                  target="_top"
+                                  rel="noreferrer noopener"
+                                  aria-label="שלח אימייל"
+                                >
+                                  <Mail className="w-3 h-3" />
+                                </a>
                               </Button>
                             )}
                             {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
