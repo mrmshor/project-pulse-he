@@ -101,7 +101,7 @@ export function EnhancedProjectForm({
         budget: '',
         paidAmount: '',
         paymentStatus: 'ממתין לתשלום',
-        clientId: '',
+        clientId: 'no-client',
         folderPath: '',
         tags: [],
         notes: ''
@@ -191,7 +191,7 @@ export function EnhancedProjectForm({
     setIsSubmitting(true);
 
     try {
-      const selectedClient = formData.clientId 
+      const selectedClient = formData.clientId && formData.clientId !== 'no-client'
         ? contacts.find(c => c.id === formData.clientId) 
         : undefined;
 
@@ -313,7 +313,7 @@ export function EnhancedProjectForm({
                   <SelectValue placeholder="בחר לקוח..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">ללא לקוח</SelectItem>
+                  <SelectItem value="no-client">ללא לקוח</SelectItem>
                   {contacts.map((contact) => (
                     <SelectItem key={contact.id} value={contact.id}>
                       <div className="flex items-center gap-2">
