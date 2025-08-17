@@ -97,33 +97,6 @@ export function Projects() {
     }
   };
 
-  const getStatusColor = (status: ProjectStatus) => {
-    switch (status) {
-      case 'תכנון':
-        return 'bg-muted text-muted-foreground';
-      case 'פעיל':
-        return 'bg-primary text-primary-foreground';
-      case 'הושלם':
-        return 'bg-success text-success-foreground';
-      case 'מושהה':
-        return 'bg-secondary text-secondary-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getPriorityColor = (priority: Priority) => {
-    switch (priority) {
-      case 'נמוכה':
-        return 'text-success';
-      case 'בינונית':
-        return 'text-primary';
-      case 'גבוהה':
-        return 'text-danger';
-      default:
-        return 'text-muted-foreground';
-    }
-  };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50/50 dark:bg-gray-900/50">
@@ -138,31 +111,57 @@ export function Projects() {
           </div>
           
           <div className="relative z-10">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              ניהול פרויקטים מתקדם
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              נהל את הפרויקטים שלך בצורה מקצועית ויעילה
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary via-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <FolderOpen className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                מערכת ניהול פרויקטים Pro
+              </h1>
+            </div>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              נהל את הפרויקטים שלך בצורה מקצועית ויעילה עם ממשק מתקדם וכלים חכמים
             </p>
           </div>
 
           {/* Stats cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
-              <div className="text-2xl font-bold text-primary">{projects.length}</div>
-              <div className="text-sm text-muted-foreground">פרויקטים</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300"></div>
+              <div className="relative bg-blue-500 text-white rounded-2xl p-6 group-hover:scale-105 transition-transform duration-300">
+                <div className="text-3xl font-bold mb-1">{projects.length}</div>
+                <div className="text-blue-100 text-sm font-medium">סה"כ פרויקטים</div>
+                <FolderOpen className="absolute top-4 left-4 w-6 h-6 text-blue-200 opacity-50" />
+              </div>
             </div>
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
-              <div className="text-2xl font-bold text-blue-600">{projects.filter(p => p.status === 'פעיל').length}</div>
-              <div className="text-sm text-muted-foreground">פעילים</div>
+            
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300"></div>
+              <div className="relative bg-green-500 text-white rounded-2xl p-6 group-hover:scale-105 transition-transform duration-300">
+                <div className="text-3xl font-bold mb-1">{projects.filter(p => p.status === 'פעיל').length}</div>
+                <div className="text-green-100 text-sm font-medium">פרויקטים בביצוע</div>
+                <div className="absolute top-4 left-4 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+              </div>
             </div>
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
-              <div className="text-2xl font-bold text-green-600">{projects.filter(p => p.status === 'הושלם').length}</div>
-              <div className="text-sm text-muted-foreground">הושלמו</div>
+            
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300"></div>
+              <div className="relative bg-purple-500 text-white rounded-2xl p-6 group-hover:scale-105 transition-transform duration-300">
+                <div className="text-3xl font-bold mb-1">{projects.filter(p => p.status === 'הושלם').length}</div>
+                <div className="text-purple-100 text-sm font-medium">פרויקטים שהושלמו</div>
+                <div className="text-xs text-purple-200 mt-1">
+                  {projects.length > 0 ? Math.round((projects.filter(p => p.status === 'הושלם').length / projects.length) * 100) : 0}% מהפרויקטים
+                </div>
+              </div>
             </div>
-            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
-              <div className="text-2xl font-bold text-amber-600">{projects.filter(p => p.priority === 'גבוהה').length}</div>
-              <div className="text-sm text-muted-foreground">דחופים</div>
+            
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300"></div>
+              <div className="relative bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-2xl p-6 group-hover:scale-105 transition-transform duration-300">
+                <div className="text-3xl font-bold mb-1">{projects.filter(p => p.priority === 'גבוהה').length}</div>
+                <div className="text-orange-100 text-sm font-medium">אחוז תשלומים</div>
+                <div className="text-xs text-orange-200 mt-1">0 מתוך {projects.length} שולמו</div>
+              </div>
             </div>
           </div>
 
@@ -191,14 +190,14 @@ export function Projects() {
             </div>
             
             {/* Main action button - centered and prominent */}
-            <div className="pt-4">
+            <div className="pt-6">
               <Button 
                 onClick={() => setIsDialogOpen(true)} 
-                className="gap-3 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-8"
+                className="gap-3 bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-primary/90 hover:via-blue-600/90 hover:to-purple-600/90 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 px-12 py-6 text-lg rounded-2xl"
                 size="lg"
               >
-                <Plus size={20} />
-                <span className="font-semibold">פרויקט חדש</span>
+                <Plus size={24} />
+                <span className="font-bold">פרויקט חדש</span>
               </Button>
             </div>
             
@@ -281,154 +280,210 @@ export function Projects() {
               <p className="text-muted-foreground">התחל ליצור פרויקטים חדשים או שנה את הסינון</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project, index) => {
+                const statusColors = {
+                  'תכנון': 'from-yellow-400 to-orange-500',
+                  'פעיל': 'from-blue-500 to-indigo-600', 
+                  'הושלם': 'from-green-500 to-emerald-600',
+                  'מושהה': 'from-gray-400 to-gray-500',
+                  'בוטל': 'from-red-400 to-red-500'
+                } as const;
+                
+                const priorityIcons = {
+                  'גבוהה': '🔥',
+                  'בינונית': '⚡',
+                  'נמוכה': '📋'
+                };
+                
+                return (
+                  <Card 
+                    key={project.id} 
+                    className="group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white/90 backdrop-blur-sm"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Gradient header */}
+                    <div className={`h-2 bg-gradient-to-r ${statusColors[project.status] || statusColors['תכנון']}`}></div>
+                    
+                    <CardHeader className="pb-4 relative">
+                      <div className="absolute top-4 left-4">
+                        <div className="text-2xl">{priorityIcons[project.priority] || '📋'}</div>
+                      </div>
+                      
+                      <div className="pr-12">
+                        <CardTitle className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors leading-tight">
                           {project.name}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                           {project.description}
                         </p>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-2 mt-3">
-                      <Badge variant="outline" className={getStatusColor(project.status)}>
-                        {project.status}
-                      </Badge>
-                      <Badge variant="outline" className={getPriorityColor(project.priority)}>
-                        {project.priority}
-                      </Badge>
-                    </div>
-                  </CardHeader>
+                      <div className="flex items-center gap-3 mt-4">
+                        <Badge 
+                          className={`bg-gradient-to-r ${statusColors[project.status]} text-white border-0 shadow-md font-medium px-3 py-1`}
+                        >
+                          {project.status}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={`border-2 font-medium px-3 py-1 ${
+                            project.priority === 'גבוהה' ? 'border-red-500 text-red-600' :
+                            project.priority === 'בינונית' ? 'border-orange-500 text-orange-600' :
+                            'border-green-500 text-green-600'
+                          }`}
+                        >
+                          {project.priority}
+                        </Badge>
+                      </div>
+                    </CardHeader>
 
-                  <CardContent className="pt-0">
-                    {/* פרטי לקוח */}
-                    {project.client && (
-                      <div className="client-info mb-4 p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-200/30">
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-sm">{project.client.name}</span>
-                        </div>
-                        {(project.client.email || project.client.phone || project.client.whatsapp || project.client.whatsappNumbers?.length) && (
-                          <div className="flex items-center gap-1">
-                            {project.client?.email && (
-                              <Button
-                                asChild
-                                variant="outline"
-                                size="sm"
-                                className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
-                              >
-                                <a
-                                  href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
-                                  target="_top"
-                                  rel="noreferrer noopener"
-                                  aria-label="שלח אימייל"
-                                >
-                                  <Mail className="w-3 h-3" />
-                                </a>
-                              </Button>
-                            )}
-                            {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const simple = project.client?.whatsapp;
-                                  const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
-                                  const numberToUse = simple || primaryNumber?.number;
-                                  if (numberToUse) {
-                                    ClientContactService.openWhatsApp(numberToUse);
-                                  }
-                                }}
-                                className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
-                              >
-                                <MessageCircle className="w-3 h-3" />
-                              </Button>
-                            )}
-                            {project.client?.phone && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => ClientContactService.openPhone(project.client!.phone!)}
-                                className="gap-1 h-7 px-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700"
-                              >
-                                <Phone className="w-3 h-3" />
-                              </Button>
+                    <CardContent className="pt-0 space-y-4">
+                      {/* פרטי לקוח */}
+                      {project.client && (
+                        <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full opacity-20 -translate-y-8 translate-x-8"></div>
+                          <div className="relative">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                <User className="w-4 h-4 text-white" />
+                              </div>
+                              <div>
+                                <div className="font-semibold text-gray-800">{project.client.name}</div>
+                                {project.client.company && (
+                                  <div className="text-xs text-gray-600">{project.client.company}</div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {(project.client.email || project.client.phone || project.client.whatsapp || project.client.whatsappNumbers?.length) && (
+                              <div className="flex items-center gap-2">
+                                {project.client?.email && (
+                                  <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 border-green-200 hover:bg-green-50 hover:border-green-300 transition-colors"
+                                  >
+                                    <a
+                                      href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
+                                      target="_top"
+                                      rel="noreferrer noopener"
+                                      aria-label="שלח אימייל"
+                                    >
+                                      <Mail className="w-4 h-4 text-green-600" />
+                                    </a>
+                                  </Button>
+                                )}
+                                {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const simple = project.client?.whatsapp;
+                                      const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
+                                      const numberToUse = simple || primaryNumber?.number;
+                                      if (numberToUse) {
+                                        ClientContactService.openWhatsApp(numberToUse);
+                                      }
+                                    }}
+                                    className="h-8 w-8 p-0 border-green-200 hover:bg-green-50 hover:border-green-300 transition-colors"
+                                  >
+                                    <MessageCircle className="w-4 h-4 text-green-600" />
+                                  </Button>
+                                )}
+                                {project.client?.phone && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => ClientContactService.openPhone(project.client!.phone!)}
+                                    className="h-8 w-8 p-0 border-orange-200 hover:bg-orange-50 hover:border-orange-300 transition-colors"
+                                  >
+                                    <Phone className="w-4 h-4 text-orange-600" />
+                                  </Button>
+                                )}
+                              </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* תיקיית פרויקט */}
-                    {project.folderPath && (
-                      <div className="folder-info p-3 bg-amber-50/50 dark:bg-amber-900/20 rounded-lg border border-amber-200/30">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => FolderService.openInFinder(project.folderPath!)}
-                          className="gap-2 w-full h-8 bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700"
-                        >
-                          <FolderOpen className="w-4 h-4" />
-                          <span className="text-xs">פתח תיקייה</span>
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* תאריכים */}
-                    <div className="dates-info mt-3 text-xs text-muted-foreground">
-                      <div>התחלה: {new Date(project.startDate).toLocaleDateString('he-IL')}</div>
-                      {project.dueDate && (
-                        <div>יעד: {new Date(project.dueDate).toLocaleDateString('he-IL')}</div>
+                        </div>
                       )}
-                    </div>
-
-                    {/* כפתורי פעולה */}
-                    <div className="actions mt-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <StatusSelector 
-                          value={project.status} 
-                          onChange={(status) => handleStatusChange(project.id, status)}
-                        />
-                        <PrioritySelector 
-                          value={project.priority} 
-                          onChange={(priority) => handlePriorityChange(project.id, priority)}
-                        />
-                      </div>
                       
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(project)}
-                          className="gap-1 h-8 px-3"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(project.id)}
-                          className="gap-1 h-8 px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
+                      {/* תיקיית פרויקט */}
+                      {project.folderPath && (
+                        <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-100">
+                          <div className="absolute top-0 left-0 w-16 h-16 bg-amber-200 rounded-full opacity-20 -translate-y-6 -translate-x-6"></div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => FolderService.openInFinder(project.folderPath!)}
+                            className="w-full gap-3 h-10 border-amber-200 hover:bg-amber-50 hover:border-amber-300 transition-colors relative z-10"
+                          >
+                            <FolderOpen className="w-5 h-5 text-amber-600" />
+                            <span className="font-medium text-amber-700">פתח תיקיית פרויקט</span>
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* תאריכים ומידע נוסף */}
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <div className="text-xs text-gray-600 mb-1">התחלה</div>
+                          <div className="text-sm font-medium text-gray-800">
+                            {new Date(project.startDate).toLocaleDateString('he-IL')}
+                          </div>
+                        </div>
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <div className="text-xs text-gray-600 mb-1">יעד</div>
+                          <div className="text-sm font-medium text-gray-800">
+                            {project.dueDate ? new Date(project.dueDate).toLocaleDateString('he-IL') : 'לא נקבע'}
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* רשימת משימות */}
-                    <ProjectTaskList projectId={project.id} />
+                      {/* כפתורי פעולה */}
+                      <div className="mt-6 flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <StatusSelector 
+                            value={project.status} 
+                            onChange={(status) => handleStatusChange(project.id, status)}
+                          />
+                          <PrioritySelector 
+                            value={project.priority} 
+                            onChange={(priority) => handlePriorityChange(project.id, priority)}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(project)}
+                            className="gap-2 h-9 px-4 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                            <span>ערוך</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(project.id)}
+                            className="gap-2 h-9 px-4 hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>מחק</span>
+                          </Button>
+                        </div>
+                      </div>
 
-                    {/* סטטוס תשלום */}
-                    <PaymentStatusButton project={project} />
-                  </CardContent>
-                </Card>
-              ))}
+                      {/* רשימת משימות */}
+                      <ProjectTaskList projectId={project.id} />
+
+                      {/* סטטוס תשלום */}
+                      <PaymentStatusButton project={project} />
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
