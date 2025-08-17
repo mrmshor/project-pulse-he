@@ -64,6 +64,7 @@ export function EnhancedProjectForm({
     clientName: '',
     clientEmail: '',
     clientPhone: '',
+    clientWhatsapp: '',
     clientCompany: '',
     folderPath: '',
     tags: [] as string[],
@@ -122,6 +123,7 @@ export function EnhancedProjectForm({
         clientName: project.client?.name || '',
         clientEmail: project.client?.email || '',
         clientPhone: project.client?.phone || '',
+        clientWhatsapp: project.client?.whatsapp || '',
         clientCompany: project.client?.company || '',
         folderPath: project.folderPath || '',
         tags: project.tags?.map(t => t.name) || [],
@@ -143,6 +145,7 @@ export function EnhancedProjectForm({
         clientName: '',
         clientEmail: '',
         clientPhone: '',
+        clientWhatsapp: '',
         clientCompany: '',
         folderPath: '',
         tags: [],
@@ -244,6 +247,7 @@ export function EnhancedProjectForm({
             name: formData.clientName.trim(),
             email: formData.clientEmail.trim() || undefined,
             phone: formData.clientPhone.trim() || undefined,
+            whatsapp: formData.clientWhatsapp.trim() || undefined,
             company: formData.clientCompany.trim() || undefined,
             notes: undefined
           }
@@ -253,6 +257,7 @@ export function EnhancedProjectForm({
               name: selectedClient.name, 
               email: selectedClient.email, 
               phone: selectedClient.phone, 
+              whatsapp: selectedClient.whatsapp,
               company: selectedClient.company, 
               notes: selectedClient.notes 
             }
@@ -374,6 +379,7 @@ export function EnhancedProjectForm({
                     handleInputChange('clientName', '');
                     handleInputChange('clientEmail', '');
                     handleInputChange('clientPhone', '');
+                    handleInputChange('clientWhatsapp', '');
                     handleInputChange('clientCompany', '');
                   } else {
                     const selectedContact = contacts.find(c => c.id === value);
@@ -381,6 +387,7 @@ export function EnhancedProjectForm({
                       handleInputChange('clientName', selectedContact.name);
                       handleInputChange('clientEmail', selectedContact.email || '');
                       handleInputChange('clientPhone', selectedContact.phone || '');
+                      handleInputChange('clientWhatsapp', selectedContact.whatsapp || '');
                       handleInputChange('clientCompany', selectedContact.company || '');
                     }
                   }
@@ -484,7 +491,7 @@ export function EnhancedProjectForm({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clientEmail">אימייל</Label>
                 <Input
@@ -504,6 +511,18 @@ export function EnhancedProjectForm({
                   type="tel"
                   value={formData.clientPhone}
                   onChange={(e) => handleInputChange('clientPhone', e.target.value)}
+                  placeholder="050-1234567"
+                  className="ltr"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="clientWhatsapp">וואטסאפ</Label>
+                <Input
+                  id="clientWhatsapp"
+                  type="tel"
+                  value={formData.clientWhatsapp}
+                  onChange={(e) => handleInputChange('clientWhatsapp', e.target.value)}
                   placeholder="050-1234567"
                   className="ltr"
                 />

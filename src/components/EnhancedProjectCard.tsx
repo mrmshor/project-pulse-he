@@ -56,8 +56,10 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
     if (!project.client) return;
     
     if (!whatsappNumber) {
-      const primaryWhatsApp = project.client.whatsappNumbers?.find(w => w.isPrimary && w.number);
-      whatsappNumber = primaryWhatsApp?.number || project.client.whatsappNumbers?.[0]?.number;
+      // בחירת מספר וואטסאפ: ראשית השדה הפשוט, אחר כך המתקדם
+      whatsappNumber = project.client.whatsapp || 
+        project.client.whatsappNumbers?.find(w => w.isPrimary && w.number)?.number || 
+        project.client.whatsappNumbers?.[0]?.number;
     }
     
     if (whatsappNumber) {
@@ -142,6 +144,19 @@ export function EnhancedProjectCard({ project, onEdit, onDelete, tasks, contacts
             </div>
             
             <div className="flex gap-2">
+              {/* כפתור וואטסאפ פשוט */}
+              {project.client?.whatsapp && (
+                <Button
+                  onClick={() => handleOpenWhatsApp(project.client?.whatsapp)}
+                  size="sm"
+                  className="btn-glass hover:bg-green-500 hover:text-white transition-smooth"
+                  title="פתח WhatsApp"
+                >
+                  <MessageCircle size={14} />
+                </Button>
+              )}
+              
+              {/* כפתורי וואטסאפ מתקדמים */}
               {project.client?.whatsappNumbers?.filter(w => w.number && w.number.trim()).map((whatsapp, index) => (
                 <Button
                   key={whatsapp.id || index}

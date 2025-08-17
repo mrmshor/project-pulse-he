@@ -46,6 +46,7 @@ export interface Project {
       label: string; // כמו "אישי", "עסקי", "משרד"
       isPrimary: boolean;
     }[];
+    whatsapp?: string; // מספר וואטסאפ פשוט
     email?: string;
     phone?: string;
     company?: string;
@@ -92,6 +93,7 @@ export interface Contact {
   name: string;
   email?: string;
   phone?: string; // פורמט ישראלי 05X-XXXXXXX
+  whatsapp?: string; // מספר וואטסאפ
   company?: string; // ✅ ADDED: Missing field used by components
   address?: string; // ✅ ADDED: Missing field used by components
   notes?: string; // ✅ ADDED: Missing field used by components
