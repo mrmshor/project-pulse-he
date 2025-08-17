@@ -7,10 +7,10 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Tauri v1 expects port 8080
+  // Vite dev server uses port 5173
   server: {
     host: "::",
-    port: 8080,
+    port: 5173,
     strictPort: true,
     hmr: host
       ? {
