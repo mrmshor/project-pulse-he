@@ -114,7 +114,7 @@ export function useAdvancedSearch() {
           return (r.item as Task).projectId === options.projectId;
         }
         if (r.type === 'contact') {
-          return (r.item as Contact).projectIds.includes(options.projectId);
+          return ((r.item as Contact).projectIds?.includes(options.projectId as string) ?? false);
         }
         return r.type === 'project' && r.item.id === options.projectId;
       });

@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     mode === 'development' && {
       name: 'tauri-v1-dev',
-      configureServer(server) {
+      configureServer(server: any) {
         console.log('🔧 Vite configured for Tauri v1 development');
       }
     }

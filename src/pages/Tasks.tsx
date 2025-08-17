@@ -4,7 +4,7 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { Task, TaskStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -68,16 +68,16 @@ export function Tasks() {
   };
 
   const getStatusColor = (status: TaskStatus) => {
-    switch (status) {
-      case 'לביצוע':
-        return 'bg-muted text-muted-foreground';
-      case 'בתהליך':
-        return 'bg-primary text-primary-foreground';
-      case 'הושלמה':
-        return 'bg-success text-success-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
+  switch (status) {
+    case 'ממתין':
+      return 'bg-muted text-muted-foreground';
+    case 'בעבודה':
+      return 'bg-primary text-primary-foreground';
+    case 'הושלם':
+      return 'bg-success text-success-foreground';
+    default:
+      return 'bg-muted text-muted-foreground';
+  }
   };
 
   const getPriorityColor = (priority: Priority) => {
@@ -142,9 +142,9 @@ export function Tasks() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">כל הסטטוסים</SelectItem>
-            <SelectItem value="לביצוע">לביצוע</SelectItem>
-            <SelectItem value="בתהליך">בתהליך</SelectItem>
-            <SelectItem value="הושלמה">הושלמה</SelectItem>
+            <SelectItem value="ממתין">ממתין</SelectItem>
+            <SelectItem value="בעבודה">בעבודה</SelectItem>
+            <SelectItem value="הושלם">הושלם</SelectItem>
           </SelectContent>
         </Select>
 

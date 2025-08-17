@@ -1,5 +1,5 @@
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
-import { openPath, openUrl } from '@tauri-apps/plugin-opener';
+
 import { exists } from '@tauri-apps/plugin-fs';
 import { invoke } from '@tauri-apps/api/core';
 import { formatPhoneForWhatsApp, isTauriEnvironment } from '@/lib/tauri';

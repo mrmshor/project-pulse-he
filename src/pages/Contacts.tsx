@@ -12,8 +12,7 @@ import {
   openWhatsApp, 
   openMail, 
   openPhone, 
-  exportFileNative,
-  formatPhoneForWhatsApp 
+  exportFileNative
 } from '@/lib/tauri';
 
 export function Contacts() {
@@ -244,13 +243,13 @@ export function Contacts() {
 
       {/* Contact Dialog */}
       <ContactDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        contact={editingContact}
-        onSave={() => {
+        isOpen={isDialogOpen}
+        onClose={() => {
           setIsDialogOpen(false);
           setEditingContact(null);
         }}
+        contact={editingContact}
+        projects={projects}
       />
     </div>
   );

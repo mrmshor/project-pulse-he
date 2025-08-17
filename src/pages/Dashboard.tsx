@@ -1,10 +1,10 @@
-import { FolderOpen, CheckSquare, TrendingUp, Activity, Clock, Target, BarChart3, Calendar, Users, AlertCircle } from 'lucide-react';
+import { FolderOpen, CheckSquare, TrendingUp, Clock, Target, BarChart3, Calendar, AlertCircle } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { usePersonalTasksStore } from '@/store/usePersonalTasksStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { AdvancedDashboard } from '@/components/AdvancedDashboard';
-import { format, subDays, isAfter, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 export function Dashboard() {
@@ -14,12 +14,12 @@ export function Dashboard() {
 
   // חישובי סטטיסטיקות מתקדמות
   const totalTasks = tasks.length + personalTasks.length;
-  const completedTasks = tasks.filter(t => t.status === 'הושלמה').length + personalTasks.filter(t => t.completed).length;
+  const completedTasks = tasks.filter(t => t.status === 'הושלם').length + personalTasks.filter(t => t.completed).length;
   const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   // משימות חשובות (עדיפות גבוהה)
   const urgentTasks = [
-    ...tasks.filter(t => t.status !== 'הושלמה' && t.priority === 'גבוהה'),
+    ...tasks.filter(t => t.status !== 'הושלם' && t.priority === 'גבוהה'),
     ...personalTasks.filter(t => !t.completed && t.priority === 'גבוהה')
   ];
   
@@ -28,7 +28,7 @@ export function Dashboard() {
   const weekEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
   const duingWeek = tasks.filter(t => 
     t.dueDate && 
-    t.status !== 'הושלמה' &&
+    t.status !== 'הושלם' &&
     new Date(t.dueDate) >= weekStart && 
     new Date(t.dueDate) <= weekEnd
   ).length;
@@ -83,7 +83,7 @@ export function Dashboard() {
     .slice(0, 3);
 
   // משימות פעילות עם יותר פרטי
-  const recentTasks = [...tasks.filter(task => task.status !== 'הושלמה'), ...personalTasks.filter(t => !t.completed)]
+  const recentTasks = [...tasks.filter(task => task.status !== 'הושלם'), ...personalTasks.filter(t => !t.completed)]
     .sort((a, b) => {
       const aPriority = a.priority === 'גבוהה' ? 3 : a.priority === 'בינונית' ? 2 : 1;
       const bPriority = b.priority === 'גבוהה' ? 3 : b.priority === 'בינונית' ? 2 : 1;
@@ -101,11 +101,11 @@ export function Dashboard() {
         return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200';
       case 'בהמתנה':
         return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200';
-      case 'לביצוע':
+      case 'ממתין':
         return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200';
-      case 'בתהליך':
+      case 'בעבודה':
         return 'bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 border-indigo-200';
-      case 'הושלמה':
+      case 'הושלם':
         return 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200';
       default:
         return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200';

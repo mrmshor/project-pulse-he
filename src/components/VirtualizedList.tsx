@@ -22,6 +22,7 @@ interface VirtualizedContactListProps {
 // Project List Item Component
 const ProjectItem = ({ index, style, data }: { index: number; style: any; data: { projects: Project[]; onProjectClick?: (project: Project) => void } }) => {
   const project = data.projects[index];
+  if (!project) return null;
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -78,12 +79,13 @@ const ProjectItem = ({ index, style, data }: { index: number; style: any; data: 
 // Task List Item Component
 const TaskItem = ({ index, style, data }: { index: number; style: any; data: { tasks: Task[]; onTaskClick?: (task: Task) => void } }) => {
   const task = data.tasks[index];
+  if (!task) return null;
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'הושלמה': return 'bg-green-100 text-green-800';
-      case 'בתהליך': return 'bg-blue-100 text-blue-800';
-      case 'לביצוע': return 'bg-yellow-100 text-yellow-800';
+      case 'הושלם': return 'bg-green-100 text-green-800';
+      case 'בעבודה': return 'bg-blue-100 text-blue-800';
+      case 'ממתין': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -107,7 +109,7 @@ const TaskItem = ({ index, style, data }: { index: number; style: any; data: { t
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <div className="flex-shrink-0">
-                {task.status === 'הושלמה' ? (
+                {task.status === 'הושלם' ? (
                   <CheckCircle className="w-5 h-5 text-green-600" />
                 ) : (
                   <Clock className="w-5 h-5 text-blue-600" />
@@ -141,7 +143,8 @@ const TaskItem = ({ index, style, data }: { index: number; style: any; data: { t
 // Contact List Item Component
 const ContactItem = ({ index, style, data }: { index: number; style: any; data: { contacts: Contact[]; onContactClick?: (contact: Contact) => void } }) => {
   const contact = data.contacts[index];
-
+  if (!contact) return null;
+ 
   return (
     <div style={style} className="px-2 py-1">
       <Card 

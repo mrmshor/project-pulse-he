@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle } from 'lucide-react';
+import { Plus, Search, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle } from 'lucide-react';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { StatusSelector } from '@/components/StatusSelector';
 import { PrioritySelector } from '@/components/PrioritySelector';
@@ -35,7 +35,6 @@ export function Projects() {
     updateProject,
     exportToCSV,
     exportToJSON,
-    getTasksByProject,
   } = useProjectStore();
 
   const filteredProjects = projects.filter((project) => {
@@ -87,14 +86,14 @@ export function Projects() {
   const handleStatusChange = (projectId: string, status: ProjectStatus) => {
     const project = projects.find(p => p.id === projectId);
     if (project) {
-      updateProject(projectId, { ...project, status });
+      updateProject({ ...project, status });
     }
   };
 
   const handlePriorityChange = (projectId: string, priority: Priority) => {
     const project = projects.find(p => p.id === projectId);
     if (project) {
-      updateProject(projectId, { ...project, priority });
+      updateProject({ ...project, priority });
     }
   };
 
@@ -106,7 +105,7 @@ export function Projects() {
         return 'bg-primary text-primary-foreground';
       case 'הושלם':
         return 'bg-success text-success-foreground';
-      case 'בהמתנה':
+      case 'מושהה':
         return 'bg-secondary text-secondary-foreground';
       default:
         return 'bg-muted text-muted-foreground';
@@ -251,7 +250,7 @@ export function Projects() {
                     <SelectItem value="תכנון">תכנון</SelectItem>
                     <SelectItem value="פעיל">פעיל</SelectItem>
                     <SelectItem value="הושלם">הושלם</SelectItem>
-                    <SelectItem value="בהמתנה">בהמתנה</SelectItem>
+                    <SelectItem value="מושהה">מושהה</SelectItem>
                   </SelectContent>
                 </Select>
                 
@@ -436,7 +435,7 @@ export function Projects() {
           </DialogHeader>
           <EnhancedProjectForm
             project={editingProject || undefined}
-            onSave={() => {
+            onSubmit={() => {
               setIsDialogOpen(false);
               setEditingProject(null);
             }}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -41,19 +41,6 @@ export function TasksModal({ open, onOpenChange, project, scrollToFirstPending =
         return <AlertCircle className="w-4 h-4 text-warning" />;
       default:
         return <Circle className="w-4 h-4 text-muted-foreground" />;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'גבוהה':
-        return 'text-danger';
-      case 'בינונית':
-        return 'text-warning';
-      case 'נמוכה':
-        return 'text-success';
-      default:
-        return 'text-muted-foreground';
     }
   };
 

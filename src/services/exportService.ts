@@ -20,8 +20,8 @@ export class ExportService {
       'תאריך התחלה': new Date(p.startDate).toLocaleDateString('he-IL'),
       'תאריך יעד': p.dueDate ? new Date(p.dueDate).toLocaleDateString('he-IL') : '',
       'מספר משימות': data.tasks.filter(t => t.projectId === p.id).length,
-      'משימות הושלמו': data.tasks.filter(t => t.projectId === p.id && t.status === 'הושלמה').length,
-      'אנשי קשר': data.contacts.filter(c => c.projectIds.includes(p.id)).length
+      'משימות הושלמו': data.tasks.filter(t => t.projectId === p.id && t.status === 'הושלם').length,
+      'אנשי קשר': data.contacts.filter(c => (c.projectIds?.includes(p.id) ?? false)).length
     }));
 
     const projectsSheet = XLSX.utils.json_to_sheet(projectsData);
@@ -53,11 +53,11 @@ export class ExportService {
       'שם': c.name,
       'אימייל': c.email || '',
       'טלפון': c.phone || '',
-      'פרויקטים': c.projectIds
+      'פרויקטים': (c.projectIds ?? [])
         .map(id => data.projects.find(p => p.id === id)?.name)
         .filter(Boolean)
         .join('; '),
-      'מספר פרויקטים': c.projectIds.length
+      'מספר פרויקטים': (c.projectIds?.length ?? 0)
     }));
 
     const contactsSheet = XLSX.utils.json_to_sheet(contactsData);
@@ -90,7 +90,7 @@ export class ExportService {
       { 'נתון': 'פרויקטים פעילים', 'ערך': data.projects.filter(p => p.status === 'פעיל').length },
       { 'נתון': 'פרויקטים הושלמו', 'ערך': data.projects.filter(p => p.status === 'הושלם').length },
       { 'נתון': 'סה"כ משימות', 'ערך': data.tasks.length },
-      { 'נתון': 'משימות הושלמו', 'ערך': data.tasks.filter(t => t.status === 'הושלמה').length },
+      { 'נתון': 'משימות הושלמו', 'ערך': data.tasks.filter(t => t.status === 'הושלם').length },
       { 'נתון': 'סה"כ אנשי קשר', 'ערך': data.contacts.length },
       { 'נתון': 'סה"כ זמן מושקע (שעות)', 'ערך': Math.round(data.timeEntries.reduce((sum, te) => sum + te.duration, 0) / 60 * 100) / 100 },
       { 'נתון': 'תאריך יצירת הדוח', 'ערך': new Date().toLocaleDateString('he-IL') }
@@ -136,7 +136,7 @@ export class ExportService {
           new Date(p.startDate).toLocaleDateString('he-IL'),
           p.dueDate ? new Date(p.dueDate).toLocaleDateString('he-IL') : '',
           data.tasks.filter(t => t.projectId === p.id).length,
-          data.tasks.filter(t => t.projectId === p.id && t.status === 'הושלמה').length
+          data.tasks.filter(t => t.projectId === p.id && t.status === 'הושלם').length
         ]);
         csvContent = [projectHeaders, ...projectRows].map(row => row.join(',')).join('\n');
         filename = 'projects_detailed.csv';
@@ -166,7 +166,7 @@ export class ExportService {
           c.name,
           c.email || '',
           c.phone || '',
-          c.projectIds.map(id => data.projects.find(p => p.id === id)?.name).filter(Boolean).join('; ')
+          (c.projectIds ?? []).map(id => data.projects.find(p => p.id === id)?.name).filter(Boolean).join('; ')
         ]);
         csvContent = [contactHeaders, ...contactRows].map(row => row.join(',')).join('\n');
         filename = 'contacts_detailed.csv';

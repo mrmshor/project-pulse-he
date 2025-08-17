@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, Task, Contact, TimeEntry, ProjectStatus, Priority } from '@/types';
+import { Project, Task, Contact, TimeEntry } from '@/types';
 import { isTauriEnvironment, saveDataNative, loadDataNative } from '@/lib/tauri';
 
 interface ProjectStore {
