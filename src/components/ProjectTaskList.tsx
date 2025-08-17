@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -193,22 +193,43 @@ export function ProjectTaskList({ projectId, className }: ProjectTaskListProps) 
   const progressPercentage = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 
   return (
-    <div className={cn('mt-4 rounded-2xl border border-blue-100 bg-blue-50/50 dark:bg-blue-950/20 p-4', className)}>
-      <div className="mb-2">
+    <Card className={cn('mt-4', className)}>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold text-blue-700">משימות</div>
-          <div className="px-2 py-0.5 rounded-full bg-white text-blue-700 border border-blue-200 text-xs">{completedCount}/{tasks.length}</div>
+          <CardTitle className="text-base flex items-center gap-2">
+            <ListTodo className="w-4 h-4" />
+            משימות ({completedCount}/{tasks.length})
+          </CardTitle>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAddingTask(true)}
+            className="gap-1 h-7 px-2"
+          >
+            <Plus className="w-3 h-3" />
+            הוסף
+          </Button>
         </div>
+        
+        {/* Progress Bar */}
         {tasks.length > 0 && (
-          <div className="mt-3">
-            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-              <div className="h-2 bg-blue-600 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
+          <div className="mt-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+              <span>התקדמות</span>
+              <span>{progressPercentage}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
+              <div 
+                className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${progressPercentage}%` }}
+              />
             </div>
           </div>
         )}
-      </div>
+      </CardHeader>
       
-      
+      <CardContent className="pt-0">
         {/* Add New Task */}
         {isAddingTask && (
           <div className="mb-4 p-3 border rounded-lg bg-muted/30">
@@ -233,7 +254,7 @@ export function ProjectTaskList({ projectId, className }: ProjectTaskListProps) 
                 onClick={handleAddTask}
                 disabled={!newTaskTitle.trim()}
               >
-                <span className="flex items-center gap-1"><Plus className="w-3 h-3" /> הוסף</span>
+                הוסף
               </Button>
               <Button 
                 variant="outline" 
@@ -362,7 +383,7 @@ export function ProjectTaskList({ projectId, className }: ProjectTaskListProps) 
             ))
           )}
         </div>
-      
-    </div>
+      </CardContent>
+    </Card>
   );
 }

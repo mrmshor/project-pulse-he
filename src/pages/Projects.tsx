@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { Plus, Search, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Download, Edit, Trash2, FolderOpen, User, Phone, Mail, MessageCircle } from 'lucide-react';
 import { FolderService, ClientContactService } from '@/services/nativeServices';
 import { StatusSelector } from '@/components/StatusSelector';
 import { PrioritySelector } from '@/components/PrioritySelector';
-
+import { ProjectTaskList } from '@/components/ProjectTaskList';
 import { PaymentStatusButton } from '@/components/PaymentStatusButton';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   Select, 
   SelectContent, 
@@ -35,7 +35,6 @@ export function Projects() {
     updateProject,
     exportToCSV,
     exportToJSON,
-    getTasksByProject,
   } = useProjectStore();
 
   const filteredProjects = projects.filter((project) => {
@@ -98,252 +97,338 @@ export function Projects() {
     }
   };
 
+  const getStatusColor = (status: ProjectStatus) => {
+    switch (status) {
+      case 'תכנון':
+        return 'bg-muted text-muted-foreground';
+      case 'פעיל':
+        return 'bg-primary text-primary-foreground';
+      case 'הושלם':
+        return 'bg-success text-success-foreground';
+      case 'מושהה':
+        return 'bg-secondary text-secondary-foreground';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getPriorityColor = (priority: Priority) => {
+    switch (priority) {
+      case 'נמוכה':
+        return 'text-success';
+      case 'בינונית':
+        return 'text-primary';
+      case 'גבוהה':
+        return 'text-danger';
+      default:
+        return 'text-muted-foreground';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-white dark:bg-background border-b">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold text-foreground">
-              פרויקטים מתקדם
+    <div className="h-screen flex flex-col bg-gray-50/50 dark:bg-gray-900/50">
+      {/* Fixed Header & Filters */}
+      <div className="flex-shrink-0 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
+        {/* Header */}
+        <div className="text-center space-y-6 py-8 px-6 relative">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute top-0 right-1/4 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-2xl"></div>
+          </div>
+          
+          <div className="relative z-10">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              ניהול פרויקטים מתקדם
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               נהל את הפרויקטים שלך בצורה מקצועית ויעילה
             </p>
           </div>
 
-          {/* Action button */}
-          <div className="pt-6">
-            <Button 
-              onClick={() => setIsDialogOpen(true)} 
-              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-6 py-2"
-              size="default"
-            >
-              <Plus size={16} className="ml-2" />
-              פרויקט חדש
-            </Button>
+          {/* Stats cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+              <div className="text-2xl font-bold text-primary">{projects.length}</div>
+              <div className="text-sm text-muted-foreground">פרויקטים</div>
+            </div>
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+              <div className="text-2xl font-bold text-blue-600">{projects.filter(p => p.status === 'פעיל').length}</div>
+              <div className="text-sm text-muted-foreground">פעילים</div>
+            </div>
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+              <div className="text-2xl font-bold text-green-600">{projects.filter(p => p.status === 'הושלם').length}</div>
+              <div className="text-sm text-muted-foreground">הושלמו</div>
+            </div>
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+              <div className="text-2xl font-bold text-amber-600">{projects.filter(p => p.priority === 'גבוהה').length}</div>
+              <div className="text-sm text-muted-foreground">דחופים</div>
+            </div>
           </div>
 
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white dark:bg-background border-b px-6 py-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-              <Input
-                placeholder="חיפוש פרויקטים..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
-            </div>
-            
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="סינון לפי סטטוס" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הסטטוסים</SelectItem>
-                <SelectItem value="תכנון">תכנון</SelectItem>
-                <SelectItem value="פעיל">פעיל</SelectItem>
-                <SelectItem value="הושלם">הושלם</SelectItem>
-                <SelectItem value="מושהה">מושהה</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="סינון לפי עדיפות" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל העדיפויות</SelectItem>
-                <SelectItem value="נמוכה">נמוכה</SelectItem>
-                <SelectItem value="בינונית">בינונית</SelectItem>
-                <SelectItem value="גבוהה">גבוהה</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <div className="flex gap-2">
+          {/* Action buttons */}
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+            {/* Export buttons - desktop only */}
+            <div className="hidden lg:flex items-center gap-3">
               <Button
                 variant="outline"
                 onClick={() => handleExport('csv')}
+                className="gap-2 text-xs shadow-sm hover:shadow-md transition-all"
                 size="sm"
               >
-                <Download size={14} className="ml-1" />
+                <Download size={14} />
                 CSV
               </Button>
               <Button
                 variant="outline"
                 onClick={() => handleExport('json')}
+                className="gap-2 text-xs shadow-sm hover:shadow-md transition-all"
                 size="sm"
               >
-                <Download size={14} className="ml-1" />
+                <Download size={14} />
+                JSON
+              </Button>
+            </div>
+            
+            {/* Main action button - centered and prominent */}
+            <div className="pt-4">
+              <Button 
+                onClick={() => setIsDialogOpen(true)} 
+                className="gap-3 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-8"
+                size="lg"
+              >
+                <Plus size={20} />
+                <span className="font-semibold">פרויקט חדש</span>
+              </Button>
+            </div>
+            
+            {/* Export buttons for mobile - below main button */}
+            <div className="flex lg:hidden items-center justify-center gap-3 pt-3">
+              <Button
+                variant="outline"
+                onClick={() => handleExport('csv')}
+                className="gap-2 text-xs"
+                size="sm"
+              >
+                <Download size={14} />
+                CSV
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleExport('json')}
+                className="gap-2 text-xs"
+                size="sm"
+              >
+                <Download size={14} />
                 JSON
               </Button>
             </div>
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="pb-6 px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="relative">
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                  <Input
+                    placeholder="חיפוש פרויקטים..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pr-10"
+                  />
+                </div>
+                
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="סינון לפי סטטוס" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הסטטוסים</SelectItem>
+                    <SelectItem value="תכנון">תכנון</SelectItem>
+                    <SelectItem value="פעיל">פעיל</SelectItem>
+                    <SelectItem value="הושלם">הושלם</SelectItem>
+                    <SelectItem value="מושהה">מושהה</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="סינון לפי עדיפות" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל העדיפויות</SelectItem>
+                    <SelectItem value="נמוכה">נמוכה</SelectItem>
+                    <SelectItem value="בינונית">בינונית</SelectItem>
+                    <SelectItem value="גבוהה">גבוהה</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Projects Grid */}
-      <div className="flex-1 bg-gray-50/30 dark:bg-gray-900/30">
-        <div className="max-w-6xl mx-auto p-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto p-6">
           {filteredProjects.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-12">
               <FolderOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold text-muted-foreground mb-2">לא נמצאו פרויקטים</h3>
               <p className="text-muted-foreground">התחל ליצור פרויקטים חדשים או שנה את הסינון</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredProjects.map((project) => {
-                const tasks = getTasksByProject(project.id);
-                const completedCount = tasks.filter((t) => t.completed).length;
-                const progress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
-
-                return (
-                  <Card
-                    key={project.id}
-                    className={`border-r-4 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] cursor-pointer bg-white dark:bg-card border border-border ${
-                      ({ 'גבוהה': 'border-r-red-500', 'בינונית': 'border-r-amber-500', 'נמוכה': 'border-r-emerald-500' } as const)[project.priority]
-                    }`}
-                  >
-                    {/* Header Section */}
-                    <div className="p-6 pb-3 bg-gradient-to-r from-white/50 to-transparent backdrop-blur">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-700 via-purple-600 to-blue-800 bg-clip-text text-transparent mb-2 leading-tight line-clamp-2 tracking-wide hover:from-blue-600 hover:via-purple-500 hover:to-blue-700 transition-colors duration-300">
-                            {project.name}
-                          </h3>
-                          <div className="flex items-center gap-2 mb-2">
-                            <User className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                              {project.client?.name || '—'}
-                            </span>
-                          </div>
-                        </div>
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600" onClick={() => handleEdit(project)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-100 text-red-500" onClick={() => handleDelete(project.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      {/* Status and Priority Selectors */}
-                      <div className="flex gap-2 mb-3">
-                        <StatusSelector value={project.status} onChange={(status) => handleStatusChange(project.id, status)} />
-                        <PrioritySelector value={project.priority} onChange={(priority) => handlePriorityChange(project.id, priority)} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <Card key={project.id} className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                          {project.name}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {project.description}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="px-6 space-y-4">
-                      {/* Description */}
-                      {project.description && (
-                        <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-3 rounded-lg border border-gray-200/50">
-                          <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed italic">
-                            "{project.description}"
-                          </p>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-2 mt-3">
+                      <Badge variant="outline" className={getStatusColor(project.status)}>
+                        {project.status}
+                      </Badge>
+                      <Badge variant="outline" className={getPriorityColor(project.priority)}>
+                        {project.priority}
+                      </Badge>
+                    </div>
+                  </CardHeader>
 
-                      {/* Price Section */}
-                      {(project.budget != null) && (
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200/50">
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm font-semibold text-green-600">
-                              {`₪${Number(project.budget).toLocaleString('he-IL')}`}
-                            </div>
-                            <div className="flex gap-2">
-                              <PaymentStatusButton project={project} />
-                            </div>
-                          </div>
+                  <CardContent className="pt-0">
+                    {/* פרטי לקוח */}
+                    {project.client && (
+                      <div className="client-info mb-4 p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-200/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-sm">{project.client.name}</span>
                         </div>
-                      )}
-
-                      {/* Contact Actions */}
-                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200/50">
-                        <div className="flex flex-wrap gap-2">
-                          {project.client?.email && (
-                            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs">
-                              <a
-                                href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
-                                target="_top"
-                                rel="noreferrer noopener"
-                                aria-label="שלח אימייל"
+                        {(project.client.email || project.client.phone || project.client.whatsapp || project.client.whatsappNumbers?.length) && (
+                          <div className="flex items-center gap-1">
+                            {project.client?.email && (
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                               >
-                                <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> מייל</span>
-                              </a>
-                            </Button>
-                          )}
-                          {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const simple = project.client?.whatsapp;
-                                const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
-                                const numberToUse = simple || primaryNumber?.number;
-                                if (numberToUse) {
-                                  ClientContactService.openWhatsApp(numberToUse);
-                                }
-                              }}
-                              className="h-8 px-3 text-xs"
-                            >
-                              <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> וואטסאפ</span>
-                            </Button>
-                          )}
-                          {project.client?.phone && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => ClientContactService.openPhone(project.client!.phone!)}
-                              className="h-8 px-3 text-xs"
-                            >
-                              <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> חייג</span>
-                            </Button>
-                          )}
-                          {project.folderPath && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => FolderService.openInFinder(project.folderPath!)}
-                              className="text-xs hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
-                            >
-                              <FolderOpen className="h-3 w-3 mr-1" />
-                              פתח תיקיה
-                            </Button>
-                          )}
-                        </div>
+                                <a
+                                  href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
+                                  target="_top"
+                                  rel="noreferrer noopener"
+                                  aria-label="שלח אימייל"
+                                >
+                                  <Mail className="w-3 h-3" />
+                                </a>
+                              </Button>
+                            )}
+                            {(project.client?.whatsapp || project.client?.whatsappNumbers?.length) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const simple = project.client?.whatsapp;
+                                  const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
+                                  const numberToUse = simple || primaryNumber?.number;
+                                  if (numberToUse) {
+                                    ClientContactService.openWhatsApp(numberToUse);
+                                  }
+                                }}
+                                className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                              >
+                                <MessageCircle className="w-3 h-3" />
+                              </Button>
+                            )}
+                            {project.client?.phone && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => ClientContactService.openPhone(project.client!.phone!)}
+                                className="gap-1 h-7 px-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700"
+                              >
+                                <Phone className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
+                    )}
+                    
+                    {/* תיקיית פרויקט */}
+                    {project.folderPath && (
+                      <div className="folder-info p-3 bg-amber-50/50 dark:bg-amber-900/20 rounded-lg border border-amber-200/30">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => FolderService.openInFinder(project.folderPath!)}
+                          className="gap-2 w-full h-8 bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700"
+                        >
+                          <FolderOpen className="w-4 h-4" />
+                          <span className="text-xs">פתח תיקייה</span>
+                        </Button>
+                      </div>
+                    )}
 
-                      {/* Tasks Section */}
-                      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200/50">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-indigo-600" />
-                            משימות ({completedCount}/{tasks.length})
-                          </h4>
-                          <span className="text-xs text-muted-foreground">{progress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full overflow-hidden h-2">
-                          <div
-                            className="bg-gradient-to-r from-indigo-500 to-blue-600 h-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
+                    {/* תאריכים */}
+                    <div className="dates-info mt-3 text-xs text-muted-foreground">
+                      <div>התחלה: {new Date(project.startDate).toLocaleDateString('he-IL')}</div>
+                      {project.dueDate && (
+                        <div>יעד: {new Date(project.dueDate).toLocaleDateString('he-IL')}</div>
+                      )}
+                    </div>
+
+                    {/* כפתורי פעולה */}
+                    <div className="actions mt-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <StatusSelector 
+                          value={project.status} 
+                          onChange={(status) => handleStatusChange(project.id, status)}
+                        />
+                        <PrioritySelector 
+                          value={project.priority} 
+                          onChange={(priority) => handlePriorityChange(project.id, priority)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(project)}
+                          className="gap-1 h-8 px-3"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(project.id)}
+                          className="gap-1 h-8 px-3 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
                     </div>
-                  </Card>
-                );
-              })}
+
+                    {/* רשימת משימות */}
+                    <ProjectTaskList projectId={project.id} />
+
+                    {/* סטטוס תשלום */}
+                    <PaymentStatusButton project={project} />
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </div>
@@ -351,7 +436,7 @@ export function Projects() {
 
       {/* Dialog for adding/editing projects */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}
