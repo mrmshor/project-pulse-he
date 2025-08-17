@@ -1,21 +1,15 @@
 import { useState } from 'react';
-import { Plus, Search, Download, Calendar, Users, TrendingUp, DollarSign, CheckCircle, Clock } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
 import { EnhancedProjectForm } from '@/components/EnhancedProjectForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { isTauriEnvironment, exportFileNative } from '@/lib/tauri';
+import { ProjectsSidebar } from '@/components/ProjectsSidebar';
+import { ProjectsHeader } from '@/components/projects/ProjectsHeader';
+import { StatsGrid } from '@/components/projects/StatsGrid';
+import { RecentProjectsList } from '@/components/projects/RecentProjectsList';
+import { QuickTasksPanel } from '@/components/projects/QuickTasksPanel';
 
 export function Projects() {
   const [searchTerm, setSearchTerm] = useState('');
