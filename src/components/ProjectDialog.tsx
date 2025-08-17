@@ -32,13 +32,15 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
     description: '',
     status: 'תכנון' as ProjectStatus,
     priority: 'בינונית' as Priority,
-    startDate: '',
-    dueDate: '',
+    startDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date().toISOString().split('T')[0],
   });
 
   const { addProject, updateProject } = useProjectStore();
 
   useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    
     if (project) {
       setFormData({
         name: project.name,
@@ -48,7 +50,7 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
         startDate: new Date(project.startDate).toISOString().split('T')[0],
         dueDate: project.dueDate 
           ? new Date(project.dueDate).toISOString().split('T')[0] 
-          : '',
+          : today,
       });
     } else {
       setFormData({
@@ -56,8 +58,8 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
         description: '',
         status: 'תכנון',
         priority: 'בינונית',
-        startDate: new Date().toISOString().split('T')[0],
-        dueDate: '',
+        startDate: today,
+        dueDate: today,
       });
     }
   }, [project, open]);

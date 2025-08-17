@@ -54,8 +54,8 @@ export function EnhancedProjectForm({
     description: '',
     status: 'תכנון' as ProjectStatus,
     priority: 'בינונית' as Priority,
-    startDate: '',
-    dueDate: '',
+    startDate: new Date().toISOString().split('T')[0],
+    dueDate: new Date().toISOString().split('T')[0],
     budget: '',
     paidAmount: '',
     paymentStatus: 'ממתין לתשלום' as PaymentStatus,
@@ -71,14 +71,16 @@ export function EnhancedProjectForm({
 
   // Initialize form data
   useEffect(() => {
+    const today = new Date().toISOString().split('T')[0]; // Define today here
+    
     if (project) {
       setFormData({
         name: project.name || '',
         description: project.description || '',
         status: project.status || 'תכנון',
         priority: project.priority || 'בינונית',
-        startDate: project.startDate ? project.startDate.split('T')[0] : '',
-        dueDate: project.dueDate ? project.dueDate.split('T')[0] : '',
+        startDate: project.startDate ? project.startDate.split('T')[0] : today,
+        dueDate: project.dueDate ? project.dueDate.split('T')[0] : today,
         budget: project.budget ? project.budget.toString() : '',
         paidAmount: project.paidAmount ? project.paidAmount.toString() : '',
         paymentStatus: project.paymentStatus || 'ממתין לתשלום',
@@ -89,14 +91,13 @@ export function EnhancedProjectForm({
       });
     } else {
       // Set default start date to today
-      const today = new Date().toISOString().split('T')[0];
       setFormData({
         name: '',
         description: '',
         status: 'תכנון',
         priority: 'בינונית',
         startDate: today,
-        dueDate: '',
+        dueDate: today,
         budget: '',
         paidAmount: '',
         paymentStatus: 'ממתין לתשלום',
@@ -213,7 +214,12 @@ export function EnhancedProjectForm({
       };
 
       if (project) {
-        const updatedProject = { ...projectData, id: project.id };
+        const updatedProject = { 
+          ...projectData, 
+          id: project.id,
+          createdAt: project.createdAt,
+          updatedAt: new Date().toISOString()
+        };
         await updateProject(updatedProject);
         onSubmit(updatedProject);
         

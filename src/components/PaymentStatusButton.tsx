@@ -12,8 +12,7 @@ import {
   CheckCircle, 
   XCircle, 
   ChevronDown,
-  Edit,
-  Receipt
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectStore } from '@/store/useProjectStore';

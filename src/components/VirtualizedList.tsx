@@ -46,7 +46,7 @@ const ProjectItem = ({ index, style, data }: { index: number; style: any; data: 
     <div style={style} className="px-2 py-1">
       <Card 
         className="cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => data.onProjectClick?.(project)}
+        onClick={() => project && data.onProjectClick?.(project)}
       >
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
@@ -146,7 +146,7 @@ const ContactItem = ({ index, style, data }: { index: number; style: any; data: 
     <div style={style} className="px-2 py-1">
       <Card 
         className="cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => data.onContactClick?.(contact)}
+        onClick={() => contact && data.onContactClick?.(contact)}
       >
         <CardContent className="p-3">
           <div className="flex items-center justify-between">
@@ -155,15 +155,15 @@ const ContactItem = ({ index, style, data }: { index: number; style: any; data: 
                 <User className="w-5 h-5 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium">{contact.name}</h4>
+                <h4 className="font-medium">{contact?.name}</h4>
                 <div className="text-xs text-muted-foreground">
-                  {contact.email && <div>{contact.email}</div>}
-                  {contact.phone && <div>{contact.phone}</div>}
+                  {contact?.email && <div>{contact.email}</div>}
+                  {contact?.phone && <div>{contact.phone}</div>}
                 </div>
               </div>
             </div>
             <Badge variant="outline">
-              {contact.projectIds.length} פרויקטים
+              {contact?.projectIds?.length || 0} פרויקטים
             </Badge>
           </div>
         </CardContent>
