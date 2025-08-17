@@ -69,7 +69,7 @@ export function ProjectsSidebar() {
       case 'תכנון': return 'bg-gray-100 text-gray-700';
       case 'פעיל': return 'bg-blue-100 text-blue-700';
       case 'הושלם': return 'bg-green-100 text-green-700';
-      case 'בהמתנה': return 'bg-yellow-100 text-yellow-700';
+      case 'מושהה': return 'bg-yellow-100 text-yellow-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
@@ -95,7 +95,7 @@ export function ProjectsSidebar() {
   // סטטיסטיקות פרויקט
   const getProjectStats = (project: Project) => {
     const tasks = getTasksByProject(project.id);
-    const completedTasks = tasks.filter(task => task.status === 'הושלמה');
+    const completedTasks = tasks.filter(task => task.status === 'הושלם');
     return {
       total: tasks.length,
       completed: completedTasks.length,

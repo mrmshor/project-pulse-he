@@ -85,7 +85,7 @@ export function ContactDialog({
           address: contact.address || '',
           notes: contact.notes || '',
           type: contact.type || 'לקוח',
-          tags: contact.tags || []
+          tags: (contact.tags?.map(t => t.name) || [])
         });
       } else {
         setFormData({

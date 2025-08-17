@@ -65,34 +65,18 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const projectData = {
+    const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
       name: formData.name,
       description: formData.description,
       status: formData.status,
       priority: formData.priority,
-      startDate: new Date(formData.startDate),
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
-      tags: [], // Initialize with empty tags array
-      reminders: [], // Initialize with empty reminders array
-      folderPath: undefined, // Will be set later via folder selection
-      client: {
-        name: '',
-        whatsapp: '',
-        email: '',
-        phone: '',
-        company: '',
-        notes: ''
-      },
-      payment: {
-        amount: undefined,
-        currency: 'ILS' as const,
-        isPaid: false,
-        notes: ''
-      }
+      startDate: new Date(formData.startDate).toISOString(),
+      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
     };
 
     if (project) {
-      updateProject(project.id, projectData);
+      const updatedProject: Project = { ...project, ...projectData, updatedAt: new Date().toISOString() };
+      updateProject(updatedProject);
     } else {
       addProject(projectData);
     }
@@ -146,7 +130,8 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
                   <SelectItem value="תכנון">תכנון</SelectItem>
                   <SelectItem value="פעיל">פעיל</SelectItem>
                   <SelectItem value="הושלם">הושלם</SelectItem>
-                  <SelectItem value="בהמתנה">בהמתנה</SelectItem>
+                  <SelectItem value="מושהה">מושהה</SelectItem>
+                  <SelectItem value="בוטל">בוטל</SelectItem>
                 </SelectContent>
               </Select>
             </div>

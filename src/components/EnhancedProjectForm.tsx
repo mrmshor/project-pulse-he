@@ -12,8 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Project, Contact, ProjectStatus, Priority, PaymentStatus } from '@/types';
+
+import { Project, ProjectStatus, Priority, PaymentStatus } from '@/types';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useToast } from '@/hooks/use-toast';
 import { StatusSelector } from './StatusSelector';
@@ -24,7 +24,7 @@ import {
   User,
   FileText,
   FolderOpen,
-  Clock,
+  
   Target,
   Building,
   Plus,
@@ -84,16 +84,27 @@ export function EnhancedProjectForm({
         paymentStatus: project.paymentStatus || 'ממתין לתשלום',
         clientId: project.client?.id || '',
         folderPath: project.folderPath || '',
-        tags: project.tags || [],
+        tags: project.tags?.map(t => t.name) || [],
         notes: project.notes || ''
       });
     } else {
       // Set default start date to today
       const today = new Date().toISOString().split('T')[0];
-      setFormData(prev => ({
-        ...prev,
-        startDate: today
-      }));
+      setFormData({
+        name: '',
+        description: '',
+        status: 'תכנון',
+        priority: 'בינונית',
+        startDate: today,
+        dueDate: '',
+        budget: '',
+        paidAmount: '',
+        paymentStatus: 'ממתין לתשלום',
+        clientId: '',
+        folderPath: '',
+        tags: [],
+        notes: ''
+      });
     }
   }, [project]);
 
@@ -183,7 +194,7 @@ export function EnhancedProjectForm({
         ? contacts.find(c => c.id === formData.clientId) 
         : undefined;
 
-      const projectData: Omit<Project, 'id'> = {
+      const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         status: formData.status,
@@ -193,12 +204,12 @@ export function EnhancedProjectForm({
         budget: formData.budget ? Number(formData.budget) : undefined,
         paidAmount: formData.paidAmount ? Number(formData.paidAmount) : undefined,
         paymentStatus: formData.paymentStatus,
-        client: selectedClient,
+        client: selectedClient
+          ? { id: selectedClient.id, name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone, company: selectedClient.company, notes: selectedClient.notes }
+          : undefined,
         folderPath: formData.folderPath.trim() || undefined,
-        tags: formData.tags,
-        notes: formData.notes.trim() || undefined,
-        createdAt: project?.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        tags: formData.tags.map(t => ({ id: `${Date.now()}-${t}`, name: t, color: '#3B82F6' })),
+        notes: formData.notes.trim() || undefined
       };
 
       if (project) {

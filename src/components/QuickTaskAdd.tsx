@@ -20,11 +20,12 @@ export function QuickTaskAdd({ projectId, onTaskAdded }: QuickTaskAddProps) {
     const newTask = {
       title: taskTitle.trim(),
       projectId,
-      status: 'לביצוע' as const,
+      status: 'ממתין' as const,
       priority: 'בינונית' as const,
-      dueDate: new Date(),
-      order: Date.now(), // משתמש בזמן נוכחי כדי שמשימות חדשות יהיו עם order גבוה יותר
-      tags: []
+      dueDate: new Date().toISOString(),
+      order: Date.now(),
+      tags: [],
+      completed: false,
     };
 
     addTask(newTask);

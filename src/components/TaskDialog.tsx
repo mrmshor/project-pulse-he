@@ -29,7 +29,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
   const [formData, setFormData] = useState({
     title: '',
     projectId: '',
-    status: 'לביצוע' as TaskStatus,
+    status: 'ממתין' as TaskStatus,
     priority: 'בינונית' as Priority,
     dueDate: '',
   });
@@ -51,7 +51,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
       setFormData({
         title: '',
         projectId: '',
-        status: 'לביצוע',
+        status: 'ממתין',
         priority: 'בינונית',
         dueDate: '',
       });
@@ -71,13 +71,14 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
       projectId: formData.projectId,
       status: formData.status,
       priority: formData.priority,
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
-      tags: [], // Initialize with empty tags array
-      order: Date.now(), // Initialize with timestamp for ordering
+      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
+      tags: [],
+      order: Date.now(),
+      completed: task?.completed ?? false,
     };
 
     if (task) {
-      updateTask(task.id, taskData);
+      updateTask({ ...task, ...taskData });
     } else {
       addTask(taskData);
     }
@@ -137,9 +138,9 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="לביצוע">לביצוע</SelectItem>
-                  <SelectItem value="בתהליך">בתהליך</SelectItem>
-                  <SelectItem value="הושלמה">הושלמה</SelectItem>
+                  <SelectItem value="ממתין">ממתין</SelectItem>
+                  <SelectItem value="בעבודה">בעבודה</SelectItem>
+                  <SelectItem value="הושלם">הושלם</SelectItem>
                 </SelectContent>
               </Select>
             </div>

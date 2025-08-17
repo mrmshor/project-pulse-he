@@ -11,19 +11,19 @@ interface ProjectStore {
   timeEntries: TimeEntry[];
 
   // Project actions - FIXED: Updated signatures to match component usage
-  addProject: (projectData: Omit<Project, 'id'>) => Promise<Project>;
+  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Project>;
   updateProject: (project: Project) => void;
   deleteProject: (id: string) => void;
   getProjectById: (id: string) => Project | undefined;
 
   // Task actions - FIXED: Updated signatures
-  addTask: (taskData: Omit<Task, 'id'>) => void;
+  addTask: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTask: (task: Task) => void;
   deleteTask: (id: string) => void;
   getTasksByProject: (projectId: string) => Task[];
 
   // Contact actions - FIXED: Updated signatures
-  addContact: (contactData: Omit<Contact, 'id'>) => Promise<Contact>;
+  addContact: (contactData: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Contact>;
   updateContact: (contact: Contact) => void;
   deleteContact: (id: string) => void;
   getContactsByProject: (projectId: string) => Contact[];
@@ -59,7 +59,7 @@ export const useProjectStore = create<ProjectStore>()(
         const newProject: Project = {
           ...projectData,
           id: generateId(),
-          createdAt: projectData.createdAt || new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
         
@@ -102,7 +102,7 @@ export const useProjectStore = create<ProjectStore>()(
         const newTask: Task = {
           ...taskData,
           id: generateId(),
-          createdAt: taskData.createdAt || new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
         
@@ -140,7 +140,7 @@ export const useProjectStore = create<ProjectStore>()(
         const newContact: Contact = {
           ...contactData,
           id: generateId(),
-          createdAt: contactData.createdAt || new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
         
@@ -316,15 +316,15 @@ export const useProjectStats = () => {
     activeProjects: projects.filter(p => p.status === 'פעיל').length,
     completedProjects: projects.filter(p => p.status === 'הושלם').length,
     plannedProjects: projects.filter(p => p.status === 'תכנון').length,
-    onHoldProjects: projects.filter(p => p.status === 'בהמתנה').length,
+    onHoldProjects: projects.filter(p => p.status === 'מושהה').length,
     
     totalTasks: tasks.length,
-    completedTasks: tasks.filter(t => t.status === 'הושלמה').length,
-    pendingTasks: tasks.filter(t => t.status !== 'הושלמה').length,
-    inProgressTasks: tasks.filter(t => t.status === 'בתהליך').length,
-    urgentTasks: tasks.filter(t => t.status !== 'הושלמה' && t.priority === 'גבוהה').length,
+    completedTasks: tasks.filter(t => t.status === 'הושלם').length,
+    pendingTasks: tasks.filter(t => t.status !== 'הושלם').length,
+    inProgressTasks: tasks.filter(t => t.status === 'בעבודה').length,
+    urgentTasks: tasks.filter(t => t.status !== 'הושלם' && t.priority === 'גבוהה').length,
     
-    completionRate: tasks.length > 0 ? (tasks.filter(t => t.status === 'הושלמה').length / tasks.length) * 100 : 0,
+    completionRate: tasks.length > 0 ? (tasks.filter(t => t.status === 'הושלם').length / tasks.length) * 100 : 0,
     projectCompletionRate: projects.length > 0 ? (projects.filter(p => p.status === 'הושלם').length / projects.length) * 100 : 0,
     
     // סטטיסטיקות לפי עדיפות

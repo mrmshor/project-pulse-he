@@ -1,21 +1,16 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+
 import { Project, PaymentStatus } from '@/types';
 import { 
-  CreditCard, 
-  DollarSign, 
   Clock, 
   CheckCircle, 
   XCircle, 
-  AlertTriangle,
   ChevronDown,
   Edit,
   Receipt
@@ -194,40 +189,6 @@ export function PaymentStatusButton({
         </div>
       )}
       
-      {/* Quick Actions */}
-      <div className="flex gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 h-6 px-2 text-xs gap-1"
-          onClick={() => {
-            // TODO: Open payment edit dialog
-            toast({
-              title: "בקרוב",
-              description: "עריכת פרטי תשלום תהיה זמינה בקרוב",
-            });
-          }}
-        >
-          <Edit className="w-3 h-3" />
-          ערוך
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 h-6 px-2 text-xs gap-1"
-          onClick={() => {
-            // TODO: Generate invoice
-            toast({
-              title: "בקרוב",
-              description: "יצירת חשבונית תהיה זמינה בקרוב",
-            });
-          }}
-        >
-          <Receipt className="w-3 h-3" />
-          חשבונית
-        </Button>
-      </div>
     </div>
   );
 }

@@ -19,12 +19,12 @@ interface TasksModalProps {
 
 export function TasksModal({ open, onOpenChange, project, scrollToFirstPending = false }: TasksModalProps) {
   const { getTasksByProject, updateTask, deleteTask } = useProjectStore();
-  const tasks = getTasksByProject(project.id).sort((a, b) => b.order - a.order);
+  const tasks = getTasksByProject(project.id).sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
   const firstPendingRef = useRef<HTMLDivElement>(null);
 
   const handleTaskToggle = (task: Task) => {
-    const newStatus = task.status === 'הושלמה' ? 'לביצוע' : 'הושלמה';
-    updateTask(task.id, { ...task, status: newStatus });
+    const newStatus = task.status === 'הושלם' ? 'ממתין' : 'הושלם';
+    updateTask({ ...task, status: newStatus });
   };
 
   const handleDeleteTask = (taskId: string) => {
@@ -35,9 +35,9 @@ export function TasksModal({ open, onOpenChange, project, scrollToFirstPending =
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'הושלמה':
+      case 'הושלם':
         return <CheckCircle2 className="w-4 h-4 text-success" />;
-      case 'בתהליך':
+      case 'בעבודה':
         return <AlertCircle className="w-4 h-4 text-warning" />;
       default:
         return <Circle className="w-4 h-4 text-muted-foreground" />;
@@ -57,8 +57,8 @@ export function TasksModal({ open, onOpenChange, project, scrollToFirstPending =
     }
   };
 
-  const completedTasks = tasks.filter(t => t.status === 'הושלמה');
-  const pendingTasks = tasks.filter(t => t.status !== 'הושלמה');
+  const completedTasks = tasks.filter(t => t.status === 'הושלם');
+  const pendingTasks = tasks.filter(t => t.status !== 'הושלם');
 
   // גלילה אוטומטית למשימה הראשונה שלא בוצעה
   useEffect(() => {
