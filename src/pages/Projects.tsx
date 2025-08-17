@@ -201,9 +201,9 @@ export function Projects() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProjects.map((project) => (
-                <Card key={project.id} className="bg-white dark:bg-card border border-border hover:shadow-md transition-all duration-200">
+                <Card key={project.id} className="rounded-2xl bg-white dark:bg-card border border-border shadow-sm hover:shadow-md transition-all duration-200">
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-lg font-medium text-foreground">
+                    <CardTitle className="text-xl font-bold text-blue-700 dark:text-blue-400">
                       {project.name}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -217,9 +217,14 @@ export function Projects() {
                         {project.priority}
                       </Badge>
                     </div>
+                    {project.budget != null && (
+                      <div className="mt-2 text-sm font-medium text-green-600">
+                        ₪{Number(project.budget).toLocaleString('he-IL')}
+                      </div>
+                    )}
                   </CardHeader>
 
-                  <CardContent className="pt-0 space-y-3">
+                  <CardContent className="pt-0 space-y-4">
                     {/* פרטי לקוח */}
                     {project.client && (
                       <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
@@ -228,13 +233,13 @@ export function Projects() {
                           <span className="font-medium text-sm">{project.client.name}</span>
                         </div>
                         {(project.client.email || project.client.phone || project.client.whatsapp || project.client.whatsappNumbers?.length) && (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
                             {project.client?.email && (
                               <Button
                                 asChild
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-xs"
+                                className="h-8 px-3 text-xs"
                               >
                                 <a
                                   href={`mailto:${project.client!.email!}?subject=${encodeURIComponent(`בנוגע לפרויקט: ${project.name}`)}`}
@@ -242,7 +247,7 @@ export function Projects() {
                                   rel="noreferrer noopener"
                                   aria-label="שלח אימייל"
                                 >
-                                  <Mail className="w-3 h-3" />
+                                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> מייל</span>
                                 </a>
                               </Button>
                             )}
@@ -258,9 +263,9 @@ export function Projects() {
                                     ClientContactService.openWhatsApp(numberToUse);
                                   }
                                 }}
-                                className="h-6 px-2 text-xs"
+                                className="h-8 px-3 text-xs"
                               >
-                                <MessageCircle className="w-3 h-3" />
+                                <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> וואטסאפ</span>
                               </Button>
                             )}
                             {project.client?.phone && (
@@ -268,9 +273,9 @@ export function Projects() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => ClientContactService.openPhone(project.client!.phone!)}
-                                className="h-6 px-2 text-xs"
+                                className="h-8 px-3 text-xs"
                               >
-                                <Phone className="w-3 h-3" />
+                                <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> חייג</span>
                               </Button>
                             )}
                           </div>
@@ -280,12 +285,12 @@ export function Projects() {
                     
                     {/* תיקיית פרויקט */}
                     {project.folderPath && (
-                      <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+                      <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => FolderService.openInFinder(project.folderPath!)}
-                          className="gap-2 w-full h-8 text-xs"
+                          className="gap-2 w-full h-9 text-sm"
                         >
                           <FolderOpen className="w-4 h-4" />
                           פתח תיקייה
@@ -349,7 +354,7 @@ export function Projects() {
 
       {/* Dialog for adding/editing projects */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingProject ? 'עריכת פרויקט' : 'פרויקט חדש'}

@@ -341,9 +341,9 @@ export function EnhancedProjectForm({
       </div>
 
       {/* Basic Information */}
-      <Card className="border-0 shadow-sm">
+      <Card className="rounded-xl border border-blue-100 bg-blue-50/60 dark:bg-blue-950/20 shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-base text-blue-700 dark:text-blue-400">
             <FileText className="w-4 h-4" />
             מידע בסיסי
           </CardTitle>
@@ -459,9 +459,9 @@ export function EnhancedProjectForm({
 
       {/* Client Information */}
       {(formData.clientId === 'new-client' || (formData.clientId && formData.clientId !== 'no-client' && !contacts.find(c => c.id === formData.clientId))) && (
-        <Card>
+        <Card className="rounded-xl border border-green-100 bg-green-50/60 dark:bg-green-950/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
               <User className="w-4 h-4" />
               פרטי לקוח
             </CardTitle>
@@ -533,9 +533,9 @@ export function EnhancedProjectForm({
       )}
 
       {/* Dates */}
-      <Card>
+      <Card className="rounded-xl border border-blue-100 bg-blue-50/40 dark:bg-blue-950/10">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
             <Calendar className="w-4 h-4" />
             תאריכים
           </CardTitle>
@@ -582,9 +582,9 @@ export function EnhancedProjectForm({
       </Card>
 
       {/* Financial Information */}
-      <Card>
+      <Card className="rounded-xl border border-blue-100 bg-blue-50/40 dark:bg-blue-950/10">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
             <DollarSign className="w-4 h-4" />
             מידע כספי
           </CardTitle>
@@ -688,7 +688,7 @@ export function EnhancedProjectForm({
       </Card>
 
       {/* Additional Information */}
-      <Card>
+      <Card className="rounded-xl border bg-muted/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="w-4 h-4" />
@@ -784,7 +784,7 @@ export function EnhancedProjectForm({
       </Card>
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 pt-4">
+      <div className="flex justify-end gap-3 pt-6 border-t">
         <Button
           variant="outline"
           onClick={onCancel}
@@ -795,8 +795,9 @@ export function EnhancedProjectForm({
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || !formData.name.trim() || !formData.description.trim()}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {isSubmitting ? 'שומר...' : project ? 'עדכן פרויקט' : 'צור פרויקט'}
+          {isSubmitting ? 'שומר...' : project ? 'שמור שינויים' : 'צור פרויקט'}
         </Button>
       </div>
     </div>
