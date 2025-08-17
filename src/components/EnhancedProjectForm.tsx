@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { FolderService } from '@/services/nativeServices';
 
 import { Project, ProjectStatus, Priority, PaymentStatus } from '@/types';
 import { useProjectStore } from '@/store/useProjectStore';
@@ -68,6 +69,25 @@ export function EnhancedProjectForm({
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSelectFolder = async () => {
+    try {
+      const selectedPath = await FolderService.selectProjectFolder();
+      if (selectedPath) {
+        handleInputChange('folderPath', selectedPath);
+        toast({
+          title: "תיקיה נבחרה",
+          description: `נבחרה התיקיה: ${selectedPath}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן לבחור תיקיה",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Initialize form data
   useEffect(() => {
@@ -541,13 +561,24 @@ export function EnhancedProjectForm({
               <FolderOpen className="w-4 h-4" />
               נתיב תיקייה
             </Label>
-            <Input
-              id="folderPath"
-              value={formData.folderPath}
-              onChange={(e) => handleInputChange('folderPath', e.target.value)}
-              placeholder="C:\Projects\ProjectName"
-              dir="ltr"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="folderPath"
+                value={formData.folderPath}
+                onChange={(e) => handleInputChange('folderPath', e.target.value)}
+                placeholder="C:\Projects\ProjectName"
+                dir="ltr"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSelectFolder}
+                className="shrink-0 px-3"
+              >
+                <FolderOpen className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Tags */}
