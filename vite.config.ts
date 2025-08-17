@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
   // Tauri expects port 8080
   server: {
     host: "::",
-    port: 5173,
+    port: 8080,
     strictPort: true,
     hmr: host
       ? {
