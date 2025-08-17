@@ -171,15 +171,15 @@ export class ClientContactService {
         if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
         if (body) params.push(`body=${encodeURIComponent(body)}`);
         
-        if (params.length > 0) {
-          mailtoUrl += '?' + params.join('&');
-        }
-        
         const a = document.createElement('a');
         a.href = mailtoUrl;
+        a.target = '_top'; // break out of iframe if needed
+        a.rel = 'noreferrer noopener';
         a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
+        // Fallback in case the click is blocked by the iframe/browser
+        try { (window.top || window).location.href = mailtoUrl; } catch (_) {}
         document.body.removeChild(a);
         return true;
       }
@@ -210,9 +210,12 @@ export class ClientContactService {
         
         const a = document.createElement('a');
         a.href = mailtoUrl;
+        a.target = '_top';
+        a.rel = 'noreferrer noopener';
         a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
+        try { (window.top || window).location.href = mailtoUrl; } catch (_) {}
         document.body.removeChild(a);
         return true;
       } catch (fallbackError) {
