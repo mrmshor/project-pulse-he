@@ -72,7 +72,7 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
       description: formData.description,
       status: formData.status,
       priority: formData.priority,
-      startDate: new Date(formData.startDate).toISOString(),
+      startDate: formData.startDate ? new Date(formData.startDate).toISOString() : new Date().toISOString(),
       dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
     };
 

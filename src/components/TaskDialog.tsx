@@ -31,7 +31,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
     projectId: '',
     status: 'ממתין' as TaskStatus,
     priority: 'בינונית' as Priority,
-    dueDate: '',
+    dueDate: new Date().toISOString().split('T')[0],
   });
 
   const { addTask, updateTask, projects } = useProjectStore();
@@ -45,7 +45,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
         priority: task.priority,
         dueDate: task.dueDate 
           ? new Date(task.dueDate).toISOString().split('T')[0] 
-          : '',
+          : new Date().toISOString().split('T')[0],
       });
     } else {
       setFormData({
@@ -53,7 +53,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
         projectId: '',
         status: 'ממתין',
         priority: 'בינונית',
-        dueDate: '',
+        dueDate: new Date().toISOString().split('T')[0],
       });
     }
   }, [task, open]);

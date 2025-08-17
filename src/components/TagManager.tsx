@@ -37,7 +37,7 @@ export function TagManager({ entity, availableTags, onTagsChange, onCreateTag }:
 
     const newTag: Omit<Tag, 'id'> = {
       name: newTagName.trim(),
-      color: selectedColor,
+      color: selectedColor || '#3B82F6',
       category: 'custom'
     };
 

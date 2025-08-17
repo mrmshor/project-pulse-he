@@ -45,8 +45,8 @@ export function TaskTimer({ taskId }: TaskTimerProps) {
       
       const timeEntry: Omit<TimeEntry, 'id'> = {
         taskId,
-        startTime,
-        endTime,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
         duration: Math.max(1, duration), // מינימום דקה אחת
       };
       

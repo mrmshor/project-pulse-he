@@ -200,7 +200,7 @@ export function EnhancedProjectForm({
         description: formData.description.trim(),
         status: formData.status,
         priority: formData.priority,
-        startDate: new Date(formData.startDate).toISOString(),
+        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : new Date().toISOString(),
         dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
         budget: formData.budget ? Number(formData.budget) : undefined,
         paidAmount: formData.paidAmount ? Number(formData.paidAmount) : undefined,

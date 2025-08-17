@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { 
   CheckSquare, 
-  Copy, 
   Menu, 
   X, 
   Plus,
@@ -22,11 +20,11 @@ import {
   ArrowUp,
   ArrowRight,
   ArrowDown,
-  MoreVertical
+  MoreVertical,
+  Timer
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { usePersonalTasksStore } from '@/store/usePersonalTasksStore';
-import { PersonalTask, Priority } from '@/types';
+import { Priority } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 // ✅ FIXED: הוסף פונקציה חסרה
@@ -223,7 +221,7 @@ export function TasksSidebar() {
           {pendingTasks.length > 0 && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+                <Timer className="w-4 h-4" />
                 ממתינות ({pendingTasks.length})
               </h3>
               
