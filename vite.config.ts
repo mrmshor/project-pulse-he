@@ -9,7 +9,7 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(({ mode }) => ({
   // Tauri expects port 8080
   server: {
-    host: "::",
+    host: "127.0.0.1",
     port: 8080,
     strictPort: true,
     hmr: host
