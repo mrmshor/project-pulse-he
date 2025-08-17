@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Project, ProjectStatus, Priority } from '@/types';
 import { Button } from '@/components/ui/button';
 import { EnhancedProjectForm } from '@/components/EnhancedProjectForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { isTauriEnvironment, exportFileNative } from '@/lib/tauri';
-import { ProjectsSidebar } from '@/components/ProjectsSidebar';
-import { ProjectsHeader } from '@/components/projects/ProjectsHeader';
-import { StatsGrid } from '@/components/projects/StatsGrid';
-import { RecentProjectsList } from '@/components/projects/RecentProjectsList';
-import { QuickTasksPanel } from '@/components/projects/QuickTasksPanel';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Users, Plus, Download, DollarSign, CheckCircle, Calendar, TrendingUp, Clock, Search } from 'lucide-react';
 
 export function Projects() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -289,12 +289,12 @@ export function Projects() {
                   <Input
                     placeholder="חיפוש פרויקטים..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                     className="pr-10"
                   />
                 </div>
                 
-                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProjectStatus | 'all')}>
+                <Select value={statusFilter} onValueChange={(value: string) => setStatusFilter(value as ProjectStatus | 'all')}>
                   <SelectTrigger>
                     <SelectValue placeholder="סטטוס" />
                   </SelectTrigger>
@@ -307,7 +307,7 @@ export function Projects() {
                   </SelectContent>
                 </Select>
                 
-                <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as Priority | 'all')}>
+                <Select value={priorityFilter} onValueChange={(value: string) => setPriorityFilter(value as Priority | 'all')}>
                   <SelectTrigger>
                     <SelectValue placeholder="עדיפות" />
                   </SelectTrigger>
