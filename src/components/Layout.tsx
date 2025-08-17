@@ -5,6 +5,7 @@ import { ProjectsSidebar } from './ProjectsSidebar';
 import { TauriStatus } from './TauriStatus';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,11 +14,12 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
       <TauriStatus />
-      <TopNavigation />
+      <TopNavigation onSignOut={signOut} />
       
       <div className="relative w-full overflow-hidden">
         {/* Mobile sidebar toggle buttons */}

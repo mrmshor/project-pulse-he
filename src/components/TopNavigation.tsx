@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FolderOpen, CheckSquare, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const navigation = [
   { name: 'דשבורד', href: '/', icon: LayoutDashboard },
@@ -9,7 +10,11 @@ const navigation = [
   { name: 'אנשי קשר', href: '/contacts', icon: Users },
 ];
 
-export function TopNavigation() {
+interface TopNavigationProps {
+  onSignOut?: () => void;
+}
+
+export function TopNavigation({ onSignOut }: TopNavigationProps = {}) {
   const location = useLocation();
 
   return (
@@ -73,6 +78,11 @@ export function TopNavigation() {
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               מחובר
             </div>
+            {onSignOut && (
+              <Button variant="outline" onClick={onSignOut} size="sm">
+                התנתק
+              </Button>
+            )}
           </div>
         </div>
       </div>
