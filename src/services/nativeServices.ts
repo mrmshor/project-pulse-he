@@ -175,7 +175,12 @@ export class ClientContactService {
           mailtoUrl += '?' + params.join('&');
         }
         
-        window.open(mailtoUrl, '_blank');
+        const a = document.createElement('a');
+        a.href = mailtoUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         return true;
       }
 
@@ -203,7 +208,12 @@ export class ClientContactService {
           mailtoUrl += '?' + params.join('&');
         }
         
-        window.open(mailtoUrl, '_blank');
+        const a = document.createElement('a');
+        a.href = mailtoUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         return true;
       } catch (fallbackError) {
         console.error('❌ Email fallback also failed:', fallbackError);
