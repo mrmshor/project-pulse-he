@@ -164,7 +164,7 @@ export function Dashboard() {
 
       {/* סטטיסטיקות מעוצבות */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statCards.map((stat, index) => (
+        {statCards.map((stat, _index) => (
           <Card key={stat.title} className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 ${stat.alert ? 'ring-2 ring-red-500/20 animate-pulse' : ''}`}>
             <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgColor} opacity-60`}></div>
             <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-10`}></div>
@@ -240,7 +240,7 @@ export function Dashboard() {
                   <p className="text-sm text-muted-foreground mt-1">התחל ליצור פרויקטים חדשים</p>
                 </div>
               ) : (
-                recentProjects.map((project, index) => (
+                recentProjects.map((project, _index) => (
                   <div
                     key={project.id}
                     className="group relative p-4 bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
@@ -301,8 +301,8 @@ export function Dashboard() {
                   <p className="text-sm text-muted-foreground mt-1">עבודה מצוינת</p>
                 </div>
               ) : (
-                recentTasks.map((task, index) => (
-                  <div key={task.id || index} className="group p-3 bg-white/60 backdrop-blur-sm border border-white/40 rounded-lg hover:shadow-sm transition-all duration-200">
+                recentTasks.map((task, _index) => (
+                  <div key={task.id || _index} className="group p-3 bg-white/60 backdrop-blur-sm border border-white/40 rounded-lg hover:shadow-sm transition-all duration-200">
                     <div className="flex items-start gap-3">
                       <div className={`w-2 h-2 rounded-full mt-2 ${
                         task.priority === 'גבוהה' ? 'bg-red-500' :
@@ -317,7 +317,7 @@ export function Dashboard() {
                           <span className={`px-2 py-0.5 text-xs rounded-full ${getPriorityColor(task.priority)}`}>
                             {task.priority}
                           </span>
-                          {task.dueDate && (
+                          {('dueDate' in task && task.dueDate) && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {format(new Date(task.dueDate), 'dd/MM', { locale: he })}

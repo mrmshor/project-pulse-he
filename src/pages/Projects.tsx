@@ -316,22 +316,22 @@ export function Projects() {
                         </div>
                         {(project.client.email || project.client.phone || project.client.whatsappNumbers?.length) && (
                           <div className="flex items-center gap-1">
-                            {project.client.email && (
+                            {project.client?.email && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => ClientContactService.openGmail(project.client.email!)}
+                                onClick={() => ClientContactService.openGmail(project.client!.email!)}
                                 className="gap-1 h-7 px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
                               >
                                 <Mail className="w-3 h-3" />
                               </Button>
                             )}
-                            {project.client.whatsappNumbers?.length && (
+                            {project.client?.whatsappNumbers?.length && (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  const primaryNumber = project.client.whatsappNumbers?.find(w => w.isPrimary) || project.client.whatsappNumbers?.[0];
+                                  const primaryNumber = project.client?.whatsappNumbers?.find(w => w.isPrimary) || project.client?.whatsappNumbers?.[0];
                                   if (primaryNumber) {
                                     ClientContactService.openWhatsApp(primaryNumber.number);
                                   }
@@ -341,11 +341,11 @@ export function Projects() {
                                 <MessageCircle className="w-3 h-3" />
                               </Button>
                             )}
-                            {project.client.phone && (
+                            {project.client?.phone && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => ClientContactService.openGmail(project.client.phone!)}
+                                onClick={() => ClientContactService.openGmail(project.client!.phone!)}
                                 className="gap-1 h-7 px-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700"
                               >
                                 <Phone className="w-3 h-3" />
