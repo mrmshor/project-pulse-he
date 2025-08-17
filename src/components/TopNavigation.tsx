@@ -30,10 +30,10 @@ export function TopNavigation({ onSignOut }: TopNavigationProps = {}) {
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                מערכת ניהול פרויקטים Pro
+              <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                ניהול פרויקטים Pro
               </h1>
-              <div className="w-16 h-1 bg-gradient-to-r from-primary via-blue-600 to-purple-600 rounded-full"></div>
+              <div className="w-12 h-0.5 bg-gradient-to-l from-primary to-transparent rounded-full"></div>
             </div>
           </div>
 
