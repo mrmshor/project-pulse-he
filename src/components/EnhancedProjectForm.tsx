@@ -61,6 +61,10 @@ export function EnhancedProjectForm({
     paidAmount: '',
     paymentStatus: 'ממתין לתשלום' as PaymentStatus,
     clientId: '',
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    clientCompany: '',
     folderPath: '',
     tags: [] as string[],
     notes: ''
@@ -115,6 +119,10 @@ export function EnhancedProjectForm({
         paidAmount: project.paidAmount ? project.paidAmount.toString() : '',
         paymentStatus: project.paymentStatus || 'ממתין לתשלום',
         clientId: project.client?.id || '',
+        clientName: project.client?.name || '',
+        clientEmail: project.client?.email || '',
+        clientPhone: project.client?.phone || '',
+        clientCompany: project.client?.company || '',
         folderPath: project.folderPath || '',
         tags: project.tags?.map(t => t.name) || [],
         notes: project.notes || ''
@@ -132,6 +140,10 @@ export function EnhancedProjectForm({
         paidAmount: '',
         paymentStatus: 'ממתין לתשלום',
         clientId: 'no-client',
+        clientName: '',
+        clientEmail: '',
+        clientPhone: '',
+        clientCompany: '',
         folderPath: '',
         tags: [],
         notes: ''
@@ -225,6 +237,27 @@ export function EnhancedProjectForm({
         ? contacts.find(c => c.id === formData.clientId) 
         : undefined;
 
+      // Create client object from form data if new client or manual entry
+      const clientData = (formData.clientId === 'new-client' || (formData.clientName && formData.clientId !== 'no-client'))
+        ? {
+            id: selectedClient?.id || `client-${Date.now()}`,
+            name: formData.clientName.trim(),
+            email: formData.clientEmail.trim() || undefined,
+            phone: formData.clientPhone.trim() || undefined,
+            company: formData.clientCompany.trim() || undefined,
+            notes: undefined
+          }
+        : selectedClient
+          ? { 
+              id: selectedClient.id, 
+              name: selectedClient.name, 
+              email: selectedClient.email, 
+              phone: selectedClient.phone, 
+              company: selectedClient.company, 
+              notes: selectedClient.notes 
+            }
+          : undefined;
+
       const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
         name: formData.name.trim(),
         description: formData.description.trim(),
@@ -235,9 +268,7 @@ export function EnhancedProjectForm({
         budget: formData.budget ? Number(formData.budget) : undefined,
         paidAmount: formData.paidAmount ? Number(formData.paidAmount) : undefined,
         paymentStatus: formData.paymentStatus,
-        client: selectedClient
-          ? { id: selectedClient.id, name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone, company: selectedClient.company, notes: selectedClient.notes }
-          : undefined,
+        client: clientData,
         folderPath: formData.folderPath.trim() || undefined,
         tags: formData.tags.map(t => ({ id: `${Date.now()}-${t}`, name: t, color: '#3B82F6' })),
         notes: formData.notes.trim() || undefined
@@ -337,13 +368,30 @@ export function EnhancedProjectForm({
               <Label htmlFor="client">לקוח</Label>
               <Select
                 value={formData.clientId}
-                onValueChange={(value) => handleInputChange('clientId', value)}
+                onValueChange={(value) => {
+                  handleInputChange('clientId', value);
+                  if (value === 'no-client') {
+                    handleInputChange('clientName', '');
+                    handleInputChange('clientEmail', '');
+                    handleInputChange('clientPhone', '');
+                    handleInputChange('clientCompany', '');
+                  } else {
+                    const selectedContact = contacts.find(c => c.id === value);
+                    if (selectedContact) {
+                      handleInputChange('clientName', selectedContact.name);
+                      handleInputChange('clientEmail', selectedContact.email || '');
+                      handleInputChange('clientPhone', selectedContact.phone || '');
+                      handleInputChange('clientCompany', selectedContact.company || '');
+                    }
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="בחר לקוח..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="no-client">ללא לקוח</SelectItem>
+                  <SelectItem value="new-client">הוסף לקוח חדש</SelectItem>
                   {contacts.map((contact) => (
                     <SelectItem key={contact.id} value={contact.id}>
                       <div className="flex items-center gap-2">
@@ -401,6 +449,69 @@ export function EnhancedProjectForm({
           </div>
         </CardContent>
       </Card>
+
+      {/* Client Information */}
+      {(formData.clientId === 'new-client' || (formData.clientId && formData.clientId !== 'no-client' && !contacts.find(c => c.id === formData.clientId))) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              פרטי לקוח
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="clientName">שם לקוח</Label>
+                <Input
+                  id="clientName"
+                  value={formData.clientName}
+                  onChange={(e) => handleInputChange('clientName', e.target.value)}
+                  placeholder="הכנס שם לקוח..."
+                  className="rtl"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="clientCompany">חברה</Label>
+                <Input
+                  id="clientCompany"
+                  value={formData.clientCompany}
+                  onChange={(e) => handleInputChange('clientCompany', e.target.value)}
+                  placeholder="שם החברה..."
+                  className="rtl"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="clientEmail">אימייל</Label>
+                <Input
+                  id="clientEmail"
+                  type="email"
+                  value={formData.clientEmail}
+                  onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+                  placeholder="email@example.com"
+                  className="ltr"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="clientPhone">טלפון</Label>
+                <Input
+                  id="clientPhone"
+                  type="tel"
+                  value={formData.clientPhone}
+                  onChange={(e) => handleInputChange('clientPhone', e.target.value)}
+                  placeholder="050-1234567"
+                  className="ltr"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Dates */}
       <Card>
