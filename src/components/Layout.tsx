@@ -2,11 +2,11 @@ import { ReactNode, useState } from 'react';
 import { TopNavigation } from './TopNavigation';
 import { TasksSidebar } from './TasksSidebar';
 import { ProjectsSidebar } from './ProjectsSidebar';
-import { TauriStatus } from './TauriStatus';
+
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { DesktopCompanionStatus } from './DesktopCompanionStatus';
+
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,7 +19,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-blue-50" dir="rtl">
-      <TauriStatus />
+      
       <TopNavigation onSignOut={signOut} />
       
       <div className="relative w-full overflow-hidden">
@@ -110,8 +110,6 @@ export function Layout({ children }: LayoutProps) {
         )}
       </div>
 
-      {/* Desktop Companion Status */}
-      <DesktopCompanionStatus />
     </div>
   );
 }

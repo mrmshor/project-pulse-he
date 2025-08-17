@@ -5,7 +5,7 @@ import { open as openDialog } from '@tauri-apps/plugin-dialog';
 
 // בדיקה אם אנחנו בסביבת Tauri
 export function isTauriEnvironment(): boolean {
-  return typeof window !== 'undefined' && '__TAURI__' in window;
+  return false; // Forced web-only mode
 }
 
 // ✅ פונקציה מאוחדת לפורמט טלפון (במקום 3 כפילויות)
