@@ -79,6 +79,16 @@ export function EnhancedProjectForm({
           title: "תיקיה נבחרה",
           description: `נבחרה התיקיה: ${selectedPath}`,
         });
+      } else {
+        // אם לא הצלחנו לבחור תיקיה, נציג הודעה מתאימה
+        const isDesktopMode = window.location.protocol === 'tauri:';
+        if (!isDesktopMode) {
+          toast({
+            title: "דרוש Desktop Companion",
+            description: "כדי לבחור תיקיות מהדפדפן, יש להתקין את Desktop Companion",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       toast({

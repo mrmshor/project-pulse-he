@@ -6,6 +6,7 @@ import { TauriStatus } from './TauriStatus';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { DesktopCompanionStatus } from './DesktopCompanionStatus';
 
 interface LayoutProps {
   children: ReactNode;
@@ -108,6 +109,9 @@ export function Layout({ children }: LayoutProps) {
           />
         )}
       </div>
+
+      {/* Desktop Companion Status */}
+      <DesktopCompanionStatus />
     </div>
   );
 }

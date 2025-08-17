@@ -3,6 +3,7 @@ import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { exists } from '@tauri-apps/plugin-fs';
 import { invoke } from '@tauri-apps/api/core';
 import { formatPhoneForWhatsApp, isTauriEnvironment } from '@/lib/tauri';
+import { DesktopCompanionService } from './desktopCompanionService';
 
 // ✅ שירותי תיקיות ופרויקטים
 export class FolderService {
@@ -13,28 +14,39 @@ export class FolderService {
     try {
       console.log('📁 Opening folder selection dialog...');
       
-      if (!isTauriEnvironment()) {
-        console.warn('🌐 Browser mode: Cannot select folders');
+      if (isTauriEnvironment()) {
+        // בסביבת Tauri - שימוש ב-plugin
+        const folderPath = await openDialog({
+          directory: true,
+          multiple: false,
+          title: 'בחר תיקיית פרויקט'
+        });
+        
+        console.log('📁 Selected folder:', folderPath);
+        
+        if (folderPath && typeof folderPath === 'string') {
+          // פתיחה אוטומטית של התיקייה שנבחרה
+          const opened = await this.openInFinder(folderPath);
+          if (opened) {
+            return folderPath;
+          }
+        }
+        
+        return null;
+      } else {
+        // בדפדפן - ניסיון דרך Desktop Companion
+        console.log('🌐 Browser mode: Trying Desktop Companion...');
+        const selectedPath = await DesktopCompanionService.selectFolder();
+        
+        if (selectedPath) {
+          // פתיחה אוטומטית של התיקייה שנבחרה
+          await this.openInFinder(selectedPath);
+          return selectedPath;
+        }
+        
+        console.warn('🌐 Browser mode & Desktop Companion not available: Cannot select folders');
         return null;
       }
-      
-      const folderPath = await openDialog({
-        directory: true,
-        multiple: false,
-        title: 'בחר תיקיית פרויקט'
-      });
-      
-      console.log('📁 Selected folder:', folderPath);
-      
-      if (folderPath && typeof folderPath === 'string') {
-        // פתיחה אוטומטית של התיקייה שנבחרה
-        const opened = await this.openInFinder(folderPath);
-        if (opened) {
-          return folderPath;
-        }
-      }
-      
-      return null;
     } catch (error) {
       console.error('❌ Error selecting folder:', error);
       return null;
@@ -48,15 +60,24 @@ export class FolderService {
     try {
       console.log('🗂️ Opening folder in system explorer:', folderPath);
       
-      if (!isTauriEnvironment()) {
-        console.warn('🌐 Browser mode: Cannot open folders in system explorer');
-        return false;
+      if (isTauriEnvironment()) {
+        // בסביבת Tauri - שימוש ב-invoke
+        await invoke('open_folder', { path: folderPath });
+        console.log('✅ Folder opened successfully via Tauri');
+        return true;
+      } else {
+        // בדפדפן - ניסיון דרך Desktop Companion
+        console.log('🌐 Browser mode: Trying Desktop Companion...');
+        const success = await DesktopCompanionService.openFolder(folderPath);
+        
+        if (success) {
+          console.log('✅ Folder opened successfully via Desktop Companion');
+          return true;
+        } else {
+          console.warn('🌐 Browser mode & Desktop Companion not available: Cannot open folders');
+          return false;
+        }
       }
-      
-      // שימוש בפונקציה המאוחדת מ-tauri.ts
-      await invoke('open_folder', { path: folderPath });
-      console.log('✅ Folder opened successfully');
-      return true;
     } catch (error) {
       console.error('❌ Error opening folder:', error);
       return false;
@@ -75,12 +96,14 @@ export class FolderService {
       if (isTauriEnvironment()) {
         // בסביבת Tauri - נשתמש ב-fs plugin לבדיקה
         const pathExists = await exists(folderPath);
-        console.log('📁 Folder validation:', pathExists ? '✅ EXISTS' : '❌ NOT FOUND', 'for:', folderPath);
+        console.log('📁 Folder validation via Tauri:', pathExists ? '✅ EXISTS' : '❌ NOT FOUND', 'for:', folderPath);
+        return pathExists;
+      } else {
+        // בדפדפן - ניסיון דרך Desktop Companion
+        const pathExists = await DesktopCompanionService.validateFolder(folderPath);
+        console.log('📁 Folder validation via Desktop Companion:', pathExists ? '✅ EXISTS' : '❌ NOT FOUND', 'for:', folderPath);
         return pathExists;
       }
-      
-      // במצב דפדפן - נחזיר true אם הנתיב לא ריק
-      return true;
     } catch (error) {
       console.error('❌ Error validating folder path:', error);
       return false;
